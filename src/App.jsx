@@ -52,8 +52,13 @@ const AuthenticatedApp = () => {
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') { base44.auth.logout(); window.location.href = '/sign-up'; return null; }
-    // For auth_required or any other error, redirect to welcome
+    if (authError.type === 'user_not_registered') {
+      base44.auth.logout();
+      window.location.href = '/sign-up';
+      return null;
+    }
+    // For auth_required or any other auth error, clear the stale token then redirect
+    base44.auth.logout();
     window.location.href = '/welcome';
     return null;
   }
