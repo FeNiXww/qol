@@ -18,6 +18,9 @@ import AboutYou from '@/pages/onboarding/AboutYou';
 import Hobbies from '@/pages/onboarding/Hobbies';
 import ProfileSetup from '@/pages/onboarding/ProfileSetup';
 
+// Landing
+import Landing from '@/pages/Landing';
+
 // Tab pages
 import Discover from '@/pages/tabs/Discover';
 import Matches from '@/pages/tabs/Matches';
@@ -50,21 +53,22 @@ const AuthenticatedApp = () => {
 
   if (authError) {
     if (authError.type === 'user_not_registered') { base44.auth.logout(); window.location.href = '/sign-up'; return null; }
-    // For auth_required or any other error, redirect to sign-in
-    window.location.href = '/sign-in';
+    // For auth_required or any other error, redirect to welcome
+    window.location.href = '/welcome';
     return null;
   }
 
   return (
     <ProfileProvider currentUser={currentUser}>
       <Routes>
-        {/* Public auth routes */}
+        {/* Public routes */}
+        <Route path="/welcome" element={<Landing />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
         {/* Protected routes */}
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/sign-in" replace />} />}>
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/welcome" replace />} />}>
           {/* Onboarding */}
           <Route path="/onboarding/name" element={<YourName />} />
           <Route path="/onboarding/nationality" element={<Nationality />} />
@@ -82,7 +86,7 @@ const AuthenticatedApp = () => {
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     </ProfileProvider>
   );
