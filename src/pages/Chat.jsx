@@ -61,6 +61,13 @@ export default function Chat() {
           try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
           return updated;
         });
+      } else if (event.type === 'update') {
+        // Translation arrived — patch the existing message in place
+        setMessages(prev => {
+          const updated = prev.map(m => m.id === event.data.id ? { ...m, ...event.data } : m);
+          try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
+          return updated;
+        });
       }
     });
     return unsub;
@@ -90,14 +97,19 @@ export default function Chat() {
 
     try {
       const receiverNat = otherProfile?.nationality || (profile.nationality === 'israeli' ? 'palestinian' : 'israeli');
-      await sendMessage({
+      const saved = await sendMessage({
         matchId,
         senderId: currentUser.id,
         text: msgText,
         senderNationality: profile.nationality,
         receiverNationality: receiverNat,
       });
-      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
+      // Replace optimistic with the real saved message
+      setMessages(prev => {
+        const updated = prev.map(m => m.id === optimistic.id ? { ...saved, status: 'sent' } : m);
+        try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
+        return updated;
+      });
     } catch {
       setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...m, status: 'failed' } : m));
     } finally {

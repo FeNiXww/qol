@@ -27,20 +27,24 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
   const fromLang = getNativeLang(senderNationality);
   const toLang = getNativeLang(receiverNationality);
 
-  const translatedText = await translateText(text, fromLang, toLang);
-
+  // Save message immediately — no waiting for translation
   const msg = await base44.entities.Message.create({
     match_id: matchId,
     sender_id: senderId,
     original_text: text,
     original_lang: fromLang,
-    translated_text: translatedText,
+    translated_text: '',
     translated_lang: toLang,
     status: 'sent',
   });
 
-  // Update match last_message_at
-  await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });
+  // Translate and update in background — don't block the caller
+  Promise.all([
+    translateText(text, fromLang, toLang).then(translatedText =>
+      base44.entities.Message.update(msg.id, { translated_text: translatedText })
+    ),
+    base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() }),
+  ]).catch(() => {});
 
   return msg;
 }
