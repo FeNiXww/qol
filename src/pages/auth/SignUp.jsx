@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
-import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', displayName: '' });
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function SignUp() {
     setLoading(true);
     try {
       await base44.auth.register({ email: form.email, password: form.password });
-      navigate('/verify-otp', { state: { email: form.email, displayName: form.displayName } });
+      navigate('/verify-otp', { state: { email: form.email } });
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -43,13 +43,6 @@ export default function SignUp() {
       </div>
 
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">What's your name?</label>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input type="text" value={form.displayName} onChange={set('displayName')} required placeholder="Your first name" className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent text-sm" />
-          </div>
-        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
           <div className="relative">

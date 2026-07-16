@@ -12,6 +12,7 @@ import SignUp from '@/pages/auth/SignUp';
 import VerifyOTP from '@/pages/auth/VerifyOTP';
 
 // Onboarding pages
+import YourName from '@/pages/onboarding/YourName';
 import Nationality from '@/pages/onboarding/Nationality';
 import AboutYou from '@/pages/onboarding/AboutYou';
 import Hobbies from '@/pages/onboarding/Hobbies';
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
         {/* Protected routes */}
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/sign-in" replace />} />}>
           {/* Onboarding */}
+          <Route path="/onboarding/name" element={<YourName />} />
           <Route path="/onboarding/nationality" element={<Nationality />} />
           <Route path="/onboarding/about" element={<AboutYou />} />
           <Route path="/onboarding/hobbies" element={<Hobbies />} />
