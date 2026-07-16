@@ -13,8 +13,11 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
   const myAgeBand = myProfile.age_band;
   const oppositeNationality = getOppositeNationality(myNationality);
 
+  // Use user_id if set (demo profiles), otherwise fall back to created_by_id
+  const myUserId = myProfile.user_id || myProfile.created_by_id;
+
   // Get all swiped IDs first
-  const swipes = await base44.entities.Swipe.filter({ swiper_id: myProfile.created_by_id });
+  const swipes = await base44.entities.Swipe.filter({ swiper_id: myUserId });
   const swipedIds = new Set(swipes.map(s => s.target_id));
 
   // Query candidates: opposite nationality, same age band, complete profile
@@ -29,8 +32,11 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
 
   const candidates = await base44.entities.Profile.filter(query, '-created_date', limit * 3);
 
-  // Filter out already-swiped
-  const filtered = candidates.filter(p => !swipedIds.has(p.created_by_id) && p.created_by_id !== myProfile.created_by_id);
+  // Filter out already-swiped; use user_id if available for identity check
+  const filtered = candidates.filter(p => {
+    const pUserId = p.user_id || p.created_by_id;
+    return !swipedIds.has(pUserId) && pUserId !== myUserId;
+  });
 
   // Score and sort with randomness
   const scored = filtered
@@ -49,7 +55,6 @@ export async function recordSwipe({ swiperId, targetId, direction }) {
   });
 
   if (direction === 'like') {
-    // Check for mutual like
     const reciprocal = await base44.entities.Swipe.filter({
       swiper_id: targetId,
       target_id: swiperId,

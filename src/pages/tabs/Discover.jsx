@@ -46,19 +46,13 @@ export default function Discover() {
 
   const handleSwipe = async (targetProfile, direction) => {
     if (!currentUser || !profile) return;
-    const result = await recordSwipe({
-      swiperId: currentUser.id,
-      targetId: targetProfile.created_by_id,
-      direction,
-    });
+    const myId = profile.user_id || currentUser.id;
+    const targetId = targetProfile.user_id || targetProfile.created_by_id;
+    const result = await recordSwipe({ swiperId: myId, targetId, direction });
     if (result.matched) {
-      await createMatchIfMutual({
-        userAId: currentUser.id,
-        userBId: targetProfile.created_by_id,
-        ageBand: profile.age_band,
-      });
-      const matches = await base44.entities.Match.filter({ user_a_id: currentUser.id, user_b_id: targetProfile.created_by_id });
-      const matchesB = await base44.entities.Match.filter({ user_a_id: targetProfile.created_by_id, user_b_id: currentUser.id });
+      await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
+      const matches = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: targetId });
+      const matchesB = await base44.entities.Match.filter({ user_a_id: targetId, user_b_id: myId });
       const match = matches[0] || matchesB[0];
       if (match) setMatchData({ ...match, otherProfile: targetProfile });
     }
