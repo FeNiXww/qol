@@ -125,21 +125,24 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
         <div className="flex-1 px-5 pb-5 flex flex-col justify-center">
           {hobbies.length > 0 ? (
             <>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Interests</p>
-              <div className="flex flex-wrap gap-2">
-                {hobbies.map(h => (
-                  <span
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Interests</p>
+              <div className="flex flex-wrap gap-3">
+                {hobbies.map((h, i) => (
+                  <motion.span
                     key={h}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-semibold border"
+                    initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: i * 0.06, type: 'spring', stiffness: 300, damping: 18 }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold border-2 shadow-sm"
                     style={{
-                      backgroundColor: `${theme.colors.teal}12`,
-                      borderColor: `${theme.colors.teal}30`,
+                      backgroundColor: `${theme.colors.teal}15`,
+                      borderColor: `${theme.colors.teal}40`,
                       color: theme.colors.navy,
                     }}
                   >
-                    <span className="text-base">{HOBBY_EMOJIS[h] || '✨'}</span>
-                    {h}
-                  </span>
+                    <span className="text-2xl">{HOBBY_EMOJIS[h] || '✨'}</span>
+                    <span className="text-sm">{h}</span>
+                  </motion.span>
                 ))}
               </div>
             </>
