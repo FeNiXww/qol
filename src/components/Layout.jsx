@@ -40,7 +40,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#F8FFFE' }}>
       {/* Main content */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${hideTabs ? '' : 'pb-20'}`}>
+      <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-20'}`}>
         <Outlet />
       </div>
 
