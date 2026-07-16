@@ -155,7 +155,7 @@ export default function Chat() {
   const placeholder = profile?.nationality === 'israeli' ? '…כתוב בעברית' : 'اكتب بالعربية…';
 
   return (
-    <div className="relative flex flex-col max-w-md mx-auto" style={{ background: '#F0F7F6', height: '100dvh' }}>
+    <div className="relative flex flex-col w-full" style={{ background: '#F0F7F6', height: '100dvh' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
