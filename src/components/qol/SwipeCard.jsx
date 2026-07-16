@@ -79,25 +79,20 @@ export default function SwipeCard({ profile, onSwipe, isTop, style }) {
             <h2 className="text-white text-2xl font-bold">
               {name}{age ? `, ${age}` : ''}
             </h2>
-            <p className="text-white/80 text-sm mt-0.5">{nationality}</p>
+            <p className="text-white/70 text-sm mt-0.5">{profile.bio ? `${profile.bio} · ` : ''}{nationality}</p>
           </div>
         </div>
 
-        {/* Info */}
-        <div className="p-4 bg-white">
-          {profile.bio && (
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{profile.bio}</p>
-          )}
-          {hobbies.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {hobbies.map(h => (
-                <span key={h} className="px-2.5 py-1 rounded-full text-xs font-medium text-teal-700 bg-teal-50 border border-teal-100">
-                  {h}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Hobbies */}
+        {hobbies.length > 0 && (
+          <div className="p-4 bg-white flex flex-wrap gap-1.5">
+            {hobbies.map(h => (
+              <span key={h} className="px-2.5 py-1 rounded-full text-xs font-medium text-teal-700 bg-teal-50 border border-teal-100">
+                {h}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );
