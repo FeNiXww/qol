@@ -29,9 +29,13 @@ export default function AboutYou() {
     if (!birthdate) { setError('Please enter your date of birth'); return; }
     if (!isAtLeast14(birthdate)) { setError('You must be at least 14 years old to join QOL.'); return; }
     setLoading(true);
-    const age_band = getAgeBand(birthdate);
-    await updateProfile({ gender, birthdate, age_band, onboarding_step: 'hobbies' });
-    navigate('/onboarding/hobbies');
+    try {
+      const age_band = getAgeBand(birthdate);
+      await updateProfile({ gender, birthdate, age_band, onboarding_step: 'hobbies' });
+      navigate('/onboarding/hobbies');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

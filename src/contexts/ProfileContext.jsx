@@ -23,13 +23,14 @@ export function ProfileProvider({ children, currentUser }) {
 
   const updateProfile = useCallback(async (data) => {
     if (!profile?.id) {
+      if (!currentUser?.id) throw new Error('No authenticated user');
       const created = await base44.entities.Profile.create({ ...data, created_by_id: currentUser.id });
       setProfile(created);
       return created;
     }
-    const updated = await base44.entities.Profile.update(profile.id, data);
+    await base44.entities.Profile.update(profile.id, data);
     setProfile(prev => ({ ...prev, ...data }));
-    return updated;
+    return { ...profile, ...data };
   }, [profile, currentUser?.id]);
 
   const onboardingComplete = profile?.onboarding_step === 'complete';

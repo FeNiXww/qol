@@ -18,8 +18,12 @@ export default function Nationality() {
   const handleContinue = async () => {
     if (!selected) return;
     setLoading(true);
-    await updateProfile({ nationality: selected, onboarding_step: 'about' });
-    navigate('/onboarding/about');
+    try {
+      await updateProfile({ nationality: selected, onboarding_step: 'about' });
+      navigate('/onboarding/about');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

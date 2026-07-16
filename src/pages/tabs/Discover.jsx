@@ -5,15 +5,15 @@ import SwipeDeck from '@/components/qol/SwipeDeck';
 import MatchModal from '@/components/qol/MatchModal';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 
 export default function Discover() {
-  const { profile } = useProfile();
+  const { profile, loading: profileLoading } = useProfile();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [genderFilter, setGenderFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
-  const [matchData, setMatchData] = useState(null); // { id, otherProfile }
+  const [matchData, setMatchData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const fetchingRef = useRef(false);
 
@@ -38,6 +38,7 @@ export default function Discover() {
   }, [profile, genderFilter]);
 
   useEffect(() => {
+    if (!profile) return;
     setProfiles([]);
     setLoading(true);
     loadMore();
@@ -56,34 +57,61 @@ export default function Discover() {
         userBId: targetProfile.created_by_id,
         ageBand: profile.age_band,
       });
-      // Find the match
       const matches = await base44.entities.Match.filter({ user_a_id: currentUser.id, user_b_id: targetProfile.created_by_id });
       const matchesB = await base44.entities.Match.filter({ user_a_id: targetProfile.created_by_id, user_b_id: currentUser.id });
       const match = matches[0] || matchesB[0];
-      if (match) {
-        setMatchData({ ...match, otherProfile: targetProfile });
-      }
+      if (match) setMatchData({ ...match, otherProfile: targetProfile });
     }
   };
 
-  if (!profile || profile.onboarding_step !== 'complete') return null;
+  // Show loading while profile is being fetched
+  if (profileLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Profile not complete — shouldn't reach here normally but safeguard
+  if (!profile || profile.onboarding_step !== 'complete') {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50 px-8">
+        <div className="text-center">
+          <div className="text-5xl mb-4">👋</div>
+          <h3 className="text-xl font-bold text-gray-700 mb-2">Complete your profile first</h3>
+          <p className="text-gray-400 text-sm">Finish onboarding to start discovering connections.</p>
+        </div>
+      </div>
+    );
+  }
 
   const oppositeNationality = profile.nationality === 'israeli' ? 'Palestinians' : 'Israelis';
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-white border-b border-gray-100">
+      <div
+        className="flex items-center justify-between px-6 pb-4 shadow-sm flex-shrink-0"
+        style={{
+          paddingTop: '52px',
+          background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)`,
+        }}
+      >
         <div>
-          <h1 className="text-xl font-black" style={{ color: theme.colors.navy }}>Discover</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Meeting {oppositeNationality}</p>
+          <h1 className="text-2xl font-black text-white">Discover</h1>
+          <p className="text-xs mt-0.5" style={{ color: `${theme.colors.tealLight}` }}>
+            Meeting {oppositeNationality}
+          </p>
         </div>
         <button
           onClick={() => setShowFilter(!showFilter)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
-            genderFilter ? 'text-white border-transparent' : 'border-gray-200 text-gray-600'
-          }`}
-          style={genderFilter ? { backgroundColor: theme.colors.teal } : {}}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+          style={
+            genderFilter
+              ? { backgroundColor: theme.colors.orange, color: 'white' }
+              : { backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }
+          }
         >
           <SlidersHorizontal className="w-4 h-4" />
           {genderFilter ? genderFilter.charAt(0).toUpperCase() + genderFilter.slice(1) : 'Filter'}
@@ -92,15 +120,17 @@ export default function Discover() {
 
       {/* Gender filter dropdown */}
       {showFilter && (
-        <div className="bg-white border-b border-gray-100 px-6 py-3 flex gap-2">
+        <div className="bg-white border-b border-gray-100 px-4 py-3 flex gap-2 flex-wrap shadow-sm">
           {['all', 'male', 'female', 'other'].map(g => (
             <button
               key={g}
               onClick={() => { setGenderFilter(g === 'all' ? null : g); setShowFilter(false); }}
-              className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-                (g === 'all' && !genderFilter) || genderFilter === g ? 'text-white border-transparent' : 'border-gray-200 text-gray-600'
-              }`}
-              style={(g === 'all' && !genderFilter) || genderFilter === g ? { backgroundColor: theme.colors.teal } : {}}
+              className="px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all"
+              style={
+                (g === 'all' && !genderFilter) || genderFilter === g
+                  ? { backgroundColor: theme.colors.teal, borderColor: theme.colors.teal, color: 'white' }
+                  : { borderColor: '#E5E7EB', color: '#6B7280', backgroundColor: 'white' }
+              }
             >
               {g.charAt(0).toUpperCase() + g.slice(1)}
             </button>
@@ -109,7 +139,7 @@ export default function Discover() {
       )}
 
       {/* Swipe deck */}
-      <div className="flex-1 flex flex-col pt-6">
+      <div className="flex-1 flex flex-col pt-4 overflow-hidden">
         <SwipeDeck
           profiles={profiles}
           onSwipe={handleSwipe}
@@ -119,7 +149,6 @@ export default function Discover() {
         />
       </div>
 
-      {/* Match modal */}
       {matchData && (
         <MatchModal
           match={matchData}

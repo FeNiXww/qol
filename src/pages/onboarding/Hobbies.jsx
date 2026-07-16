@@ -27,8 +27,12 @@ export default function Hobbies() {
   const handleContinue = async () => {
     if (selected.length < MIN_HOBBIES) return;
     setLoading(true);
-    await updateProfile({ hobbies: selected, onboarding_step: 'profile' });
-    navigate('/onboarding/profile-setup');
+    try {
+      await updateProfile({ hobbies: selected, onboarding_step: 'profile' });
+      navigate('/onboarding/profile-setup');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

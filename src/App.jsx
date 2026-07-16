@@ -30,7 +30,7 @@ import { ProfileProvider } from '@/contexts/ProfileContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, currentUser } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user: currentUser } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (

@@ -33,12 +33,16 @@ export default function ProfileSetup() {
 
   const handleComplete = async () => {
     setLoading(true);
-    await updateProfile({
-      bio,
-      avatar_url: avatar || null,
-      onboarding_step: 'complete',
-    });
-    window.location.href = '/';
+    try {
+      await updateProfile({
+        bio,
+        avatar_url: avatar || null,
+        onboarding_step: 'complete',
+      });
+      window.location.href = '/';
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
