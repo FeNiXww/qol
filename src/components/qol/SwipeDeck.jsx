@@ -7,11 +7,12 @@ import { motion } from 'framer-motion';
 export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empty }) {
   const [stack, setStack] = useState([]);
   const topCardRef = useRef(null);
+  const swipedIdsRef = useRef(new Set());
 
   useEffect(() => {
     setStack(prev => {
       const prevIds = new Set(prev.map(p => p.id));
-      const newOnes = profiles.filter(p => !prevIds.has(p.id));
+      const newOnes = profiles.filter(p => !prevIds.has(p.id) && !swipedIdsRef.current.has(p.id));
       if (newOnes.length === 0) return prev;
       return [...newOnes, ...prev];
     });
@@ -19,6 +20,7 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
 
   // Called by drag (card handles its own animation, then calls this)
   const handleSwipeDone = (profile, direction) => {
+    swipedIdsRef.current.add(profile.id);
     setStack(prev => {
       const next = prev.filter(p => p.id !== profile.id);
       if (next.length <= 3) onLoadMore?.();
