@@ -6,7 +6,7 @@ import { getMessages, sendMessage } from '@/lib/matchesApi';
 import ChatBubble from '@/components/qol/ChatBubble';
 import ReportMessageModal from '@/components/qol/ReportMessageModal';
 import { theme } from '@/lib/theme';
-import { ArrowLeft, Send, Globe } from 'lucide-react';
+import { ArrowLeft, Send, Globe, Trash2 } from 'lucide-react';
 
 const MAX_CHARS = 200;
 
@@ -20,6 +20,7 @@ export default function Chat() {
   const [otherProfile, setOtherProfile] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [reportingMessage, setReportingMessage] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -92,6 +93,12 @@ export default function Chat() {
     }
   };
 
+  const handleClearChat = async () => {
+    await base44.entities.Message.deleteMany({ match_id: matchId });
+    setMessages([]);
+    setConfirmClear(false);
+  };
+
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
@@ -102,7 +109,7 @@ export default function Chat() {
   const placeholder = profile?.nationality === 'israeli' ? '…כתוב בעברית' : 'اكتب بالعربية…';
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto" style={{ background: '#F0F7F6' }}>
+    <div className="relative flex flex-col h-screen max-w-md mx-auto" style={{ background: '#F0F7F6' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
@@ -128,7 +135,38 @@ export default function Chat() {
             <p className="text-xs text-white/50">Auto-translated</p>
           </div>
         </div>
+        <button
+          onClick={() => setConfirmClear(true)}
+          className="text-white/50 hover:text-white/80 transition-colors p-1"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
       </div>
+
+      {/* Confirm clear dialog */}
+      {confirmClear && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-xl">
+            <h3 className="font-bold text-gray-900 text-lg mb-1">Clear chat?</h3>
+            <p className="text-gray-500 text-sm mb-5">All messages will be permanently deleted for both users.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmClear(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearChat}
+                className="flex-1 py-2.5 rounded-xl text-white font-medium text-sm"
+                style={{ backgroundColor: '#EF4444' }}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
