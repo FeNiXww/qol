@@ -2,6 +2,14 @@ import React, { forwardRef, useImperativeHandle } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { theme } from '@/lib/theme';
 
+const HOBBY_EMOJIS = {
+  Music: '🎵', Art: '🎨', Cooking: '🍳', Reading: '📚', Football: '⚽', Basketball: '🏀',
+  Tennis: '🎾', Swimming: '🏊', Hiking: '🥾', Photography: '📸', Gaming: '🎮', Dancing: '💃',
+  Travel: '✈️', Yoga: '🧘', Fitness: '💪', Cinema: '🎬', Theatre: '🎭', Poetry: '✍️',
+  Chess: '♟️', Cycling: '🚴', Painting: '🖌️', Volunteering: '🤝', Languages: '🗣️',
+  History: '🏛️', Technology: '💻',
+};
+
 const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style }, ref) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-25, 0, 25]);
@@ -11,7 +19,6 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
 
   const SWIPE_THRESHOLD = 100;
 
-  // Expose triggerSwipe so SwipeDeck buttons can animate before removing
   useImperativeHandle(ref, () => ({
     triggerSwipe: async (dir) => {
       await controls.start({
@@ -39,8 +46,8 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
   const age = profile.birthdate
     ? Math.floor((new Date() - new Date(profile.birthdate)) / (365.25 * 24 * 60 * 60 * 1000))
     : null;
-  const nationality = profile.nationality === 'israeli' ? '🇮🇱 Israeli' : '🇵🇸 Palestinian';
-  const hobbies = (profile.hobbies || []).slice(0, 4);
+  const flag = profile.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+  const hobbies = (profile.hobbies || []).slice(0, 8);
 
   return (
     <motion.div
@@ -71,38 +78,78 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
       )}
 
       {/* Card */}
-      <div className="bg-white rounded-3xl overflow-hidden shadow-2xl h-[500px] flex flex-col">
-        {/* Photo */}
-        <div className="relative flex-1 bg-gray-100">
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center text-7xl font-bold text-white"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-            >
-              {name[0]?.toUpperCase()}
-            </div>
-          )}
-          <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-black/80 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4">
-            <h2 className="text-white text-2xl font-bold drop-shadow">
+      <div className="bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col" style={{ height: 500 }}>
+
+        {/* Top: avatar + identity */}
+        <div
+          className="flex items-center gap-4 px-5 py-4"
+          style={{ background: `linear-gradient(135deg, ${theme.colors.navy} 0%, #1a2a5e 100%)` }}
+        >
+          {/* Avatar — small */}
+          <div className="flex-shrink-0">
+            {profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={name}
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20"
+              />
+            ) : (
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white border-2 border-white/20"
+                style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+              >
+                {name[0]?.toUpperCase()}
+              </div>
+            )}
+          </div>
+
+          {/* Name + meta */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-white font-black text-xl leading-tight truncate">
               {name}{age ? `, ${age}` : ''}
             </h2>
-            <p className="text-white/70 text-sm mt-0.5">{profile.bio ? `${profile.bio} · ` : ''}{nationality}</p>
+            <p className="text-white/60 text-sm mt-0.5">{flag} {profile.nationality === 'israeli' ? 'Israeli' : 'Palestinian'}</p>
           </div>
         </div>
 
-        {/* Hobbies */}
-        {hobbies.length > 0 && (
-          <div className="p-4 bg-white flex flex-wrap gap-1.5">
-            {hobbies.map(h => (
-              <span key={h} className="px-2.5 py-1 rounded-full text-xs font-medium text-teal-700 bg-teal-50 border border-teal-100">
-                {h}
-              </span>
-            ))}
+        {/* Bio */}
+        {profile.bio ? (
+          <div className="px-5 pt-4 pb-2">
+            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">"{profile.bio}"</p>
           </div>
+        ) : (
+          <div className="pt-4" />
         )}
+
+        {/* Interests — main focus */}
+        <div className="flex-1 px-5 pb-5 flex flex-col justify-center">
+          {hobbies.length > 0 ? (
+            <>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Interests</p>
+              <div className="flex flex-wrap gap-2">
+                {hobbies.map(h => (
+                  <span
+                    key={h}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-semibold border"
+                    style={{
+                      backgroundColor: `${theme.colors.teal}12`,
+                      borderColor: `${theme.colors.teal}30`,
+                      color: theme.colors.navy,
+                    }}
+                  >
+                    <span className="text-base">{HOBBY_EMOJIS[h] || '✨'}</span>
+                    {h}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-4xl mb-2">🌱</p>
+              <p className="text-gray-400 text-sm">Still exploring interests</p>
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
