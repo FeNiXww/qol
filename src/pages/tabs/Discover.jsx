@@ -16,6 +16,7 @@ export default function Discover() {
   const [matchData, setMatchData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const fetchingRef = useRef(false);
+  const swipedIdsRef = useRef(new Set());
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -28,7 +29,10 @@ export default function Discover() {
       const batch = await fetchDiscoverBatch({ myProfile: profile, genderFilter, limit: 10 });
       setProfiles(prev => {
         const existingIds = new Set(prev.map(p => p.id));
-        const newOnes = batch.filter(p => !existingIds.has(p.id));
+        const newOnes = batch.filter(p => {
+          const pUserId = p.user_id || p.created_by_id;
+          return !existingIds.has(p.id) && !swipedIdsRef.current.has(pUserId);
+        });
         return [...prev, ...newOnes];
       });
     } finally {
@@ -40,6 +44,7 @@ export default function Discover() {
   useEffect(() => {
     if (!profile) return;
     setProfiles([]);
+    swipedIdsRef.current = new Set();
     setLoading(true);
     loadMore();
   }, [profile?.id, genderFilter]);
@@ -48,6 +53,8 @@ export default function Discover() {
     if (!currentUser || !profile) return;
     const myId = profile.user_id || currentUser.id;
     const targetId = targetProfile.user_id || targetProfile.created_by_id;
+    // Track locally so refetched batches never re-include this profile
+    swipedIdsRef.current.add(targetId);
     const result = await recordSwipe({ swiperId: myId, targetId, direction });
     if (result.matched) {
       await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
