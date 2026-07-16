@@ -49,7 +49,9 @@ export default function Discover() {
         const existingIds = new Set(prev.map(p => p.id));
         const newOnes = batch.filter(p => {
           const pUserId = p.user_id || p.created_by_id;
-          return !existingIds.has(p.id) && !swipedIdsRef.current.has(pUserId);
+          return !existingIds.has(p.id)
+            && !swipedIdsRef.current.has(pUserId)
+            && !swipedIdsRef.current.has(p.id);
         });
         return [...prev, ...newOnes];
       });
@@ -71,8 +73,9 @@ export default function Discover() {
     if (!currentUser || !profile) return;
     const myId = profile.user_id || currentUser.id;
     const targetId = targetProfile.user_id || targetProfile.created_by_id;
-    // Track locally so refetched batches never re-include this profile
+    // Track locally (both user ID and profile ID) so refetched batches never re-include this profile
     swipedIdsRef.current.add(targetId);
+    swipedIdsRef.current.add(targetProfile.id);
     const result = await recordSwipe({ swiperId: myId, targetId, direction });
     if (result.matched) {
       await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
