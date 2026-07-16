@@ -44,7 +44,7 @@ export default function SignUp() {
 
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Display name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">What's your name?</label>
           <div className="relative">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input type="text" value={form.displayName} onChange={set('displayName')} required placeholder="Your first name" className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent text-sm" />

@@ -20,6 +20,9 @@ export default function VerifyOTP() {
     try {
       const { access_token } = await base44.auth.verifyOtp({ email, otpCode: otp });
       base44.auth.setToken(access_token);
+      if (displayName) {
+        await base44.auth.updateMe({ full_name: displayName });
+      }
       window.location.href = '/onboarding/nationality';
     } catch (err) {
       setError(err.message || 'Invalid code. Please try again.');
