@@ -9,7 +9,12 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
   const topCardRef = useRef(null);
 
   useEffect(() => {
-    setStack(profiles);
+    setStack(prev => {
+      const prevIds = new Set(prev.map(p => p.id));
+      const newOnes = profiles.filter(p => !prevIds.has(p.id));
+      if (newOnes.length === 0) return prev;
+      return [...newOnes, ...prev];
+    });
   }, [profiles]);
 
   // Called by drag (card handles its own animation, then calls this)
