@@ -61,7 +61,7 @@ export default function Chat() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!text.trim() || sending || !profile || !otherProfile || !currentUser) return;
+    if (!text.trim() || sending || !profile || !currentUser) return;
     const msgText = text.trim();
     setText('');
     setSending(true);
@@ -84,7 +84,7 @@ export default function Chat() {
         senderId: currentUser.id,
         text: msgText,
         senderNationality: profile.nationality,
-        receiverNationality: otherProfile.nationality,
+        receiverNationality: otherProfile?.nationality,
       });
       setMessages(prev => prev.filter(m => m.id !== optimistic.id));
     } catch {
