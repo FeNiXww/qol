@@ -24,6 +24,14 @@
         "minor",
         "adult"
       ]
+    },
+    "user_a_cleared_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "user_b_cleared_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

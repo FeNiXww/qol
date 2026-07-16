@@ -21,6 +21,7 @@ export default function Chat() {
   const [currentUser, setCurrentUser] = useState(null);
   const [reportingMessage, setReportingMessage] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [clearedAt, setClearedAt] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -35,6 +36,9 @@ export default function Chat() {
       const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
       const profiles = await base44.entities.Profile.filter({ user_id: otherId });
       setOtherProfile(profiles[0] || null);
+      const isUserA = m.user_a_id === currentUser.id;
+      const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
+      if (myClearedAt) setClearedAt(myClearedAt);
       const msgs = await getMessages(matchId);
       setMessages(msgs);
     };
@@ -94,8 +98,13 @@ export default function Chat() {
   };
 
   const handleClearChat = async () => {
-    await base44.entities.Message.deleteMany({ match_id: matchId });
-    setMessages([]);
+    if (!currentUser) return;
+    const match = await base44.entities.Match.get(matchId);
+    const isUserA = match.user_a_id === currentUser.id;
+    const field = isUserA ? 'user_a_cleared_at' : 'user_b_cleared_at';
+    const clearedAt = new Date().toISOString();
+    await base44.entities.Match.update(matchId, { [field]: clearedAt });
+    setClearedAt(clearedAt);
     setConfirmClear(false);
   };
 
@@ -177,7 +186,7 @@ export default function Chat() {
             <p className="text-gray-400 text-sm mt-1">Your message will be auto-translated.</p>
           </div>
         )}
-        {messages.map(msg => (
+        {messages.filter(msg => !clearedAt || new Date(msg.created_date) > new Date(clearedAt)).map(msg => (
           <ChatBubble
             key={msg.id}
             message={msg}
