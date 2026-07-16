@@ -1,0 +1,71 @@
+{
+  "name": "Profile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "References the auth user"
+    },
+    "nationality": {
+      "type": "string",
+      "enum": [
+        "israeli",
+        "palestinian"
+      ]
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "male",
+        "female",
+        "other"
+      ]
+    },
+    "birthdate": {
+      "type": "string",
+      "format": "date"
+    },
+    "age_band": {
+      "type": "string",
+      "enum": [
+        "minor",
+        "adult"
+      ]
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hobbies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "onboarding_step": {
+      "type": "string",
+      "enum": [
+        "nationality",
+        "about",
+        "hobbies",
+        "profile",
+        "complete"
+      ],
+      "default": "nationality"
+    },
+    "display_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nationality"
+  ]
+}

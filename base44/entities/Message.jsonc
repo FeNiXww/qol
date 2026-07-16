@@ -1,0 +1,46 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string"
+    },
+    "sender_id": {
+      "type": "string"
+    },
+    "original_text": {
+      "type": "string"
+    },
+    "original_lang": {
+      "type": "string",
+      "enum": [
+        "he",
+        "ar"
+      ]
+    },
+    "translated_text": {
+      "type": "string"
+    },
+    "translated_lang": {
+      "type": "string",
+      "enum": [
+        "he",
+        "ar"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sending",
+        "sent",
+        "failed"
+      ],
+      "default": "sent"
+    }
+  },
+  "required": [
+    "match_id",
+    "sender_id",
+    "original_text"
+  ]
+}

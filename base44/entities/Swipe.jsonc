@@ -1,0 +1,26 @@
+{
+  "name": "Swipe",
+  "type": "object",
+  "properties": {
+    "swiper_id": {
+      "type": "string",
+      "description": "User who swiped"
+    },
+    "target_id": {
+      "type": "string",
+      "description": "User who was swiped on"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "like",
+        "pass"
+      ]
+    }
+  },
+  "required": [
+    "swiper_id",
+    "target_id",
+    "direction"
+  ]
+}

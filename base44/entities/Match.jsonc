@@ -1,0 +1,33 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "user_a_id": {
+      "type": "string"
+    },
+    "user_b_id": {
+      "type": "string"
+    },
+    "user_a_profile_id": {
+      "type": "string"
+    },
+    "user_b_profile_id": {
+      "type": "string"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "age_band": {
+      "type": "string",
+      "enum": [
+        "minor",
+        "adult"
+      ]
+    }
+  },
+  "required": [
+    "user_a_id",
+    "user_b_id"
+  ]
+}
