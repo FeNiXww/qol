@@ -1,29 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import SwipeCard from './SwipeCard';
 import { Heart, X, RefreshCw } from 'lucide-react';
 import { theme } from '@/lib/theme';
+import { motion } from 'framer-motion';
 
 export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empty }) {
   const [stack, setStack] = useState([]);
+  const topCardRef = useRef(null);
 
   useEffect(() => {
     setStack(profiles);
   }, [profiles]);
 
-  const handleSwipe = (direction) => {
-    if (stack.length === 0) return;
-    const top = stack[stack.length - 1];
+  // Called by drag (card handles its own animation, then calls this)
+  const handleSwipeDone = (profile, direction) => {
     setStack(prev => {
-      const next = prev.slice(0, -1);
+      const next = prev.filter(p => p.id !== profile.id);
       if (next.length <= 3) onLoadMore?.();
       return next;
     });
-    onSwipe?.(top, direction);
+    onSwipe?.(profile, direction);
   };
 
+  // Called by buttons — triggers card fly-off animation first
   const handleButton = async (dir) => {
-    handleSwipe(dir);
+    if (!topCardRef.current) return;
+    topCardRef.current.triggerSwipe(dir);
   };
 
   if (loading && stack.length === 0) {
@@ -51,10 +53,12 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
     );
   }
 
+  const topProfile = stack[stack.length - 1];
+
   return (
     <div className="flex-1 flex flex-col items-center px-4">
       {/* Deck */}
-      <div className="relative w-full max-w-sm" style={{ height: 560 }}>
+      <div className="relative w-full max-w-sm" style={{ height: 520 }}>
         {stack.slice(-3).map((profile, idx, arr) => {
           const isTop = idx === arr.length - 1;
           const offsetY = (arr.length - 1 - idx) * 12;
@@ -62,8 +66,9 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
           return (
             <SwipeCard
               key={profile.id}
+              ref={isTop ? topCardRef : null}
               profile={profile}
-              onSwipe={handleSwipe}
+              onSwipe={(dir) => handleSwipeDone(profile, dir)}
               isTop={isTop}
               style={{
                 transform: `translateY(${offsetY}px) scale(${scale})`,
@@ -74,29 +79,33 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
         })}
       </div>
 
-      {/* Buttons */}
+      {/* Action Buttons */}
       <div className="flex items-center gap-8 mt-4">
+        {/* Pass */}
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => handleButton('pass')}
-          className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-red-100 hover:border-red-300 transition-colors"
+          className="flex flex-col items-center gap-1.5"
         >
-          <X className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-red-100 hover:border-red-300 transition-colors">
+            <X className="w-7 h-7 text-red-400" />
+          </div>
+          <span className="text-xs font-semibold text-red-400">Pass</span>
         </motion.button>
+
+        {/* Like */}
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => handleButton('like')}
-          className="w-20 h-20 rounded-full shadow-xl flex items-center justify-center"
-          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+          className="flex flex-col items-center gap-1.5"
         >
-          <Heart className="w-9 h-9 text-white fill-white" />
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => handleButton('pass')}
-          className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-100 hover:border-gray-300 transition-colors"
-        >
-          <X className="w-7 h-7 text-gray-300" />
+          <div
+            className="w-20 h-20 rounded-full shadow-xl flex items-center justify-center"
+            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+          >
+            <Heart className="w-9 h-9 text-white fill-white" />
+          </div>
+          <span className="text-xs font-semibold" style={{ color: theme.colors.teal }}>Like</span>
         </motion.button>
       </div>
     </div>

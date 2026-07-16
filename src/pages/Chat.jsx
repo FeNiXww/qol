@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { getMessages, sendMessage } from '@/lib/matchesApi';
 import ChatBubble from '@/components/qol/ChatBubble';
 import { theme } from '@/lib/theme';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Globe } from 'lucide-react';
 
 const MAX_CHARS = 200;
 
@@ -18,7 +18,6 @@ export default function Chat() {
   const [sending, setSending] = useState(false);
   const [otherProfile, setOtherProfile] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-  const [match, setMatch] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -30,14 +29,11 @@ export default function Chat() {
     if (!currentUser) return;
     const load = async () => {
       let m = null;
-      try {
-        m = await base44.entities.Match.get(matchId);
-        setMatch(m);
-      } catch { return; }
+      try { m = await base44.entities.Match.get(matchId); } catch { return; }
 
       const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
-      const profiles = await base44.entities.Profile.filter({ created_by_id: otherId });
-      setOtherProfile(profiles[0]);
+      const profiles = await base44.entities.Profile.filter({ user_id: otherId });
+      setOtherProfile(profiles[0] || null);
 
       const msgs = await getMessages(matchId);
       setMessages(msgs);
@@ -70,7 +66,6 @@ export default function Chat() {
     setText('');
     setSending(true);
 
-    // Optimistic bubble
     const optimistic = {
       id: `opt-${Date.now()}`,
       match_id: matchId,
@@ -91,9 +86,8 @@ export default function Chat() {
         senderNationality: profile.nationality,
         receiverNationality: otherProfile.nationality,
       });
-      // Remove optimistic (realtime will add real one)
       setMessages(prev => prev.filter(m => m.id !== optimistic.id));
-    } catch (err) {
+    } catch {
       setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...m, status: 'failed' } : m));
     } finally {
       setSending(false);
@@ -106,33 +100,48 @@ export default function Chat() {
 
   const name = otherProfile?.display_name || 'Connection';
   const flag = otherProfile?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+  const isRTLInput = profile?.nationality === 'israeli' || profile?.nationality === 'palestinian';
+  const placeholder = profile?.nationality === 'israeli' ? '…כתוב בעברית' : 'اكتب بالعربية…';
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 max-w-md mx-auto">
+    <div className="flex flex-col h-screen max-w-md mx-auto" style={{ background: '#F0F7F6' }}>
       {/* Header */}
-      <div className="flex items-center gap-4 px-4 pt-12 pb-4 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
-        <button onClick={() => navigate('/matches')} className="text-gray-400 hover:text-gray-700">
-          <ArrowLeft className="w-6 h-6" />
+      <div
+        className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
+        style={{
+          paddingTop: '52px',
+          background: `linear-gradient(135deg, ${theme.colors.navy}, #1a2a5e)`,
+        }}
+      >
+        <button onClick={() => navigate('/matches')} className="text-white/70 hover:text-white transition-colors p-1">
+          <ArrowLeft className="w-5 h-5" />
         </button>
         {otherProfile?.avatar_url ? (
-          <img src={otherProfile.avatar_url} alt={name} className="w-10 h-10 rounded-full object-cover" />
+          <img src={otherProfile.avatar_url} alt={name} className="w-10 h-10 rounded-full object-cover border-2 border-white/30" />
         ) : (
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: theme.colors.teal }}>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-white/30"
+            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+          >
             {name[0]?.toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-gray-900 truncate">{flag} {name}</h2>
-          <p className="text-xs text-gray-400 capitalize">{otherProfile?.nationality || ''}</p>
+          <h2 className="font-bold text-white truncate">{flag} {name}</h2>
+          <div className="flex items-center gap-1">
+            <Globe className="w-3 h-3 text-white/50" />
+            <p className="text-xs text-white/50">Auto-translated</p>
+          </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
         {messages.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <p className="text-4xl mb-3">👋</p>
-            <p className="text-gray-400 text-sm">Say hello! Your message will be automatically translated.</p>
+            <p className="text-gray-500 font-medium">Say hello!</p>
+            <p className="text-gray-400 text-sm mt-1">Your message will be auto-translated.</p>
           </div>
         )}
         {messages.map(msg => (
@@ -145,37 +154,32 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Translation note */}
-      <div className="px-4 py-1.5 text-center">
-        <p className="text-xs text-gray-400">✨ Messages are auto-translated • Write in your language</p>
-      </div>
-
       {/* Input */}
-      <div className="px-4 pb-6 pt-2 bg-white border-t border-gray-100 flex-shrink-0">
-        <div className="flex items-end gap-3">
+      <div className="px-4 pb-6 pt-3 bg-white border-t border-gray-100 flex-shrink-0 shadow-lg">
+        <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             <textarea
               value={text}
               onChange={e => setText(e.target.value.slice(0, MAX_CHARS))}
               onKeyDown={handleKey}
-              placeholder={profile?.nationality === 'israeli' ? 'Write in Hebrew…' : 'Write in Arabic…'}
+              placeholder={placeholder}
               rows={1}
-              dir={profile?.nationality === 'israeli' || profile?.nationality === 'palestinian' ? 'rtl' : 'ltr'}
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent text-sm resize-none"
-              style={{ minHeight: 44, maxHeight: 120 }}
+              dir={isRTLInput ? 'rtl' : 'ltr'}
+              className="w-full px-4 py-3 pr-12 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 text-sm resize-none"
+              style={{ minHeight: 46, maxHeight: 120, focusRingColor: theme.colors.teal }}
             />
-            <span className="absolute bottom-2 right-3 text-xs text-gray-300">{text.length}/{MAX_CHARS}</span>
+            <span className="absolute bottom-2.5 right-3 text-xs text-gray-300">{text.length}/{MAX_CHARS}</span>
           </div>
           <button
             onClick={handleSend}
             disabled={!text.trim() || sending}
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white flex-shrink-0 transition-all disabled:opacity-50"
-            style={{ backgroundColor: theme.colors.teal }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white flex-shrink-0 transition-all disabled:opacity-40 active:scale-95"
+            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0f7a6e)` }}
           >
             {sending ? (
               <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             )}
           </button>
         </div>

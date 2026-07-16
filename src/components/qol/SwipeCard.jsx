@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { theme } from '@/lib/theme';
-import { Heart, X, MapPin } from 'lucide-react';
 
-export default function SwipeCard({ profile, onSwipe, isTop, style }) {
+const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style }, ref) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-25, 0, 25]);
   const likeOpacity = useTransform(x, [0, 80], [0, 1]);
@@ -12,11 +11,24 @@ export default function SwipeCard({ profile, onSwipe, isTop, style }) {
 
   const SWIPE_THRESHOLD = 100;
 
+  // Expose triggerSwipe so SwipeDeck buttons can animate before removing
+  useImperativeHandle(ref, () => ({
+    triggerSwipe: async (dir) => {
+      await controls.start({
+        x: dir === 'like' ? 600 : -600,
+        opacity: 0,
+        rotate: dir === 'like' ? 20 : -20,
+        transition: { duration: 0.28 },
+      });
+      onSwipe(dir);
+    },
+  }));
+
   const handleDragEnd = async (_, info) => {
     const offset = info.offset.x;
     if (Math.abs(offset) > SWIPE_THRESHOLD) {
       const dir = offset > 0 ? 'like' : 'pass';
-      await controls.start({ x: offset > 0 ? 500 : -500, opacity: 0, transition: { duration: 0.3 } });
+      await controls.start({ x: offset > 0 ? 600 : -600, opacity: 0, transition: { duration: 0.25 } });
       onSwipe(dir);
     } else {
       controls.start({ x: 0, rotate: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } });
@@ -59,7 +71,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, style }) {
       )}
 
       {/* Card */}
-      <div className="bg-white rounded-3xl overflow-hidden shadow-2xl h-[520px] flex flex-col">
+      <div className="bg-white rounded-3xl overflow-hidden shadow-2xl h-[500px] flex flex-col">
         {/* Photo */}
         <div className="relative flex-1 bg-gray-100">
           {profile.avatar_url ? (
@@ -72,11 +84,9 @@ export default function SwipeCard({ profile, onSwipe, isTop, style }) {
               {name[0]?.toUpperCase()}
             </div>
           )}
-          {/* Gradient overlay */}
-          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/70 to-transparent" />
-          {/* Name overlay */}
+          <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-black/80 to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
-            <h2 className="text-white text-2xl font-bold">
+            <h2 className="text-white text-2xl font-bold drop-shadow">
               {name}{age ? `, ${age}` : ''}
             </h2>
             <p className="text-white/70 text-sm mt-0.5">{profile.bio ? `${profile.bio} · ` : ''}{nationality}</p>
@@ -96,4 +106,6 @@ export default function SwipeCard({ profile, onSwipe, isTop, style }) {
       </div>
     </motion.div>
   );
-}
+});
+
+export default SwipeCard;
