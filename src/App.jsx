@@ -27,6 +27,7 @@ import Chat from '@/pages/Chat';
 // Layout & context
 import Layout from '@/components/Layout';
 import { ProfileProvider } from '@/contexts/ProfileContext';
+import { base44 } from '@/api/base44Client';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -48,7 +49,7 @@ const AuthenticatedApp = () => {
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'user_not_registered') { base44.auth.logout(); window.location.href = '/sign-up'; return null; }
     // For auth_required or any other error, redirect to sign-in
     window.location.href = '/sign-in';
     return null;
