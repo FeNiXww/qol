@@ -22,6 +22,24 @@ export default function Discover() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
+  // Listen for matches created by the OTHER user (when they complete the mutual like)
+  useEffect(() => {
+    if (!currentUser || !profile) return;
+    const myId = profile.user_id || currentUser.id;
+    const unsub = base44.entities.Match.subscribe(async (event) => {
+      if (event.type !== 'create') return;
+      const match = event.data;
+      // Only care if we're user_b (we already swiped, they just completed the match)
+      if (match.user_b_id !== myId) return;
+      // Fetch the other user's profile to show the modal
+      const otherId = match.user_a_id;
+      const profiles = await base44.entities.Profile.filter({ user_id: otherId });
+      const otherProfile = profiles[0] || null;
+      if (otherProfile) setMatchData({ ...match, otherProfile });
+    });
+    return unsub;
+  }, [currentUser?.id, profile?.id]);
+
   const loadMore = useCallback(async () => {
     if (!profile || fetchingRef.current) return;
     fetchingRef.current = true;
