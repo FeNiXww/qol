@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { theme } from '@/lib/theme';
 import { format } from 'date-fns';
-import { Languages } from 'lucide-react';
+import { Languages, Flag } from 'lucide-react';
 
-export default function ChatBubble({ message, isMine }) {
+export default function ChatBubble({ message, isMine, onReport }) {
   const [showOriginal, setShowOriginal] = useState(false);
+  const [showActions, setShowActions] = useState(false);
 
   const mainText = isMine ? message.original_text : (message.translated_text || message.original_text);
-  const subText = isMine ? null : (message.translated_text ? message.original_text : null);
+  const subText = !isMine && message.translated_text ? message.original_text : null;
   const mainLang = isMine ? message.original_lang : (message.translated_lang || message.original_lang);
   const isRTL = mainLang === 'he' || mainLang === 'ar';
   const time = message.created_date ? format(new Date(message.created_date), 'HH:mm') : '';
@@ -18,26 +19,23 @@ export default function ChatBubble({ message, isMine }) {
     <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[78%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
         <div
-          className={`px-4 py-3 rounded-2xl shadow-sm ${
+          className={`px-4 py-3 rounded-2xl shadow-sm cursor-pointer ${
             isMine
               ? 'rounded-br-sm text-white'
               : 'rounded-bl-sm bg-white text-gray-800 border border-gray-100'
           } ${isFailed ? 'opacity-60' : ''}`}
           style={isMine ? { backgroundColor: isFailed ? '#9CA3AF' : theme.colors.teal } : {}}
+          onClick={() => !isMine && setShowActions(p => !p)}
         >
-          {/* Main text */}
-          <p
-            className="text-sm leading-relaxed"
-            dir={isRTL ? 'rtl' : 'ltr'}
-          >
+          <p className="text-sm leading-relaxed" dir={isRTL ? 'rtl' : 'ltr'}>
             {isSending ? <span className="opacity-70">{mainText}</span> : mainText}
           </p>
 
-          {/* Translation toggle for received messages */}
+          {/* Translation toggle */}
           {!isMine && subText && (
             <div className="mt-2 pt-2 border-t border-gray-100">
               <button
-                onClick={() => setShowOriginal(p => !p)}
+                onClick={e => { e.stopPropagation(); setShowOriginal(p => !p); }}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <Languages className="w-3 h-3" />
@@ -63,6 +61,16 @@ export default function ChatBubble({ message, isMine }) {
             )}
           </div>
         </div>
+
+        {/* Report action — appears when tapping a received message */}
+        {!isMine && showActions && (
+          <button
+            onClick={() => { setShowActions(false); onReport?.(message); }}
+            className="flex items-center gap-1 mt-1 px-2 py-1 rounded-lg text-xs text-red-400 hover:bg-red-50 transition-colors"
+          >
+            <Flag className="w-3 h-3" /> Report
+          </button>
+        )}
       </div>
     </div>
   );

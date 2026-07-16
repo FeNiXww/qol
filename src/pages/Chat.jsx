@@ -4,6 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { base44 } from '@/api/base44Client';
 import { getMessages, sendMessage } from '@/lib/matchesApi';
 import ChatBubble from '@/components/qol/ChatBubble';
+import ReportMessageModal from '@/components/qol/ReportMessageModal';
 import { theme } from '@/lib/theme';
 import { ArrowLeft, Send, Globe } from 'lucide-react';
 
@@ -18,30 +19,27 @@ export default function Chat() {
   const [sending, setSending] = useState(false);
   const [otherProfile, setOtherProfile] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [reportingMessage, setReportingMessage] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
-  // Load match + other profile
   useEffect(() => {
     if (!currentUser) return;
     const load = async () => {
       let m = null;
       try { m = await base44.entities.Match.get(matchId); } catch { return; }
-
       const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
       const profiles = await base44.entities.Profile.filter({ user_id: otherId });
       setOtherProfile(profiles[0] || null);
-
       const msgs = await getMessages(matchId);
       setMessages(msgs);
     };
     load();
   }, [matchId, currentUser?.id]);
 
-  // Realtime subscription
   useEffect(() => {
     const unsub = base44.entities.Message.subscribe((event) => {
       if (event.data?.match_id !== matchId) return;
@@ -55,7 +53,6 @@ export default function Chat() {
     return unsub;
   }, [matchId]);
 
-  // Scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -108,10 +105,7 @@ export default function Chat() {
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
-        style={{
-          paddingTop: '52px',
-          background: `linear-gradient(135deg, ${theme.colors.navy}, #1a2a5e)`,
-        }}
+        style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy}, #1a2a5e)` }}
       >
         <button onClick={() => navigate('/matches')} className="text-white/70 hover:text-white transition-colors p-1">
           <ArrowLeft className="w-5 h-5" />
@@ -149,6 +143,7 @@ export default function Chat() {
             key={msg.id}
             message={msg}
             isMine={msg.sender_id === currentUser?.id}
+            onReport={setReportingMessage}
           />
         ))}
         <div ref={bottomRef} />
@@ -166,7 +161,7 @@ export default function Chat() {
               rows={1}
               dir={isRTLInput ? 'rtl' : 'ltr'}
               className="w-full px-4 py-3 pr-12 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 text-sm resize-none"
-              style={{ minHeight: 46, maxHeight: 120, focusRingColor: theme.colors.teal }}
+              style={{ minHeight: 46, maxHeight: 120 }}
             />
             <span className="absolute bottom-2.5 right-3 text-xs text-gray-300">{text.length}/{MAX_CHARS}</span>
           </div>
@@ -176,14 +171,22 @@ export default function Chat() {
             className="w-12 h-12 rounded-2xl flex items-center justify-center text-white flex-shrink-0 transition-all disabled:opacity-40 active:scale-95"
             style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0f7a6e)` }}
           >
-            {sending ? (
-              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
+            {sending
+              ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              : <Send className="w-4 h-4" />}
           </button>
         </div>
       </div>
+
+      {reportingMessage && (
+        <ReportMessageModal
+          message={reportingMessage}
+          reportedUserId={reportingMessage.sender_id}
+          matchId={matchId}
+          currentUserId={currentUser?.id}
+          onClose={() => setReportingMessage(null)}
+        />
+      )}
     </div>
   );
 }
