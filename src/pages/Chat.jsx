@@ -76,12 +76,13 @@ export default function Chat() {
     setMessages(prev => [...prev, optimistic]);
 
     try {
+      const receiverNat = otherProfile?.nationality || (profile.nationality === 'israeli' ? 'palestinian' : 'israeli');
       await sendMessage({
         matchId,
         senderId: currentUser.id,
         text: msgText,
         senderNationality: profile.nationality,
-        receiverNationality: otherProfile?.nationality,
+        receiverNationality: receiverNat,
       });
       setMessages(prev => prev.filter(m => m.id !== optimistic.id));
     } catch {

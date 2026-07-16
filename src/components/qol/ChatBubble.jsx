@@ -6,6 +6,7 @@ import { Languages, Flag } from 'lucide-react';
 export default function ChatBubble({ message, isMine, onReport }) {
   const [showOriginal, setShowOriginal] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const mainText = isMine ? message.original_text : (message.translated_text || message.original_text);
   const subText = !isMine && message.translated_text ? message.original_text : null;
@@ -25,6 +26,8 @@ export default function ChatBubble({ message, isMine, onReport }) {
               : 'rounded-bl-sm bg-white text-gray-800 border border-gray-100'
           } ${isFailed ? 'opacity-60' : ''}`}
           style={isMine ? { backgroundColor: isFailed ? '#9CA3AF' : theme.colors.teal } : {}}
+          onMouseEnter={() => !isMine && setHovered(true)}
+          onMouseLeave={() => !isMine && setHovered(false)}
           onClick={() => !isMine && setShowActions(p => !p)}
         >
           <p className="text-sm leading-relaxed" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -34,6 +37,7 @@ export default function ChatBubble({ message, isMine, onReport }) {
           {/* Translation toggle */}
           {!isMine && subText && (
             <div className="mt-2 pt-2 border-t border-gray-100">
+              {(hovered || showOriginal) && (
               <button
                 onClick={e => { e.stopPropagation(); setShowOriginal(p => !p); }}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
@@ -41,6 +45,7 @@ export default function ChatBubble({ message, isMine, onReport }) {
                 <Languages className="w-3 h-3" />
                 {showOriginal ? 'Hide original' : 'See original'}
               </button>
+              )}
               {showOriginal && (
                 <p
                   className="text-xs text-gray-400 mt-1 leading-relaxed italic"
