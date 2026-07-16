@@ -42,12 +42,32 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
   if (empty || stack.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center px-8">
-        <div className="text-center">
-          <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
-            <RefreshCw className="w-10 h-10 text-gray-300" />
+        <div className="text-center max-w-xs mx-auto">
+          {/* Animated globe */}
+          <div className="relative w-32 h-32 mx-auto mb-8">
+            <div
+              className="w-32 h-32 rounded-full flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #e8f8f6, #fef3ec)' }}
+            >
+              <span className="text-6xl">🌍</span>
+            </div>
+            <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇮🇱</div>
+            <div className="absolute -bottom-1 -left-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇵🇸</div>
           </div>
-          <h3 className="text-xl font-bold text-gray-700 mb-2">You've seen everyone!</h3>
-          <p className="text-gray-400 text-sm">Check back later to discover more connections.</p>
+
+          <h3 className="text-2xl font-black text-gray-800 mb-3">You've met everyone!</h3>
+          <p className="text-gray-400 text-sm leading-relaxed mb-8">
+            You've gone through all available connections for now. New people join every day — come back soon!
+          </p>
+
+          <button
+            onClick={() => onLoadMore?.()}
+            className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg active:scale-95 transition-transform"
+            style={{ background: 'linear-gradient(135deg, #17998A, #F4801F)' }}
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
         </div>
       </div>
     );
