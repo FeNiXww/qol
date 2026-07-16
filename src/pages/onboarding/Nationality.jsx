@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/contexts/ProfileContext';
 import { theme } from '@/lib/theme';
 import PrimaryButton from '@/components/qol/PrimaryButton';
@@ -11,6 +11,7 @@ const options = [
 
 export default function Nationality() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { updateProfile } = useProfile();
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,8 @@ export default function Nationality() {
     if (!selected) return;
     setLoading(true);
     try {
-      await updateProfile({ nationality: selected, onboarding_step: 'about' });
+      const displayName = location.state?.displayName;
+      await updateProfile({ nationality: selected, onboarding_step: 'about', ...(displayName ? { display_name: displayName } : {}) });
       navigate('/onboarding/about');
     } finally {
       setLoading(false);

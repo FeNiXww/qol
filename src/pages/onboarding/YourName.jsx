@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useProfile } from '@/contexts/ProfileContext';
 import { theme } from '@/lib/theme';
 import PrimaryButton from '@/components/qol/PrimaryButton';
 
 export default function YourName() {
   const navigate = useNavigate();
-  const { updateProfile } = useProfile();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,8 +14,7 @@ export default function YourName() {
     setLoading(true);
     try {
       await base44.auth.updateMe({ full_name: name.trim() });
-      await updateProfile({ display_name: name.trim() });
-      navigate('/onboarding/nationality');
+      navigate('/onboarding/nationality', { state: { displayName: name.trim() } });
     } finally {
       setLoading(false);
     }
