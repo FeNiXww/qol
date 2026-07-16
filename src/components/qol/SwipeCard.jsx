@@ -23,7 +23,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, style }) {
     }
   };
 
-  const name = profile.display_name || 'User';
+  const name = profile.display_name || (profile.nationality === 'israeli' ? 'Israeli' : 'Palestinian');
   const age = profile.birthdate
     ? Math.floor((new Date() - new Date(profile.birthdate)) / (365.25 * 24 * 60 * 60 * 1000))
     : null;

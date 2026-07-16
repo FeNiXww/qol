@@ -24,7 +24,7 @@ export function ProfileProvider({ children, currentUser }) {
   const updateProfile = useCallback(async (data) => {
     if (!profile?.id) {
       if (!currentUser?.id) throw new Error('No authenticated user');
-      const created = await base44.entities.Profile.create({ ...data, created_by_id: currentUser.id });
+      const created = await base44.entities.Profile.create({ display_name: currentUser.full_name, ...data, created_by_id: currentUser.id });
       setProfile(created);
       return created;
     }

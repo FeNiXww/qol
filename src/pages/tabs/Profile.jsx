@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
@@ -15,7 +15,10 @@ const HOBBIES = [
 
 export default function ProfileTab() {
   const { profile, updateProfile } = useProfile();
+  const [currentUser, setCurrentUser] = useState(null);
   const [editingBio, setEditingBio] = useState(false);
+
+  useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
   const [bio, setBio] = useState(profile?.bio || '');
   const [editingHobbies, setEditingHobbies] = useState(false);
   const [hobbies, setHobbies] = useState(profile?.hobbies || []);
@@ -25,7 +28,7 @@ export default function ProfileTab() {
 
   if (!profile) return null;
 
-  const name = profile.display_name || 'You';
+  const name = profile.display_name || currentUser?.full_name || currentUser?.email?.split('@')[0] || 'You';
   const flag = profile.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
   const natLabel = profile.nationality === 'israeli' ? 'Israeli' : 'Palestinian';
   const age = profile.birthdate ? differenceInYears(new Date(), parseISO(profile.birthdate)) : null;
