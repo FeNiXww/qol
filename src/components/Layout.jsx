@@ -15,7 +15,7 @@ export default function Layout() {
   const hideTabs = location.pathname.startsWith('/chat/');
 
   return (
-    <div className="flex flex-col max-w-md mx-auto bg-gray-50" style={{ minHeight: '100dvh' }}>
+    <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#F8FFFE' }}>
       {/* Main content */}
       <div className={`flex-1 flex flex-col overflow-hidden ${hideTabs ? '' : 'pb-20'}`}>
         <Outlet />
