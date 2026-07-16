@@ -6,7 +6,7 @@ import { getMessages, sendMessage } from '@/lib/matchesApi';
 import ChatBubble from '@/components/qol/ChatBubble';
 import ReportMessageModal from '@/components/qol/ReportMessageModal';
 import { theme } from '@/lib/theme';
-import { ArrowLeft, Send, Globe, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, Globe, Eraser } from 'lucide-react';
 
 const MAX_CHARS = 200;
 
@@ -139,7 +139,7 @@ export default function Chat() {
           onClick={() => setConfirmClear(true)}
           className="text-white/50 hover:text-white/80 transition-colors p-1"
         >
-          <Trash2 className="w-5 h-5" />
+          <Eraser className="w-5 h-5" />
         </button>
       </div>
 
