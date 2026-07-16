@@ -27,11 +27,15 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
   const fromLang = getNativeLang(senderNationality);
   const toLang = getNativeLang(receiverNationality);
 
-  // Translate first, then save — so the message is never stored without a translation
-  const [translatedText] = await Promise.all([
-    translateText(text, fromLang, toLang),
-    base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() }),
-  ]);
+  const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
+
+  // Try to translate within 3 seconds, otherwise save without translation
+  let translatedText = '';
+  try {
+    translatedText = await Promise.race([translateText(text, fromLang, toLang), timeout(3000)]);
+  } catch {
+    // Timed out — save now, translate in background
+  }
 
   const msg = await base44.entities.Message.create({
     match_id: matchId,
@@ -42,6 +46,15 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
     translated_lang: toLang,
     status: 'sent',
   });
+
+  base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() }).catch(() => {});
+
+  // If translation didn't finish in time, update in background
+  if (!translatedText) {
+    translateText(text, fromLang, toLang)
+      .then(t => base44.entities.Message.update(msg.id, { translated_text: t }))
+      .catch(() => {});
+  }
 
   return msg;
 }
