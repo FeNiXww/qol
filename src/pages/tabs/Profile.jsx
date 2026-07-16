@@ -60,13 +60,16 @@ export default function ProfileTab() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-50 overflow-y-auto">
+    <div className="flex flex-col min-h-full overflow-y-auto" style={{ background: '#F8FFFE' }}>
       {/* Header */}
-      <div className="px-6 pt-14 pb-4 bg-white border-b border-gray-100 flex items-center justify-between">
-        <h1 className="text-xl font-black" style={{ color: theme.colors.navy }}>Profile</h1>
+      <div
+        className="px-6 pb-5 flex-shrink-0 shadow-sm flex items-center justify-between"
+        style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)` }}
+      >
+        <h1 className="text-2xl font-black text-white">Profile</h1>
         <button
           onClick={() => base44.auth.logout('/sign-in')}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
+          className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
         >
           <LogOut className="w-4 h-4" /> Sign out
         </button>
