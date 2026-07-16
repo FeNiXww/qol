@@ -14,7 +14,12 @@ export default function Chat() {
   const { matchId } = useParams();
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const cached = localStorage.getItem(`qol_chat_${matchId}`);
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [otherProfile, setOtherProfile] = useState(null);
@@ -41,6 +46,7 @@ export default function Chat() {
       if (myClearedAt) setClearedAt(myClearedAt);
       const msgs = await getMessages(matchId);
       setMessages(msgs);
+      try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
     };
     load();
   }, [matchId, currentUser?.id]);
@@ -51,7 +57,9 @@ export default function Chat() {
       if (event.type === 'create') {
         setMessages(prev => {
           if (prev.find(m => m.id === event.data.id)) return prev;
-          return [...prev, event.data];
+          const updated = [...prev, event.data];
+          try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
+          return updated;
         });
       }
     });
