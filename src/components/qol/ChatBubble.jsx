@@ -7,7 +7,7 @@ function isImageUrl(text) {
   return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(text?.trim());
 }
 
-export default function ChatBubble({ message, isMine, onReport }) {
+export default function ChatBubble({ message, isMine, onReport, translationOn = true }) {
   const [showOriginal, setShowOriginal] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -15,9 +15,11 @@ export default function ChatBubble({ message, isMine, onReport }) {
 
   const isImage = isImageUrl(message.original_text);
 
-  const mainText = isMine ? message.original_text : (message.translated_text || message.original_text);
-  const subText = !isMine && message.translated_text ? message.original_text : null;
-  const mainLang = isMine ? message.original_lang : (message.translated_lang || message.original_lang);
+  const mainText = isMine
+    ? message.original_text
+    : (translationOn ? (message.translated_text || message.original_text) : message.original_text);
+  const subText = !isMine && translationOn && message.translated_text ? message.original_text : null;
+  const mainLang = isMine ? message.original_lang : (translationOn ? (message.translated_lang || message.original_lang) : message.original_lang);
   const isRTL = mainLang === 'he' || mainLang === 'ar';
   const time = message.created_date ? format(new Date(message.created_date), 'HH:mm') : '';
   const isFailed = message.status === 'failed';

@@ -6,7 +6,7 @@ import { getMessages, sendMessage } from '@/lib/matchesApi';
 import ChatBubble from '@/components/qol/ChatBubble';
 import ReportMessageModal from '@/components/qol/ReportMessageModal';
 import { theme } from '@/lib/theme';
-import { ArrowLeft, Send, Globe, Eraser } from 'lucide-react';
+import { ArrowLeft, Send, Globe, Eraser, GlobeLock } from 'lucide-react';
 
 const MAX_CHARS = 200;
 
@@ -27,6 +27,7 @@ export default function Chat() {
   const [reportingMessage, setReportingMessage] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearedAt, setClearedAt] = useState(null);
+  const [translationOn, setTranslationOn] = useState(true);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -178,9 +179,17 @@ export default function Chat() {
           <h2 className="font-bold text-white truncate">{flag} {name}</h2>
           <div className="flex items-center gap-1">
             <Globe className="w-3 h-3 text-white/50" />
-            <p className="text-xs text-white/50">Auto-translated</p>
+            <p className="text-xs text-white/50">{translationOn ? 'Auto-translated' : 'Translation off'}</p>
           </div>
         </div>
+        <button
+          onClick={() => setTranslationOn(p => !p)}
+          className="p-1 transition-colors"
+          title={translationOn ? 'Disable translation' : 'Enable translation'}
+          style={{ color: translationOn ? theme.colors.teal : 'rgba(255,255,255,0.35)' }}
+        >
+          {translationOn ? <Globe className="w-5 h-5" /> : <GlobeLock className="w-5 h-5" />}
+        </button>
         <button
           onClick={() => setConfirmClear(true)}
           className="text-white/50 hover:text-white/80 transition-colors p-1"
@@ -229,6 +238,7 @@ export default function Chat() {
             message={msg}
             isMine={msg.sender_id === currentUser?.id}
             onReport={setReportingMessage}
+            translationOn={translationOn}
           />
         ))}
         <div ref={bottomRef} />
