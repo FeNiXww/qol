@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Compass, MessageCircle, User } from 'lucide-react';
+import { Compass, MessageCircle, User, Gamepad2 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 
 const navItems = [
   { path: '/', label: 'Discover', icon: Compass },
   { path: '/matches', label: 'Matches', icon: MessageCircle },
+  { path: '/games', label: 'Games', icon: Gamepad2 },
   { path: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function Layout() {
   const location = useLocation();
-  const hideTabs = location.pathname.startsWith('/chat/');
+  const hideTabs = location.pathname.startsWith('/chat/') || location.pathname.startsWith('/game/');
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {

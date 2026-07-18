@@ -25,7 +25,9 @@ import Landing from '@/pages/Landing';
 import Discover from '@/pages/tabs/Discover';
 import Matches from '@/pages/tabs/Matches';
 import ProfileTab from '@/pages/tabs/Profile';
+import MiniGames from '@/pages/tabs/MiniGames';
 import Chat from '@/pages/Chat';
+import GameRoom from '@/pages/GameRoom';
 
 // Layout & context
 import Layout from '@/components/Layout';
@@ -85,9 +87,11 @@ const AuthenticatedApp = () => {
           <Route element={<Layout />}>
             <Route path="/" element={<Discover />} />
             <Route path="/matches" element={<Matches />} />
+            <Route path="/games" element={<MiniGames />} />
             <Route path="/profile" element={<ProfileTab />} />
             <Route path="/chat/:matchId" element={<Chat />} />
           </Route>
+          <Route path="/game/:sessionId" element={<GameRoom />} />
         </Route>
 
         {/* Catch-all */}

@@ -1,0 +1,74 @@
+{
+  "name": "GameSession",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string"
+    },
+    "player_a_id": {
+      "type": "string"
+    },
+    "player_b_id": {
+      "type": "string"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": [
+        "word_guess",
+        "translation_duel"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "waiting",
+        "active",
+        "finished"
+      ],
+      "default": "waiting"
+    },
+    "current_round": {
+      "type": "number",
+      "default": 1
+    },
+    "total_rounds": {
+      "type": "number",
+      "default": 5
+    },
+    "score_a": {
+      "type": "number",
+      "default": 0
+    },
+    "score_b": {
+      "type": "number",
+      "default": 0
+    },
+    "current_word": {
+      "type": "string"
+    },
+    "current_word_lang": {
+      "type": "string"
+    },
+    "current_answer": {
+      "type": "string"
+    },
+    "player_a_guess": {
+      "type": "string"
+    },
+    "player_b_guess": {
+      "type": "string"
+    },
+    "round_result": {
+      "type": "string"
+    },
+    "winner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "match_id",
+    "player_a_id",
+    "player_b_id",
+    "game_type"
+  ]
+}
