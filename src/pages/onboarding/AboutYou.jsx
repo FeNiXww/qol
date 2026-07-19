@@ -5,29 +5,31 @@ import { theme } from '@/lib/theme';
 import PrimaryButton from '@/components/qol/PrimaryButton';
 import { isAtLeast14, getAgeBand } from '@/lib/ageUtils';
 import { format, subYears } from 'date-fns';
+import { useLang } from '@/contexts/LanguageContext';
 
 const MAX_DATE = format(subYears(new Date(), 14), 'yyyy-MM-dd');
 const MIN_DATE = '1920-01-01';
 
-const genderOptions = [
-  { value: 'male', label: 'Male', emoji: '♂️' },
-  { value: 'female', label: 'Female', emoji: '♀️' },
-  { value: 'other', label: 'Other', emoji: '⚧' },
-];
-
 export default function AboutYou() {
   const navigate = useNavigate();
   const { updateProfile } = useProfile();
+  const { t } = useLang();
   const [gender, setGender] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const genderOptions = [
+    { value: 'male', label: t.male, emoji: '♂️' },
+    { value: 'female', label: t.female, emoji: '♀️' },
+    { value: 'other', label: t.other, emoji: '⚧' },
+  ];
+
   const handleContinue = async () => {
     setError('');
-    if (!gender) { setError('Please select your gender'); return; }
-    if (!birthdate) { setError('Please enter your date of birth'); return; }
-    if (!isAtLeast14(birthdate)) { setError('You must be at least 14 years old to join QOL.'); return; }
+    if (!gender) { setError(t.selectGender); return; }
+    if (!birthdate) { setError(t.enterBirthdate); return; }
+    if (!isAtLeast14(birthdate)) { setError(t.notOldEnough); return; }
     setLoading(true);
     try {
       const age_band = getAgeBand(birthdate);
@@ -39,22 +41,22 @@ export default function AboutYou() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-6 py-12 bg-white">
+    <div className="min-h-screen flex flex-col px-6 py-12 bg-white" dir={t.dir}>
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
+          <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full bg-gray-200" />
           <div className="h-1.5 w-8 rounded-full bg-gray-200" />
         </div>
-        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>About you</h1>
-        <p className="text-gray-400 mt-2 text-sm">Tell us a bit about yourself.</p>
+        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>{t.aboutYouTitle}</h1>
+        <p className="text-gray-400 mt-2 text-sm">{t.aboutYouSubtitle}</p>
       </div>
 
       <div className="space-y-6 flex-1">
-        {/* Gender */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">Gender</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">{t.gender}</label>
           <div className="grid grid-cols-3 gap-3">
             {genderOptions.map(opt => (
               <button
@@ -72,10 +74,9 @@ export default function AboutYou() {
           </div>
         </div>
 
-        {/* Date of Birth */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Date of birth</label>
-          <p className="text-xs text-gray-400 mb-3">You must be at least 14 years old.</p>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.dateOfBirth}</label>
+          <p className="text-xs text-gray-400 mb-3">{t.mustBe14}</p>
           <input
             type="date"
             value={birthdate}
@@ -93,7 +94,7 @@ export default function AboutYou() {
 
       <div className="mt-8">
         <PrimaryButton onClick={handleContinue} disabled={!gender || !birthdate} loading={loading}>
-          Continue
+          {t.continue}
         </PrimaryButton>
       </div>
     </div>

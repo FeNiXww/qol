@@ -4,6 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { theme } from '@/lib/theme';
 import HobbyChip from '@/components/qol/HobbyChip';
 import PrimaryButton from '@/components/qol/PrimaryButton';
+import { useLang } from '@/contexts/LanguageContext';
 
 const HOBBIES = [
   'Music', 'Art', 'Cooking', 'Reading', 'Football', 'Basketball', 'Tennis', 'Swimming',
@@ -17,6 +18,7 @@ const MIN_HOBBIES = 3;
 export default function Hobbies() {
   const navigate = useNavigate();
   const { updateProfile } = useProfile();
+  const { t } = useLang();
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -36,16 +38,17 @@ export default function Hobbies() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-6 py-12 bg-white">
+    <div className="min-h-screen flex flex-col px-6 py-12 bg-white" dir={t.dir}>
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
+          <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full bg-gray-200" />
         </div>
-        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>Your interests</h1>
-        <p className="text-gray-400 mt-2 text-sm">Pick at least 3 hobbies. They help you connect with people who share your passions.</p>
+        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>{t.interestsTitle}</h1>
+        <p className="text-gray-400 mt-2 text-sm">{t.interestsSubtitle}</p>
       </div>
 
       <div className="flex-1">
@@ -55,13 +58,13 @@ export default function Hobbies() {
           ))}
         </div>
         <p className="text-sm text-gray-400 text-center mt-4">
-          {selected.length} selected {selected.length < MIN_HOBBIES && `(need ${MIN_HOBBIES - selected.length} more)`}
+          {selected.length} {t.selected} {selected.length < MIN_HOBBIES && `(${t.needMore} ${MIN_HOBBIES - selected.length})`}
         </p>
       </div>
 
       <div className="mt-8">
         <PrimaryButton onClick={handleContinue} disabled={selected.length < MIN_HOBBIES} loading={loading}>
-          Continue
+          {t.continue}
         </PrimaryButton>
       </div>
     </div>

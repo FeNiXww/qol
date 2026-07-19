@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, ChevronRight, Zap, BookOpen } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
+import { useLang } from '@/contexts/LanguageContext';
 
 const GAMES = [
   {
@@ -25,6 +26,7 @@ const GAMES = [
 
 export default function MiniGames() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [matches, setMatches] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,17 +75,17 @@ export default function MiniGames() {
       >
         <div className="flex items-center gap-2 mb-1">
           <QolLogo size={32} blend />
-          <h1 className="text-2xl font-black text-white">Mini Games</h1>
+          <h1 className="text-2xl font-black text-white">{t.miniGamesTitle}</h1>
         </div>
         <p className="text-xs mt-1" style={{ color: theme.colors.tealLight }}>
-          Learn a language together with your match
+          {t.learnTogether}
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
         {/* Game picker */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Choose a Game</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.chooseGame}</p>
           <div className="space-y-3">
             {GAMES.map(game => (
               <button
@@ -117,7 +119,7 @@ export default function MiniGames() {
         {selectedGame && (
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-              Pick a Match to Play With
+              {t.pickMatch}
             </p>
             {loading ? (
               <div className="flex justify-center py-8">
@@ -125,7 +127,7 @@ export default function MiniGames() {
               </div>
             ) : matches.length === 0 ? (
               <div className="text-center py-8 text-gray-400 text-sm">
-                You need at least one match to play games!
+                {t.noMatchesForGame}
               </div>
             ) : (
               <div className="space-y-2">
@@ -152,7 +154,7 @@ export default function MiniGames() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-gray-900">{flag} {name}</p>
-                        <p className="text-xs text-gray-400">Play {selectedGame.name}</p>
+                        <p className="text-xs text-gray-400">{t.playWith} {selectedGame.name}</p>
                       </div>
                       <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
                     </button>
@@ -167,7 +169,7 @@ export default function MiniGames() {
         {!selectedGame && (
           <div className="flex flex-col items-center py-10 text-center text-gray-400">
             <BookOpen className="w-12 h-12 mb-3 opacity-30" />
-            <p className="text-sm">Select a game above to get started!</p>
+            <p className="text-sm">{t.selectGameHint}</p>
           </div>
         )}
       </div>

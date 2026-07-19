@@ -4,6 +4,7 @@ const LanguageContext = createContext(null);
 
 export const translations = {
   he: {
+    dir: 'rtl',
     // Language picker
     langPickerTitle: 'שפת האפליקציה',
     langPickerSubtitle: 'בחר את השפה שלך',
@@ -20,41 +21,95 @@ export const translations = {
 
     // Landing slides
     slides: [
-      {
-        title: 'שני עמים.\nעולם אחד.',
-        body: 'ישראלים ופלסטינים חיים זה לצד זה מזה דורות — אך רובם מעולם לא קיימו שיחה אמיתית. QOL משנה את זה.',
-      },
-      {
-        title: 'התחבר מעבר\nלגבול.',
-        body: 'גלה אנשים אמיתיים בצד השני. החלק, התאם ופתח שיחה — מתורגמת אוטומטית כדי שהשפה לא תהיה מחסום.',
-      },
-      {
-        title: 'כל הודעה\nהיא גשר.',
-        body: 'שלום לא מתחיל בפרלמנטים. הוא מתחיל ב"שלום" פשוט בין שני בני אדם סקרנים.',
-      },
-      {
-        title: 'בטוח.\nמכבד.\nאמיתי.',
-        body: 'QOL נבנה עם תכונות בטיחות קפדניות לקטינים ומבוגרים כאחד. קהילה המושרשת בכבוד הדדי.',
-      },
+      { title: 'שני עמים.\nעולם אחד.', body: 'ישראלים ופלסטינים חיים זה לצד זה מזה דורות — אך רובם מעולם לא קיימו שיחה אמיתית. QOL משנה את זה.' },
+      { title: 'התחבר מעבר\nלגבול.', body: 'גלה אנשים אמיתיים בצד השני. החלק, התאם ופתח שיחה — מתורגמת אוטומטית כדי שהשפה לא תהיה מחסום.' },
+      { title: 'כל הודעה\nהיא גשר.', body: 'שלום לא מתחיל בפרלמנטים. הוא מתחיל ב"שלום" פשוט בין שני בני אדם סקרנים.' },
+      { title: 'בטוח.\nמכבד.\nאמיתי.', body: 'QOL נבנה עם תכונות בטיחות קפדניות לקטינים ומבוגרים כאחד. קהילה המושרשת בכבוד הדדי.' },
     ],
 
     // Auth
-    signUpTitle: 'הצטרף ל-QOL',
-    signUpSubtitle: 'צור חשבון חדש',
-    email: 'אימייל',
-    password: 'סיסמה',
-    confirmPassword: 'אשר סיסמה',
-    createAccount: 'צור חשבון',
+    signInTitle: 'ברוך שובך',
+    signInSubtitle: 'מחבר אנשים, גשר בין עולמות',
+    signInBtn: 'התחבר',
+    signingIn: 'מתחבר…',
+    emailLabel: 'אימייל',
+    passwordLabel: 'סיסמה',
+    confirmPasswordLabel: 'אשר סיסמה',
+    forgotPassword: 'שכחת סיסמה?',
     noAccount: 'אין לך חשבון?',
     signUp: 'הירשם',
-    forgotPassword: 'שכחת סיסמה?',
-    signInTitle: 'ברוך שובך',
+    signUpTitle: 'צור חשבון',
+    signUpSubtitle: 'הצטרף לקהילת QOL',
+    createAccount: 'צור חשבון',
+    creatingAccount: 'יוצר חשבון…',
+    alreadyHaveAccount: 'כבר יש לך חשבון?',
+    ageDisclaimer: 'בהרשמה אתה מאשר שאתה בן לפחות 14.',
+    passwordMismatch: 'הסיסמאות אינן תואמות',
+    passwordTooShort: 'הסיסמה חייבת להכיל לפחות 6 תווים',
+
+    // OTP
+    checkEmail: 'בדוק את האימייל שלך',
+    otpSentTo: 'שלחנו קוד אימות ל-',
+    enterCode: 'הכנס קוד בן 6 ספרות',
+    verify: 'אמת',
+    verifying: 'מאמת…',
+    resendCode: 'שלח קוד מחדש',
+    codeResent: 'הקוד נשלח מחדש!',
+
+    // Onboarding
+    continue: 'המשך',
+    whatsYourName: 'מה שמך?',
+    nameSubtitle: 'כך משתמשים אחרים יראו אותך.',
+    namePlaceholder: 'השם הפרטי שלך',
+    whoAreYou: 'מי אתה?',
+    nationalitySubtitle: 'הלאומיות שלך קובעת את השפה באפליקציה.',
+    aboutYouTitle: 'קצת עליך',
+    aboutYouSubtitle: 'ספר לנו קצת על עצמך.',
+    gender: 'מגדר',
+    male: 'זכר',
+    female: 'נקבה',
+    other: 'אחר',
+    dateOfBirth: 'תאריך לידה',
+    mustBe14: 'חייב להיות בן לפחות 14.',
+    selectGender: 'בחר מגדר',
+    enterBirthdate: 'הכנס תאריך לידה',
+    notOldEnough: 'חייב להיות בן לפחות 14 להצטרף ל-QOL.',
+    interestsTitle: 'תחומי העניין שלך',
+    interestsSubtitle: 'בחר לפחות 3 תחביבים. הם עוזרים לך להתחבר עם אנשים שחולקים את התשוקות שלך.',
+    selected: 'נבחרו',
+    needMore: 'עוד נדרשים',
+    yourProfileTitle: 'הפרופיל שלך',
+    yourProfileSubtitle: 'הוסף תמונה וביו כדי שאנשים יוכלו להכיר אותך.',
+    tapToAddPhoto: 'לחץ להוסיף תמונת פרופיל',
+    bioLabel: 'ביו',
+    bioOptional: '(אופציונלי)',
+    bioPlaceholder: 'כמה מילים עליך — תחביבים, עיר, מה אתה מחפש בחיבור…',
+    completeProfile: 'סיים פרופיל',
+    skipForNow: 'דלג לעכשיו',
 
     // Tabs
     discover: 'גלה',
     matches: 'התאמות',
     games: 'משחקים',
     profile: 'פרופיל',
+
+    // Matches page
+    matchesTitle: 'התאמות',
+    connections: 'חיבורים',
+    connection: 'חיבור',
+    noMatchesYet: 'אין התאמות עדיין',
+    noMatchesMsg: 'התחל להחליק בלשונית הגילוי כדי למצוא את החיבור הבין-תרבותי הראשון שלך!',
+    goToDiscover: 'עבור לגילוי',
+    newMatch: 'התאמה חדשה!',
+
+    // Games page
+    miniGamesTitle: 'מיני משחקים',
+    learnTogether: 'למד שפה יחד עם ההתאמה שלך',
+    chooseGame: 'בחר משחק',
+    pickMatch: 'בחר התאמה לשחק איתה',
+    noMatchesForGame: 'אתה צריך לפחות התאמה אחת כדי לשחק!',
+    selectGameHint: 'בחר משחק למעלה כדי להתחיל!',
+    playWith: 'שחק',
 
     // Profile page
     profileTitle: 'פרופיל',
@@ -64,11 +119,13 @@ export const translations = {
     noBio: 'אין ביו עדיין. לחץ ✏️ להוסיף.',
     noInterests: 'אין תחומי עניין עדיין.',
     appLanguage: 'שפת האפליקציה',
-    switchToArabic: 'החלף לערבית',
-    switchToHebrew: 'החלף לעברית',
+    writeSomething: 'כתוב משהו על עצמך…',
+    needThreeMore: 'נדרשים עוד',
+    minor: '🔒 קטין',
+    adult: '✓ מבוגר',
+    yearsOld: 'שנים',
 
     // Discover
-    discoverTitle: 'גלה',
     meeting: 'פגישה עם',
     palestinians: 'פלסטינים',
     israelis: 'ישראלים',
@@ -87,10 +144,10 @@ export const translations = {
     cancel: 'ביטול',
     clear: 'נקה',
     writeHere: '…כתוב בעברית',
-    dir: 'rtl',
   },
 
   ar: {
+    dir: 'rtl',
     // Language picker
     langPickerTitle: 'لغة التطبيق',
     langPickerSubtitle: 'اختر لغتك',
@@ -107,35 +164,71 @@ export const translations = {
 
     // Landing slides
     slides: [
-      {
-        title: 'شعبان.\nعالم واحد.',
-        body: 'عاش الإسرائيليون والفلسطينيون جنباً إلى جنب لأجيال — لكن معظمهم لم يجروا محادثة حقيقية قط. QOL يغيّر ذلك.',
-      },
-      {
-        title: 'تواصل عبر\nالحدود.',
-        body: 'اكتشف أشخاصاً حقيقيين على الجانب الآخر. مرّر، تطابق وابدأ محادثة — تُترجم تلقائياً حتى لا تكون اللغة عائقاً.',
-      },
-      {
-        title: 'كل رسالة\nهي جسر.',
-        body: 'السلام لا يبدأ في البرلمانات. يبدأ بـ"مرحباً" بسيطة بين إنسانَين فضوليَّين.',
-      },
-      {
-        title: 'آمن.\nمحترم.\nحقيقي.',
-        body: 'QOL مبني بميزات أمان صارمة للقاصرين والبالغين على حدٍّ سواء. مجتمع متجذّر في الاحترام المتبادل.',
-      },
+      { title: 'شعبان.\nعالم واحد.', body: 'عاش الإسرائيليون والفلسطينيون جنباً إلى جنب لأجيال — لكن معظمهم لم يجروا محادثة حقيقية قط. QOL يغيّر ذلك.' },
+      { title: 'تواصل عبر\nالحدود.', body: 'اكتشف أشخاصاً حقيقيين على الجانب الآخر. مرّر، تطابق وابدأ محادثة — تُترجم تلقائياً حتى لا تكون اللغة عائقاً.' },
+      { title: 'كل رسالة\nهي جسر.', body: 'السلام لا يبدأ في البرلمانات. يبدأ بـ"مرحباً" بسيطة بين إنسانَين فضوليَّين.' },
+      { title: 'آمن.\nمحترم.\nحقيقي.', body: 'QOL مبني بميزات أمان صارمة للقاصرين والبالغين على حدٍّ سواء. مجتمع متجذّر في الاحترام المتبادل.' },
     ],
 
     // Auth
-    signUpTitle: 'انضم إلى QOL',
-    signUpSubtitle: 'أنشئ حساباً جديداً',
-    email: 'البريد الإلكتروني',
-    password: 'كلمة المرور',
-    confirmPassword: 'تأكيد كلمة المرور',
-    createAccount: 'إنشاء حساب',
+    signInTitle: 'مرحباً بعودتك',
+    signInSubtitle: 'يربط الناس ويجسر العوالم',
+    signInBtn: 'تسجيل الدخول',
+    signingIn: 'جارٍ تسجيل الدخول…',
+    emailLabel: 'البريد الإلكتروني',
+    passwordLabel: 'كلمة المرور',
+    confirmPasswordLabel: 'تأكيد كلمة المرور',
+    forgotPassword: 'نسيت كلمة المرور؟',
     noAccount: 'ليس لديك حساب؟',
     signUp: 'سجّل',
-    forgotPassword: 'نسيت كلمة المرور؟',
-    signInTitle: 'مرحباً بعودتك',
+    signUpTitle: 'إنشاء حساب',
+    signUpSubtitle: 'انضم إلى مجتمع QOL',
+    createAccount: 'إنشاء حساب',
+    creatingAccount: 'جارٍ إنشاء الحساب…',
+    alreadyHaveAccount: 'هل لديك حساب بالفعل؟',
+    ageDisclaimer: 'بالتسجيل، تؤكد أن عمرك 14 سنة على الأقل.',
+    passwordMismatch: 'كلمتا المرور غير متطابقتين',
+    passwordTooShort: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل',
+
+    // OTP
+    checkEmail: 'تحقق من بريدك الإلكتروني',
+    otpSentTo: 'أرسلنا رمز التحقق إلى ',
+    enterCode: 'أدخل الرمز المكون من 6 أرقام',
+    verify: 'تحقق',
+    verifying: 'جارٍ التحقق…',
+    resendCode: 'إعادة إرسال الرمز',
+    codeResent: 'تم إعادة إرسال الرمز!',
+
+    // Onboarding
+    continue: 'استمر',
+    whatsYourName: 'ما اسمك؟',
+    nameSubtitle: 'هكذا سيراك المستخدمون الآخرون.',
+    namePlaceholder: 'اسمك الأول',
+    whoAreYou: 'من أنت؟',
+    nationalitySubtitle: 'تحدد جنسيتك اللغة في التطبيق.',
+    aboutYouTitle: 'عنك',
+    aboutYouSubtitle: 'أخبرنا قليلاً عن نفسك.',
+    gender: 'الجنس',
+    male: 'ذكر',
+    female: 'أنثى',
+    other: 'آخر',
+    dateOfBirth: 'تاريخ الميلاد',
+    mustBe14: 'يجب أن يكون عمرك 14 سنة على الأقل.',
+    selectGender: 'اختر الجنس',
+    enterBirthdate: 'أدخل تاريخ الميلاد',
+    notOldEnough: 'يجب أن يكون عمرك 14 سنة على الأقل للانضمام إلى QOL.',
+    interestsTitle: 'اهتماماتك',
+    interestsSubtitle: 'اختر 3 هوايات على الأقل. تساعدك على التواصل مع الأشخاص الذين يشاركونك شغفك.',
+    selected: 'محدد',
+    needMore: 'مطلوب المزيد',
+    yourProfileTitle: 'ملفك الشخصي',
+    yourProfileSubtitle: 'أضف صورة ونبذة حتى يتعرف عليك الناس.',
+    tapToAddPhoto: 'اضغط لإضافة صورة الملف الشخصي',
+    bioLabel: 'نبذة',
+    bioOptional: '(اختياري)',
+    bioPlaceholder: 'بضع كلمات عنك — هواياتك، مدينتك، ما تبحث عنه في تواصل…',
+    completeProfile: 'إكمال الملف الشخصي',
+    skipForNow: 'تخطى الآن',
 
     // Tabs
     discover: 'اكتشف',
@@ -143,19 +236,39 @@ export const translations = {
     games: 'الألعاب',
     profile: 'الملف الشخصي',
 
+    // Matches page
+    matchesTitle: 'التطابقات',
+    connections: 'اتصالات',
+    connection: 'اتصال',
+    noMatchesYet: 'لا تطابقات بعد',
+    noMatchesMsg: 'ابدأ بالتمرير في علامة الاكتشاف للعثور على أول تواصل عابر للثقافات!',
+    goToDiscover: 'اذهب للاكتشاف',
+    newMatch: 'تطابق جديد!',
+
+    // Games page
+    miniGamesTitle: 'الألعاب المصغرة',
+    learnTogether: 'تعلم لغة مع تطابقك',
+    chooseGame: 'اختر لعبة',
+    pickMatch: 'اختر تطابقاً للعب معه',
+    noMatchesForGame: 'تحتاج إلى تطابق واحد على الأقل للعب!',
+    selectGameHint: 'اختر لعبة من أعلى للبدء!',
+    playWith: 'العب',
+
     // Profile page
     profileTitle: 'الملف الشخصي',
     signOut: 'تسجيل الخروج',
     aboutMe: 'عني',
     interests: 'الاهتمامات',
-    noBio: 'لا يوجد ملف شخصي بعد. اضغط ✏️ للإضافة.',
+    noBio: 'لا توجد نبذة بعد. اضغط ✏️ للإضافة.',
     noInterests: 'لا توجد اهتمامات بعد.',
     appLanguage: 'لغة التطبيق',
-    switchToArabic: 'التبديل إلى العربية',
-    switchToHebrew: 'التبديل إلى العبرية',
+    writeSomething: 'اكتب شيئاً عن نفسك…',
+    needThreeMore: 'مطلوب المزيد',
+    minor: '🔒 قاصر',
+    adult: '✓ بالغ',
+    yearsOld: 'سنة',
 
     // Discover
-    discoverTitle: 'اكتشف',
     meeting: 'التعرف على',
     palestinians: 'فلسطينيين',
     israelis: 'إسرائيليين',
@@ -174,7 +287,6 @@ export const translations = {
     cancel: 'إلغاء',
     clear: 'مسح',
     writeHere: 'اكتب بالعربية…',
-    dir: 'rtl',
   },
 };
 

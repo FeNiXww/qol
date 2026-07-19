@@ -5,8 +5,10 @@ import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
 import { MessageCircle, ChevronRight, Heart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function Matches() {
+  const { t } = useLang();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -38,9 +40,9 @@ export default function Matches() {
           background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)`,
         }}
       >
-        <h1 className="text-2xl font-black text-white">Matches</h1>
+        <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
         <p className="text-xs mt-1" style={{ color: theme.colors.tealLight }}>
-          {matches.length} connection{matches.length !== 1 ? 's' : ''}
+          {matches.length} {matches.length !== 1 ? t.connections : t.connection}
         </p>
       </div>
 
@@ -58,16 +60,14 @@ export default function Matches() {
             >
               <Heart className="w-10 h-10" style={{ color: theme.colors.teal }} />
             </div>
-            <h3 className="text-xl font-bold mb-2" style={{ color: theme.colors.navy }}>No matches yet</h3>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Start swiping on the Discover tab to find your first cross-cultural connection!
-            </p>
+            <h3 className="text-xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.noMatchesYet}</h3>
+            <p className="text-gray-400 text-sm leading-relaxed">{t.noMatchesMsg}</p>
             <Link
               to="/"
               className="mt-6 px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-md"
               style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
             >
-              Go to Discover
+              {t.goToDiscover}
             </Link>
           </div>
         ) : (
@@ -77,7 +77,7 @@ export default function Matches() {
             const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
             const timeAgo = match.last_message_at
               ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true })
-              : 'New match!';
+              : t.newMatch;
 
             return (
               <Link

@@ -68,12 +68,12 @@ export default function ProfileTab() {
         className="px-6 pb-5 flex-shrink-0 shadow-sm flex items-center justify-between"
         style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)` }}
       >
-        <h1 className="text-2xl font-black text-white">Profile</h1>
+        <h1 className="text-2xl font-black text-white">{t.profileTitle}</h1>
         <button
           onClick={() => base44.auth.logout('/sign-in')}
           className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
         >
-          <LogOut className="w-4 h-4" /> Sign out
+          <LogOut className="w-4 h-4" /> {t.signOut}
         </button>
       </div>
 
@@ -105,10 +105,10 @@ export default function ProfileTab() {
           <div>
             <h2 className="text-lg font-black text-gray-900">{name}</h2>
             <p className="text-sm text-gray-500">{flag} {natLabel}</p>
-            {age && <p className="text-xs text-gray-400">{age} years old{profile.gender ? ` · ${profile.gender}` : ''}</p>}
+            {age && <p className="text-xs text-gray-400">{age} {t.yearsOld}{profile.gender ? ` · ${profile.gender}` : ''}</p>}
             {profile.age_band && (
               <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${profile.age_band === 'minor' ? 'bg-blue-50 text-blue-600' : 'bg-teal-50 text-teal-700'}`}>
-                {profile.age_band === 'minor' ? '🔒 Minor' : '✓ Adult'}
+                {profile.age_band === 'minor' ? t.minor : t.adult}
               </span>
             )}
           </div>
@@ -117,7 +117,7 @@ export default function ProfileTab() {
         {/* Bio */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-800">About me</h3>
+            <h3 className="font-semibold text-gray-800">{t.aboutMe}</h3>
             {editingBio ? (
               <div className="flex gap-2">
                 <button onClick={() => { setBio(profile.bio || ''); setEditingBio(false); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -140,14 +140,14 @@ export default function ProfileTab() {
                 onChange={e => setBio(e.target.value)}
                 rows={4}
                 maxLength={300}
-                placeholder="Write something about yourself…"
+                placeholder={t.writeSomething}
                 className="w-full text-sm text-gray-700 resize-none rounded-xl p-3 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
               />
               <p className="text-xs text-gray-400 text-right mt-1">{bio.length}/300</p>
             </div>
           ) : (
             <p className="text-sm text-gray-500 leading-relaxed">
-              {profile.bio || <span className="text-gray-300 italic">No bio yet. Tap ✏️ to add one.</span>}
+              {profile.bio || <span className="text-gray-300 italic">{t.noBio}</span>}
             </p>
           )}
         </div>
@@ -182,7 +182,7 @@ export default function ProfileTab() {
         {/* Hobbies */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-800">Interests</h3>
+            <h3 className="font-semibold text-gray-800">{t.interests}</h3>
             {editingHobbies ? (
               <div className="flex gap-2">
                 <button onClick={() => { setHobbies(profile.hobbies || []); setEditingHobbies(false); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -211,13 +211,13 @@ export default function ProfileTab() {
                 ))}
               </div>
               <p className="text-xs text-center" style={{ color: hobbies.length < 3 ? theme.colors.orange : theme.colors.teal }}>
-                {hobbies.length} selected {hobbies.length < 3 && `(need ${3 - hobbies.length} more)`}
+                {hobbies.length} {t.selected} {hobbies.length < 3 && `(${t.needThreeMore} ${3 - hobbies.length})`}
               </p>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
               {(profile.hobbies || []).length === 0
-                ? <p className="text-sm text-gray-300 italic">No interests yet.</p>
+                ? <p className="text-sm text-gray-300 italic">{t.noInterests}</p>
                 : (profile.hobbies || []).map(h => <HobbyChip key={h} label={h} selected disabled />)
               }
             </div>
