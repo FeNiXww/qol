@@ -5,10 +5,12 @@ import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
 import { MessageCircle, ChevronRight, Heart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { he, ar } from 'date-fns/locale';
 import { useLang } from '@/contexts/LanguageContext';
 
 export default function Matches() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const dateFnsLocale = lang === 'ar' ? ar : he;
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -76,7 +78,7 @@ export default function Matches() {
             const name = other?.display_name || 'Connection';
             const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
             const timeAgo = match.last_message_at
-              ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true })
+              ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true, locale: dateFnsLocale })
               : t.newMatch;
 
             return (
@@ -123,7 +125,7 @@ export default function Matches() {
                           className="text-xs px-2 py-0.5 rounded-full font-medium"
                           style={{ backgroundColor: `${theme.colors.teal}15`, color: theme.colors.teal }}
                         >
-                          {h}
+                          {t.hobbyTranslations?.[h] || h}
                         </span>
                       ))}
                     </div>
