@@ -51,6 +51,9 @@ function buildDeck() {
 export default function MemoryGame({ session, isPlayerA, otherProfile }) {
   const { t } = useLang();
   const [busy, setBusy] = useState(false);
+  const [localFlipped, setLocalFlipped] = useState([]);
+  const [localMatched, setLocalMatched] = useState([]);
+  const [myMatches, setMyMatches] = useState(() => (isPlayerA ? session.score_a || 0 : session.score_b || 0));
   const initRef = useRef(false);
 
   let board = null;
@@ -62,9 +65,12 @@ export default function MemoryGame({ session, isPlayerA, otherProfile }) {
 
   const currentTurn = session.current_turn || 'a';
   const myTurn = isPlayerA ? currentTurn === 'a' : currentTurn === 'b';
-  const myScore = isPlayerA ? session.score_a : session.score_b;
-  const theirScore = isPlayerA ? session.score_b : session.score_a;
   const otherName = otherProfile?.display_name || t.opponent;
+
+  // Reset optimistic flip state whenever the turn switches.
+  useEffect(() => {
+    setLocalFlipped([]);
+  }, [currentTurn]);
 
   // Player A builds the shared deck once the game goes active.
   useEffect(() => {
@@ -78,57 +84,64 @@ export default function MemoryGame({ session, isPlayerA, otherProfile }) {
     }
   }, [session.id, session.board_state, isPlayerA]);
 
-  const onCardClick = async (idx) => {
+  const onCardClick = (idx) => {
     if (busy || !board || !myTurn) return;
-    if (board.matched.includes(board.deck[idx].pairId)) return;
-    if (board.flipped.includes(idx)) return;
-    if (board.flipped.length >= 2) return;
+    const pairId = board.deck[idx].pairId;
+    if (board.matched.includes(pairId) || localMatched.includes(pairId)) return;
+    if (localFlipped.includes(idx)) return;
+    if (localFlipped.length >= 2) return;
 
     const deck = board.deck;
-    const matchedNow = board.matched;
-    const player = currentTurn;
-    const newFlipped = [...board.flipped, idx];
+    const newFlipped = [...localFlipped, idx];
+    setLocalFlipped(newFlipped);
 
-    setBusy(true);
-    await base44.entities.GameSession.update(session.id, {
-      board_state: JSON.stringify({ deck, flipped: newFlipped, matched: matchedNow }),
-    });
+    // Sync the flip to the opponent in the background (don't block the UI).
+    base44.entities.GameSession.update(session.id, {
+      board_state: JSON.stringify({ deck, flipped: newFlipped, matched: board.matched }),
+    }).catch(() => {});
 
     if (newFlipped.length === 2) {
+      setBusy(true);
       const [i1, i2] = newFlipped;
+      const player = currentTurn;
+      const capturedMatched = board.matched;
+      const capturedLocalMatched = [...localMatched];
+      const capturedMyMatches = myMatches;
+
       if (deck[i1].pairId === deck[i2].pairId) {
-        setTimeout(async () => {
-          const matched = [...matchedNow, deck[i1].pairId];
-          const scoreA = player === 'a' ? session.score_a + 1 : session.score_a;
-          const scoreB = player === 'b' ? session.score_b + 1 : session.score_b;
-          const allMatched = matched.length === PAIRS;
+        setTimeout(() => {
+          const newMyMatches = capturedMyMatches + 1;
+          setMyMatches(newMyMatches);
+          setLocalMatched(m => [...m, deck[i1].pairId]);
+          setLocalFlipped([]);
+          const globalMatched = Array.from(new Set([...capturedMatched, ...capturedLocalMatched, deck[i1].pairId]));
+          const scoreKey = isPlayerA ? 'score_a' : 'score_b';
           const update = {
-            board_state: JSON.stringify({ deck, flipped: [], matched }),
-            score_a: scoreA,
-            score_b: scoreB,
+            board_state: JSON.stringify({ deck, flipped: [], matched: globalMatched }),
+            [scoreKey]: newMyMatches,
           };
-          if (allMatched) {
+          if (globalMatched.length >= PAIRS) {
             update.status = 'finished';
-            update.winner_id = scoreA > scoreB
+            const theirScore = isPlayerA ? session.score_b : session.score_a;
+            update.winner_id = newMyMatches > theirScore
               ? session.player_a_id
-              : scoreB > scoreA
+              : theirScore > newMyMatches
                 ? session.player_b_id
                 : null;
           }
-          await base44.entities.GameSession.update(session.id, update);
+          base44.entities.GameSession.update(session.id, update).catch(() => {});
           setBusy(false);
         }, 650);
       } else {
-        setTimeout(async () => {
-          await base44.entities.GameSession.update(session.id, {
-            board_state: JSON.stringify({ deck, flipped: [], matched: matchedNow }),
+        setTimeout(() => {
+          setLocalFlipped([]);
+          base44.entities.GameSession.update(session.id, {
+            board_state: JSON.stringify({ deck, flipped: [], matched: capturedMatched }),
             current_turn: player === 'a' ? 'b' : 'a',
-          });
+          }).catch(() => {});
           setBusy(false);
         }, 1000);
       }
-    } else {
-      setBusy(false);
     }
   };
 
@@ -140,8 +153,12 @@ export default function MemoryGame({ session, isPlayerA, otherProfile }) {
     );
   }
 
+  const displayFlipped = myTurn ? localFlipped : board.flipped;
+  const displayMatched = myTurn ? [...board.matched, ...localMatched] : board.matched;
   const myColor = isPlayerA ? theme.colors.teal : theme.colors.orange;
   const theirColor = isPlayerA ? theme.colors.orange : theme.colors.teal;
+  const myScore = myMatches;
+  const theirScore = isPlayerA ? session.score_b : session.score_a;
 
   return (
     <div className="flex flex-col h-full px-4 pt-3 pb-5" style={{ background: '#F8FFFE' }}>
@@ -169,8 +186,8 @@ export default function MemoryGame({ session, isPlayerA, otherProfile }) {
             <MemoryCard
               key={card.uid}
               card={card}
-              flipped={board.flipped.includes(idx)}
-              matched={board.matched.includes(card.pairId)}
+              flipped={displayFlipped.includes(idx)}
+              matched={displayMatched.includes(card.pairId)}
               onClick={() => onCardClick(idx)}
               disabled={busy || !myTurn}
             />

@@ -17,6 +17,7 @@ export default function GameRoom() {
   const [myProfile, setMyProfile] = useState(null);
   const [otherProfile, setOtherProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [abandoned, setAbandoned] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -40,7 +41,10 @@ export default function GameRoom() {
 
     // Real-time sync
     const unsub = base44.entities.GameSession.subscribe(event => {
-      if (event.data?.id === sessionId) setSession(event.data);
+      const evtId = event.id || event.data?.id;
+      if (evtId !== sessionId) return;
+      if (event.type === 'delete') { setAbandoned(true); return; }
+      if (event.data) setSession(event.data);
     });
     return unsub;
   }, [sessionId, currentUser?.id]);
@@ -125,6 +129,25 @@ export default function GameRoom() {
     );
   }
 
+  if (abandoned) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-6 text-center" style={{ background: '#F8FFFE' }}>
+        <div className="bg-white rounded-3xl px-7 py-8 flex flex-col items-center shadow-2xl w-full max-w-xs">
+          <div className="text-5xl mb-3">👋</div>
+          <h2 className="text-xl font-black mb-2" style={{ color: theme.colors.navy }}>{t.opponentLeft}</h2>
+          <p className="text-sm text-gray-500 mb-6">{t.opponentLeftDesc}</p>
+          <button
+            onClick={() => navigate('/games')}
+            className="px-8 py-3 rounded-xl text-white font-bold shadow-md"
+            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+          >
+            {t.backToGames}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen" style={{ background: '#F8FFFE' }}>
       {/* Header */}
@@ -132,7 +155,7 @@ export default function GameRoom() {
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
         style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy}, #1a2a5e)` }}
       >
-        <button onClick={() => navigate('/games')} className="text-white/70 p-1">
+        <button onClick={cancelInvite} className="text-white/70 p-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">

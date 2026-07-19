@@ -211,6 +211,9 @@ export const translations = {
     itsDraw: "תיקו!",
     youWon: '🎉 ניצחת!',
     goodGame: 'משחק טוב!',
+    opponentLeft: 'היריב עזב את המשחק',
+    opponentLeftDesc: 'המשחק הסתיים מכיוון שהשחקן השני עזב.',
+    backToGames: 'חזור למשחקים',
     wordGuessGameName: '🔤 ניחוש מילים',
     translationDuelGameName: '⚔️ דו-קרב תרגום',
 
@@ -458,6 +461,9 @@ export const translations = {
     itsDraw: 'تعادل!',
     youWon: '🎉 فزت!',
     goodGame: 'لعبة جيدة!',
+    opponentLeft: 'غادر الخصم اللعبة',
+    opponentLeftDesc: 'انتهت اللعبة لأن اللاعب الآخر غادر.',
+    backToGames: 'العودة إلى الألعاب',
     wordGuessGameName: '🔤 تخمين الكلمات',
     translationDuelGameName: '⚔️ مبارزة الترجمة',
 
