@@ -69,7 +69,9 @@ export default function LetterMatchGame() {
     setWon(false);
     setLost(false);
     setMistakes(0);
-    letterEls.current = {};
+    // Don't clear letterEls: React reuses DOM nodes by key across resets, so
+    // ref callbacks won't re-fire for them. The callbacks add/delete entries
+    // on mount/unmount, keeping the map correct without a manual wipe.
     setLetters(generateLetters(w, h));
   }, []);
 
