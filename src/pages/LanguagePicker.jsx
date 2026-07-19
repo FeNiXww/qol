@@ -23,13 +23,8 @@ const options = [
 
 export default function LanguagePicker() {
   const navigate = useNavigate();
-  const { chooseLang, lang, hasChosen } = useLang();
+  const { chooseLang, lang } = useLang();
   const [selected, setSelected] = React.useState(lang || null);
-
-  // If language already chosen, skip straight to welcome
-  React.useEffect(() => {
-    if (hasChosen) navigate('/welcome', { replace: true });
-  }, [hasChosen, navigate]);
 
   const handleContinue = () => {
     if (!selected) return;
