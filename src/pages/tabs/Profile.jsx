@@ -76,7 +76,7 @@ export default function ProfileTab() {
     <div className="flex flex-col min-h-full overflow-y-auto" style={{ background: '#E6E2D8' }}>
       {/* Hero Header */}
       <div
-        className="relative flex-shrink-0 pb-16"
+        className="relative flex-shrink-0 pb-8"
         style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)' }}
       >
         {/* Top bar actions */}
@@ -154,8 +154,8 @@ export default function ProfileTab() {
         </div>
       </div>
 
-      {/* Cards — overlap the hero */}
-      <div className="px-5 -mt-6 space-y-4 pb-8">
+      {/* Cards */}
+      <div className="px-5 pt-5 space-y-4 pb-8">
         {/* Bio card */}
         <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(19,46,76,0.10)' }}>
           <div className="flex items-center justify-between mb-3">
