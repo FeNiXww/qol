@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Loader2 } from 'lucide-react';
+import { useLang } from '@/contexts/LanguageContext';
 
 // Phrases to translate — each player translates it to the other's language
 const PHRASES = [
@@ -23,6 +24,7 @@ function pickPhrase(round) {
 }
 
 export default function TranslationDuelGame({ session, currentUser, myProfile, otherProfile, isPlayerA }) {
+  const { t } = useLang();
   const [myTranslation, setMyTranslation] = useState('');
   const [rating, setRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -30,9 +32,8 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
   const phrase = pickPhrase(session.current_round);
   const myNat = myProfile?.nationality;
 
-  // I translate FROM my language TO theirs
   const phraseToShow = myNat === 'israeli' ? phrase.he : phrase.ar;
-  const targetLang = myNat === 'israeli' ? 'Arabic' : 'Hebrew';
+  const targetLang = myNat === 'israeli' ? t.arabic : t.hebrew;
   const referenceAnswer = myNat === 'israeli' ? phrase.ar : phrase.he;
 
   const myGuessField = isPlayerA ? 'player_a_guess' : 'player_b_guess';
@@ -116,7 +117,7 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
     : !roundResultParsed || (isPlayerA ? roundResultParsed[1] === 0 : roundResultParsed[0] === 0) ? 'rate'
     : 'done';
 
-  const otherName = otherProfile?.display_name || 'Opponent';
+  const otherName = otherProfile?.display_name || t.opponent;
 
   return (
     <div className="flex flex-col px-6 py-8 gap-5">
@@ -127,7 +128,7 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
         animate={{ y: 0, opacity: 1 }}
         className="bg-white rounded-3xl p-6 shadow-md border border-gray-50 text-center"
       >
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Translate to {targetLang}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{t.translateTo} {targetLang}</p>
         <p className="text-2xl font-black mb-1" style={{ color: theme.colors.navy }} dir="auto">{phraseToShow}</p>
         <p className="text-xs text-gray-400 italic">{phrase.meaning}</p>
       </motion.div>
@@ -135,12 +136,12 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
       {/* Write phase */}
       {phase === 'write' && (
         <div>
-          <p className="text-xs text-gray-400 mb-2 text-center">Write your translation in {targetLang}</p>
+          <p className="text-xs text-gray-400 mb-2 text-center">{t.writeTranslationIn} {targetLang}</p>
           <div className="flex flex-col gap-2">
             <textarea
               value={myTranslation}
               onChange={e => setMyTranslation(e.target.value)}
-              placeholder={`Your translation in ${targetLang}…`}
+              placeholder={`${t.yourTranslationIn} ${targetLang}…`}
               dir="auto"
               rows={3}
               className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 text-sm resize-none"
@@ -151,7 +152,7 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
               className="py-3 rounded-2xl text-white font-bold text-sm disabled:opacity-40 transition-all active:scale-95"
               style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0f7a6e)` }}
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Submit Translation'}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t.submitTranslation}
             </button>
           </div>
         </div>
@@ -160,9 +161,9 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
       {/* Waiting phase */}
       {phase === 'waiting' && (
         <div className="bg-white rounded-2xl p-4 text-center border border-gray-100">
-          <p className="text-sm text-gray-500 mb-1">Your translation</p>
+          <p className="text-sm text-gray-500 mb-1">{t.yourTranslation}</p>
           <p className="font-bold text-gray-800 mb-3" dir="auto">{myGuess}</p>
-          <p className="text-xs text-gray-400 animate-pulse">Waiting for {otherName}…</p>
+          <p className="text-xs text-gray-400 animate-pulse">{t.waitingFor} {otherName}…</p>
         </div>
       )}
 
@@ -171,12 +172,12 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
         <div className="space-y-4">
           {/* Show other player's translation to rate */}
           <div className="bg-white rounded-2xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-400 mb-1">{otherName}'s translation</p>
+            <p className="text-xs text-gray-400 mb-1">{t.translationOf} {otherName}</p>
             <p className="font-bold text-gray-800 mb-1" dir="auto">{theirGuess}</p>
-            <p className="text-xs text-gray-400 italic">Reference: <span dir="auto">{referenceAnswer}</span></p>
+            <p className="text-xs text-gray-400 italic">{t.reference}: <span dir="auto">{referenceAnswer}</span></p>
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold text-gray-600 mb-3">Rate {otherName}'s translation</p>
+            <p className="text-sm font-semibold text-gray-600 mb-3">{t.rateTranslation} {otherName}</p>
             <div className="flex justify-center gap-3">
               {[1, 2, 3].map(s => (
                 <button
@@ -194,14 +195,14 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
                       <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500">{s === 1 ? 'Close' : s === 2 ? 'Good' : 'Perfect'}</span>
+                  <span className="text-xs text-gray-500">{s === 1 ? t.close : s === 2 ? t.good : t.perfect}</span>
                 </button>
               ))}
             </div>
           </div>
           {/* Show my translation too */}
           <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100">
-            <p className="text-xs text-gray-400 mb-1">Your translation</p>
+            <p className="text-xs text-gray-400 mb-1">{t.yourTranslation}</p>
             <p className="text-sm text-gray-700" dir="auto">{myGuess}</p>
           </div>
         </div>
@@ -214,10 +215,10 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl p-5 border-2 border-teal-100 text-center"
         >
-          <p className="text-xs text-gray-400 mb-3">Ratings this round</p>
+          <p className="text-xs text-gray-400 mb-3">{t.ratingsThisRound}</p>
           <div className="flex justify-around">
             <div>
-              <p className="text-xs text-gray-400 mb-1">You got</p>
+              <p className="text-xs text-gray-400 mb-1">{t.youGot}</p>
               <div className="flex justify-center">
                 {Array.from({ length: isPlayerA ? roundResultParsed[0] : roundResultParsed[1] }).map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
@@ -225,7 +226,7 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1">{otherName} got</p>
+              <p className="text-xs text-gray-400 mb-1">{otherName} {t.got}</p>
               <div className="flex justify-center">
                 {Array.from({ length: isPlayerA ? roundResultParsed[1] : roundResultParsed[0] }).map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
@@ -233,14 +234,14 @@ export default function TranslationDuelGame({ session, currentUser, myProfile, o
               </div>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mt-3 animate-pulse">Next round coming up…</p>
+          <p className="text-xs text-gray-400 mt-3 animate-pulse">{t.nextRound}</p>
         </motion.div>
       )}
 
       {/* Status footer */}
       <div className="flex justify-between text-xs text-gray-400 px-1">
-        <span>You: {myGuess ? '✅ submitted' : '⏳ writing…'}</span>
-        <span>{otherName}: {theirGuess ? '✅ submitted' : '⏳ writing…'}</span>
+        <span>{t.you}: {myGuess ? t.submitted : t.writing}</span>
+        <span>{otherName}: {theirGuess ? t.submitted : t.writing}</span>
       </div>
     </div>
   );

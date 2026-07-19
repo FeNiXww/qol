@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useLang } from '@/contexts/LanguageContext';
 
 // Hebrew words with their Arabic translations and meanings
 const WORD_PAIRS = [
@@ -34,19 +35,17 @@ function pickWords(round) {
 }
 
 export default function WordGuessGame({ session, currentUser, myProfile, otherProfile, isPlayerA }) {
+  const { t } = useLang();
   const [guess, setGuess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [roundFeedback, setRoundFeedback] = useState(null); // null | 'correct' | 'wrong'
 
   const wordPair = pickWords(session.current_round);
 
-  // I'm challenged in the language I DON'T speak
-  // Israeli (he) → asked to guess Arabic word
-  // Palestinian (ar) → asked to guess Hebrew word
   const myNat = myProfile?.nationality;
   const wordToShow = myNat === 'israeli' ? wordPair.he : wordPair.ar;
   const correctAnswer = myNat === 'israeli' ? wordPair.ar : wordPair.he;
-  const targetLangLabel = myNat === 'israeli' ? 'Arabic' : 'Hebrew';
+  const targetLangLabel = myNat === 'israeli' ? t.arabic : t.hebrew;
 
   const myGuessField = isPlayerA ? 'player_a_guess' : 'player_b_guess';
   const myGuess = isPlayerA ? session.player_a_guess : session.player_b_guess;
@@ -136,7 +135,7 @@ export default function WordGuessGame({ session, currentUser, myProfile, otherPr
     setSubmitting(false);
   };
 
-  const otherName = otherProfile?.display_name || 'Opponent';
+  const otherName = otherProfile?.display_name || t.opponent;
 
   return (
     <div className="flex flex-col items-center px-6 py-8 gap-6">
@@ -165,7 +164,7 @@ export default function WordGuessGame({ session, currentUser, myProfile, otherPr
         animate={{ y: 0, opacity: 1 }}
         className="w-full bg-white rounded-3xl p-6 shadow-md border border-gray-50 text-center"
       >
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Translate this word to {targetLangLabel}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{t.translateToLang} {targetLangLabel}</p>
         <p className="text-5xl font-black mb-2" style={{ color: theme.colors.navy }} dir="auto">{wordToShow}</p>
         <p className="text-sm text-gray-400 italic">{wordPair.meaning}</p>
       </motion.div>
@@ -173,13 +172,13 @@ export default function WordGuessGame({ session, currentUser, myProfile, otherPr
       {/* Input */}
       {!myGuess ? (
         <div className="w-full">
-          <p className="text-xs text-gray-400 mb-2 text-center">Type your answer in {targetLangLabel}</p>
+          <p className="text-xs text-gray-400 mb-2 text-center">{t.typeAnswerIn} {targetLangLabel}</p>
           <div className="flex gap-2">
             <input
               value={guess}
               onChange={e => setGuess(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submitGuess()}
-              placeholder={`Answer in ${targetLangLabel}…`}
+              placeholder={`${t.answerIn} ${targetLangLabel}…`}
               dir="auto"
               className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 text-sm"
               style={{ '--tw-ring-color': theme.colors.teal }}
@@ -190,16 +189,16 @@ export default function WordGuessGame({ session, currentUser, myProfile, otherPr
               className="px-5 py-3 rounded-2xl text-white font-bold text-sm disabled:opacity-40 transition-all active:scale-95"
               style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0f7a6e)` }}
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit'}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.submitBtn}
             </button>
           </div>
         </div>
       ) : (
         <div className="w-full bg-white rounded-2xl p-4 border border-gray-100 text-center">
-          <p className="text-xs text-gray-400 mb-1">Your answer</p>
+          <p className="text-xs text-gray-400 mb-1">{t.yourAnswer}</p>
           <p className="font-bold text-gray-700" dir="auto">{myGuess}</p>
           {!theirGuess && (
-            <p className="text-xs text-gray-400 mt-3 animate-pulse">Waiting for {otherName}…</p>
+            <p className="text-xs text-gray-400 mt-3 animate-pulse">{t.waitingFor} {otherName}…</p>
           )}
         </div>
       )}
@@ -211,15 +210,15 @@ export default function WordGuessGame({ session, currentUser, myProfile, otherPr
           animate={{ opacity: 1, y: 0 }}
           className="w-full bg-white rounded-2xl p-4 border-2 border-teal-100 text-center"
         >
-          <p className="text-xs text-gray-400 mb-1">Correct answer</p>
+          <p className="text-xs text-gray-400 mb-1">{t.correctAnswer}</p>
           <p className="text-xl font-black" style={{ color: theme.colors.teal }} dir="auto">{correctAnswer}</p>
         </motion.div>
       )}
 
       {/* Status */}
       <div className="w-full flex justify-between text-xs text-gray-400 px-1">
-        <span>You: {myGuess ? '✅ answered' : '⏳ thinking…'}</span>
-        <span>{otherName}: {theirGuess ? '✅ answered' : '⏳ thinking…'}</span>
+        <span>{t.you}: {myGuess ? t.answered : t.thinking}</span>
+        <span>{otherName}: {theirGuess ? t.answered : t.thinking}</span>
       </div>
     </div>
   );

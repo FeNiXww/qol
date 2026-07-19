@@ -5,10 +5,12 @@ import { theme } from '@/lib/theme';
 import WordGuessGame from '@/components/games/WordGuessGame';
 import TranslationDuelGame from '@/components/games/TranslationDuelGame';
 import { ArrowLeft, Trophy } from 'lucide-react';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function GameRoom() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLang();
   const [session, setSession] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
@@ -53,7 +55,7 @@ export default function GameRoom() {
   const isPlayerA = session.player_a_id === currentUser.id;
   const myScore = isPlayerA ? session.score_a : session.score_b;
   const theirScore = isPlayerA ? session.score_b : session.score_a;
-  const otherName = otherProfile?.display_name || 'Opponent';
+  const otherName = otherProfile?.display_name || t.opponent;
 
   if (session.status === 'finished') {
     const iWon = session.winner_id === currentUser.id;
@@ -67,18 +69,18 @@ export default function GameRoom() {
           <Trophy className="w-12 h-12 text-white" />
         </div>
         <h2 className="text-3xl font-black mb-2" style={{ color: theme.colors.navy }}>
-          {isDraw ? "It's a Draw!" : iWon ? '🎉 You Won!' : 'Good Game!'}
+          {isDraw ? t.itsDraw : iWon ? t.youWon : t.goodGame}
         </h2>
-        <p className="text-gray-500 mb-2">Final score</p>
+        <p className="text-gray-500 mb-2">{t.finalScore}</p>
         <p className="text-2xl font-bold mb-8" style={{ color: theme.colors.teal }}>
-          You {myScore} — {theirScore} {otherName}
+          {t.you} {myScore} — {theirScore} {otherName}
         </p>
         <button
           onClick={() => navigate('/games')}
           className="px-8 py-3 rounded-2xl text-white font-bold shadow-lg"
           style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
         >
-          Play Again
+          {t.playAgain}
         </button>
       </div>
     );
@@ -96,15 +98,15 @@ export default function GameRoom() {
         </button>
         <div className="flex-1">
           <p className="font-bold text-white text-sm">
-            {session.game_type === 'word_guess' ? '🔤 Word Guess' : '⚔️ Translation Duel'}
+            {session.game_type === 'word_guess' ? t.wordGuessGameName : t.translationDuelGameName}
           </p>
-          <p className="text-xs text-white/50">Round {session.current_round} of {session.total_rounds}</p>
+          <p className="text-xs text-white/50">{t.roundOf} {session.current_round} {t.of} {session.total_rounds}</p>
         </div>
         {/* Scores */}
         <div className="flex items-center gap-2">
           <div className="text-center">
             <p className="text-lg font-black text-white leading-none">{myScore}</p>
-            <p className="text-[10px] text-white/50">You</p>
+            <p className="text-[10px] text-white/50">{t.you}</p>
           </div>
           <p className="text-white/40 font-bold">—</p>
           <div className="text-center">
