@@ -37,7 +37,7 @@ export default function LanguagePicker() {
         className="mb-10 flex flex-col items-center"
       >
         <img
-          src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/561895cb0_Qollogo.png"
+          src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/a5dc31826_Untitleddesign.png"
           alt="QOL"
           className="w-20 h-20 object-contain mb-4"
           style={{ mixBlendMode: 'multiply' }}
