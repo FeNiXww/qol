@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SwipeCard from './SwipeCard';
+import ProfileDetailSheet from './ProfileDetailSheet';
 import { Heart, X, RefreshCw } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { motion } from 'framer-motion';
@@ -8,6 +9,7 @@ import { useLang } from '@/contexts/LanguageContext';
 export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empty }) {
   const { t } = useLang();
   const [stack, setStack] = useState([]);
+  const [detailProfile, setDetailProfile] = useState(null);
   const topCardRef = useRef(null);
   const swipedIdsRef = useRef(new Set());
 
@@ -87,10 +89,20 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
               onSwipe={(dir) => handleSwipeDone(profile, dir)}
               isTop={isTop}
               style={{ transform: `translateY(${offsetY}px) scale(${scale})`, zIndex: idx + 1 }}
+              onTap={isTop ? () => setDetailProfile(profile) : undefined}
             />
           );
         })}
       </div>
+
+      {detailProfile && (
+        <ProfileDetailSheet
+          profile={detailProfile}
+          onClose={() => setDetailProfile(null)}
+          onLike={() => handleButton('like')}
+          onPass={() => handleButton('pass')}
+        />
+      )}
 
       <div className="flex items-center gap-8 mt-4">
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleButton('pass')} className="flex flex-col items-center gap-1.5">

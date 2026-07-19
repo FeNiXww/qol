@@ -12,7 +12,7 @@ const HOBBY_EMOJIS = {
   History: '🏛️', Technology: '💻',
 };
 
-const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style }, ref) {
+const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style, onTap }, ref) {
   const { t } = useLang();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-18, 0, 18]);
@@ -45,6 +45,11 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
     }
   };
 
+  const handleTap = (e) => {
+    // Only open detail if no drag occurred (velocity near zero)
+    if (isTop && onTap) onTap();
+  };
+
   const name = profile.display_name || (profile.nationality === 'israeli' ? t.israeli : t.palestinian);
   const age = profile.birthdate
     ? Math.floor((new Date() - new Date(profile.birthdate)) / (365.25 * 24 * 60 * 60 * 1000))
@@ -59,6 +64,7 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
       drag={isTop ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={isTop ? handleDragEnd : undefined}
+      onTap={isTop ? handleTap : undefined}
       animate={controls}
       whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
       className="select-none"
