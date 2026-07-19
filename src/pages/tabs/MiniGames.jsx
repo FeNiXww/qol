@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, ChevronRight, Zap, BookOpen } from 'lucide-react';
+import { Gamepad2, ChevronRight, BookOpen } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
 import { useLang } from '@/contexts/LanguageContext';
 
@@ -104,7 +104,7 @@ export default function MiniGames() {
                   <p className="text-xs text-gray-400 mt-0.5">{game.description}</p>
                 </div>
                 {selectedGame?.id === game.id && (
-                  <Zap className="w-5 h-5 flex-shrink-0" style={{ color: game.color }} />
+                  <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: game.color }} />
                 )}
               </button>
             ))}
