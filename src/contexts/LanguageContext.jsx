@@ -108,6 +108,7 @@ export const translations = {
     chooseGame: 'בחר משחק',
     pickMatch: 'בחר התאמה לשחק איתה',
     noMatchesForGame: 'אתה צריך לפחות התאמה אחת כדי לשחק!',
+    noMatchesOnline: 'אין התאמות מחוברות כעת. נסה שוב מאוחר יותר!',
     selectGameHint: 'בחר משחק למעלה כדי להתחיל!',
     playWith: 'שחק',
 
@@ -320,6 +321,7 @@ export const translations = {
     chooseGame: 'اختر لعبة',
     pickMatch: 'اختر تطابقاً للعب معه',
     noMatchesForGame: 'تحتاج إلى تطابق واحد على الأقل للعب!',
+    noMatchesOnline: 'لا يوجد تطابقات متصلون الآن. حاول مرة أخرى لاحقاً!',
     selectGameHint: 'اختر لعبة من أعلى للبدء!',
     playWith: 'العب',
 

@@ -18,6 +18,12 @@ export async function getMatches(myUserId) {
   return enriched.filter(m => m.otherProfile);
 }
 
+// A profile is considered online if its heartbeat is within the last 2 minutes
+export function isProfileOnline(profile, windowMs = 120_000) {
+  if (!profile?.last_seen_at) return false;
+  return Date.now() - new Date(profile.last_seen_at).getTime() < windowMs;
+}
+
 export async function getMessages(matchId) {
   return base44.entities.Message.filter({ match_id: matchId }, 'created_date', 200);
 }

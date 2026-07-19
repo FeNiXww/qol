@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getMatches } from '@/lib/matchesApi';
+import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, ChevronRight, Zap, BookOpen } from 'lucide-react';
@@ -21,6 +21,7 @@ export default function MiniGames() {
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
   const [creating, setCreating] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -32,7 +33,13 @@ export default function MiniGames() {
       setMatches(data);
       setLoading(false);
     });
-  }, [currentUser?.id]);
+  }, [currentUser?.id, refreshTick]);
+
+  // Re-evaluate online status every 30s without refetching all matches
+  useEffect(() => {
+    const interval = setInterval(() => setRefreshTick(t => t + 1), 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const startGame = async (match, gameType) => {
     setCreating(true);
@@ -114,13 +121,19 @@ export default function MiniGames() {
               <div className="flex justify-center py-8">
                 <div className="w-7 h-7 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
               </div>
-            ) : matches.length === 0 ? (
-              <div className="text-center py-8 text-gray-400 text-sm">
-                {t.noMatchesForGame}
-              </div>
             ) : (
+              (() => {
+                const onlineMatches = matches.filter(m => isProfileOnline(m.otherProfile));
+                if (onlineMatches.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-400 text-sm">
+                      {t.noMatchesOnline}
+                    </div>
+                  );
+                }
+                return (
               <div className="space-y-2">
-                {matches.map(match => {
+                {onlineMatches.map(match => {
                   const other = match.otherProfile;
                   const name = other?.display_name || 'Connection';
                   const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
@@ -145,11 +158,14 @@ export default function MiniGames() {
                         <p className="font-bold text-gray-900">{flag} {name}</p>
                         <p className="text-xs text-gray-400">{t.playWith} {selectedGame.name}</p>
                       </div>
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0 ring-2 ring-white" />
                       <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
                     </button>
                   );
                 })}
               </div>
+                );
+              })()
             )}
           </div>
         )}

@@ -29,6 +29,22 @@ export function ProfileProvider({ children, currentUser }) {
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
 
+  // Presence heartbeat — mark this profile online while the app is open
+  useEffect(() => {
+    if (!profile?.id) return;
+    const beat = () => {
+      base44.entities.Profile.update(profile.id, { last_seen_at: new Date().toISOString() }).catch(() => {});
+    };
+    beat();
+    const interval = setInterval(beat, 60_000);
+    const onVisible = () => { if (!document.hidden) beat(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [profile?.id]);
+
   const updateProfile = useCallback(async (data) => {
     if (!profile?.id) {
       if (!currentUser?.id) throw new Error('No authenticated user');
