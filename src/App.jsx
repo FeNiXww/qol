@@ -48,6 +48,7 @@ const AuthenticatedApp = () => {
             alt="QOL"
             className="w-16 h-16 object-contain mx-auto mb-4 animate-pulse"
           />
+
           <div className="w-8 h-8 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
         </div>
       </div>

@@ -72,7 +72,7 @@ export default function MiniGames() {
         style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)` }}
       >
         <div className="flex items-center gap-2 mb-1">
-          <QolLogo size={32} />
+          <QolLogo size={32} blend />
           <h1 className="text-2xl font-black text-white">Mini Games</h1>
         </div>
         <p className="text-xs mt-1" style={{ color: theme.colors.tealLight }}>

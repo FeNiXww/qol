@@ -78,6 +78,7 @@ export default function Landing() {
                 src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/561895cb0_Qollogo.png"
                 alt="QOL"
                 className="w-28 h-28 object-contain mb-8 drop-shadow-2xl"
+                style={{ mixBlendMode: 'multiply' }}
               />
             ) : (
               <div
