@@ -133,6 +133,18 @@ export const translations = {
     youLost: 'הפסדת',
     lostDesc: 'עשית 3 טעויות. לא נורא, אפשר לנסות שוב!',
 
+    // Memory game
+    localTwoPlayerGames: 'משחקים מקומיים לשניים',
+    memoryGameName: 'משחק הזיכרון',
+    memoryGameDesc: 'הפוך קלפים והתאם זוגות — שני שחקנים באותו מכשיר',
+    memoryGameTitle: 'משחק הזיכרון',
+    player: 'שחקן',
+    player1: 'שחקן 1',
+    player2: 'שחקן 2',
+    playerTurn: 'תור שחקן',
+    tie: 'תיקו!',
+    winner: 'מנצח',
+
     // Profile page
     profileTitle: 'פרופיל',
     signOut: 'התנתק',
@@ -366,6 +378,18 @@ export const translations = {
     playAgain: 'العب مرة أخرى',
     youLost: 'خسرت',
     lostDesc: 'لقد أخطأت 3 مرات. لا بأس، يمكنك المحاولة مرة أخرى!',
+
+    // Memory game
+    localTwoPlayerGames: 'ألعاب محلية للاعبين',
+    memoryGameName: 'لعبة الذاكرة',
+    memoryGameDesc: 'اقلب البطاقات وطابق الأزواج — لاعبان على نفس الجهاز',
+    memoryGameTitle: 'لعبة الذاكرة',
+    player: 'لاعب',
+    player1: 'لاعب 1',
+    player2: 'لاعب 2',
+    playerTurn: 'دور اللاعب',
+    tie: 'تعادل!',
+    winner: 'فاز',
 
     // Profile page
     profileTitle: 'الملف الشخصي',

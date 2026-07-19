@@ -5,7 +5,6 @@ import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, ChevronRight, BookOpen } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
-import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
 
 const GAMES_CONFIG = [
@@ -15,6 +14,10 @@ const GAMES_CONFIG = [
 
 const OFFLINE_GAMES = [
   { id: 'letter_match', emoji: '🧩', color: theme.colors.navy, nameKey: 'letterMatchName', descKey: 'letterMatchDesc' },
+];
+
+const LOCAL_TWO_PLAYER_GAMES = [
+  { id: 'memory', emoji: '🃏', color: theme.colors.orange, nameKey: 'memoryGameName', descKey: 'memoryGameDesc' },
 ];
 
 export default function MiniGames() {
@@ -84,9 +87,6 @@ export default function MiniGames() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-        {/* Pending game invitations */}
-        <GameInvitations />
-
         {/* Offline / single-player games */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.offlineGames}</p>
@@ -97,6 +97,36 @@ export default function MiniGames() {
                 <button
                   key={g.id}
                   onClick={() => navigate('/letter-match')}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+                  style={{ borderColor: '#F0FDFA' }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                    style={{ background: `${g.color}18` }}
+                  >
+                    {g.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900">{g.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{g.description}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Local two-player (pass & play) games */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.localTwoPlayerGames}</p>
+          <div className="space-y-3">
+            {LOCAL_TWO_PLAYER_GAMES.map(game => {
+              const g = { ...game, name: t[game.nameKey], description: t[game.descKey] };
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => navigate('/memory-game')}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
                   style={{ borderColor: '#F0FDFA' }}
                 >
