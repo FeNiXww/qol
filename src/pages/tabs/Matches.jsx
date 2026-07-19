@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getMatches } from '@/lib/matchesApi';
+import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ChevronRight, Heart } from 'lucide-react';
+import { MessageCircle, ChevronRight, Heart, Moon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
 import { useLang } from '@/contexts/LanguageContext';
@@ -100,11 +100,20 @@ export default function Matches() {
                       {name[0]?.toUpperCase()}
                     </div>
                   )}
-                  {/* Online dot */}
-                  <div
-                    className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white"
-                    style={{ backgroundColor: theme.colors.teal }}
-                  />
+                  {/* Online / idle status */}
+                  {isProfileOnline(other) ? (
+                    <div
+                      className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white"
+                      style={{ backgroundColor: theme.colors.teal }}
+                    />
+                  ) : (
+                    <div
+                      className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"
+                      style={{ backgroundColor: '#94A3B8' }}
+                    >
+                      <Moon className="w-3 h-3 text-white" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Info */}
