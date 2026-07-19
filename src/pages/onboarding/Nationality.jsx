@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/contexts/ProfileContext';
 import { theme } from '@/lib/theme';
 import PrimaryButton from '@/components/qol/PrimaryButton';
+import QolLogo from '@/components/qol/QolLogo';
 
 const options = [
   { value: 'israeli', flag: '🇮🇱', label: 'Israeli', lang: 'Hebrew', desc: 'ישראל' },
@@ -30,6 +31,9 @@ export default function Nationality() {
 
   return (
     <div className="min-h-screen flex flex-col px-6 py-12 bg-white">
+      <div className="flex justify-center mb-6">
+        <QolLogo size={52} />
+      </div>
       <div className="mb-10">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />

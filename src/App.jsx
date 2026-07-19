@@ -43,10 +43,11 @@ const AuthenticatedApp = () => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #17998A, #F4801F)' }}>
-            <span className="text-white text-3xl font-black">Q</span>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/561895cb0_Qollogo.png"
+            alt="QOL"
+            className="w-16 h-16 object-contain mx-auto mb-4 animate-pulse"
+          />
           <div className="w-8 h-8 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
         </div>
       </div>

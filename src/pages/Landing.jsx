@@ -72,13 +72,21 @@ export default function Landing() {
             transition={{ duration: 0.45, ease: 'easeOut' }}
             className="flex flex-col items-center"
           >
-            {/* Emoji */}
-            <div
-              className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 text-5xl shadow-2xl"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-            >
-              {slide.emoji}
-            </div>
+            {/* Logo on first slide, emoji on others */}
+            {current === 0 ? (
+              <img
+                src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/561895cb0_Qollogo.png"
+                alt="QOL"
+                className="w-28 h-28 object-contain mb-8 drop-shadow-2xl"
+              />
+            ) : (
+              <div
+                className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 text-5xl shadow-2xl"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+              >
+                {slide.emoji}
+              </div>
+            )}
 
             {/* Title */}
             <h1

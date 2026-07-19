@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import QolLogo from '@/components/qol/QolLogo';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -32,12 +33,7 @@ export default function SignUp() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white">
       <div className="mb-8 text-center">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-        >
-          <span className="text-white text-3xl font-black">Q</span>
-        </div>
+        <QolLogo size={64} className="mx-auto mb-3" />
         <h1 className="text-2xl font-black" style={{ color: theme.colors.navy }}>Create Account</h1>
         <p className="text-gray-400 text-sm mt-1">Join the QOL community</p>
       </div>

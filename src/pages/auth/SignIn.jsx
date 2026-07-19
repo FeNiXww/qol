@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import QolLogo from '@/components/qol/QolLogo';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -30,12 +31,7 @@ export default function SignIn() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white">
       {/* Logo area */}
       <div className="mb-10 text-center">
-        <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-        >
-          <span className="text-white text-4xl font-black">Q</span>
-        </div>
+        <QolLogo size={80} className="mx-auto mb-4" />
         <h1 className="text-3xl font-black" style={{ color: theme.colors.navy }}>QOL</h1>
         <p className="text-gray-400 text-sm mt-1">Connecting people, bridging worlds</p>
       </div>

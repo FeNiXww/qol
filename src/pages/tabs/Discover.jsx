@@ -6,6 +6,7 @@ import MatchModal from '@/components/qol/MatchModal';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 import { SlidersHorizontal, X } from 'lucide-react';
+import QolLogo from '@/components/qol/QolLogo';
 
 export default function Discover() {
   const { profile, loading: profileLoading } = useProfile();
@@ -120,6 +121,7 @@ export default function Discover() {
           background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)`,
         }}
       >
+        <QolLogo size={36} className="mr-1" />
         <div>
           <h1 className="text-2xl font-black text-white">Discover</h1>
           <p className="text-xs mt-0.5" style={{ color: `${theme.colors.tealLight}` }}>
