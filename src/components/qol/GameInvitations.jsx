@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
+import { requestNotificationPermission, showGameInviteNotification } from '@/lib/gameNotifications';
 
 export default function GameInvitations() {
   const { t } = useLang();
@@ -11,9 +12,11 @@ export default function GameInvitations() {
   const [invites, setInvites] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [accepting, setAccepting] = useState(null);
+  const knownInviteIds = useRef(new Set());
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
+    requestNotificationPermission();
   }, []);
 
   const loadInvites = useCallback(async () => {
@@ -24,6 +27,20 @@ export default function GameInvitations() {
         const profiles = await base44.entities.Profile.filter({ user_id: s.player_a_id });
         return { ...s, inviterProfile: profiles[0] || null };
       }));
+      // Fire notification for any new invite we haven't seen yet
+      enriched.forEach(inv => {
+        if (!knownInviteIds.current.has(inv.id)) {
+          if (knownInviteIds.current.size > 0) {
+            // Only notify if we already had a baseline (not on first load)
+            const name = inv.inviterProfile?.display_name || t.opponent;
+            const gameName = inv.game_type === 'word_guess' ? t.wordGuessName
+              : inv.game_type === 'translation_duel' ? t.translationDuelName
+              : t.memoryGameName;
+            showGameInviteNotification({ inviterName: name, gameName });
+          }
+          knownInviteIds.current.add(inv.id);
+        }
+      });
       setInvites(enriched);
     } catch (e) {
       // ignore
