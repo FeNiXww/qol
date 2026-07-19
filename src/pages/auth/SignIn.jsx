@@ -1,3 +1,4 @@
+import { useLang } from '@/contexts/LanguageContext';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';

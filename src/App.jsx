@@ -20,6 +20,7 @@ import ProfileSetup from '@/pages/onboarding/ProfileSetup';
 
 // Landing
 import Landing from '@/pages/Landing';
+import LanguagePicker from '@/pages/LanguagePicker';
 
 // Tab pages
 import Discover from '@/pages/tabs/Discover';
@@ -32,6 +33,7 @@ import GameRoom from '@/pages/GameRoom';
 // Layout & context
 import Layout from '@/components/Layout';
 import { ProfileProvider } from '@/contexts/ProfileContext';
+import { LanguageProvider, useLang } from '@/contexts/LanguageContext';
 import { base44 } from '@/api/base44Client';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -63,7 +65,7 @@ const AuthenticatedApp = () => {
     }
     // For auth_required or any other auth error, clear the stale token then redirect
     base44.auth.logout();
-    window.location.href = '/welcome';
+    window.location.href = '/language';
     return null;
   }
 
@@ -71,6 +73,7 @@ const AuthenticatedApp = () => {
     <ProfileProvider currentUser={currentUser}>
       <Routes>
         {/* Public routes */}
+        <Route path="/language" element={<LanguagePicker />} />
         <Route path="/welcome" element={<Landing />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
@@ -97,7 +100,7 @@ const AuthenticatedApp = () => {
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/welcome" replace />} />
+        <Route path="*" element={<Navigate to="/language" replace />} />
       </Routes>
     </ProfileProvider>
   );
@@ -106,6 +109,7 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <AuthProvider>
+      <LanguageProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
@@ -113,6 +117,7 @@ function App() {
         </Router>
         <Toaster />
       </QueryClientProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

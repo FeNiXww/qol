@@ -3,7 +3,8 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import HobbyChip from '@/components/qol/HobbyChip';
-import { Camera, LogOut, Edit2, Check, X, Calendar } from 'lucide-react';
+import { Camera, LogOut, Edit2, Check, X, Globe } from 'lucide-react';
+import { useLang } from '@/contexts/LanguageContext';
 import { differenceInYears, parseISO } from 'date-fns';
 
 const HOBBIES = [
@@ -15,6 +16,7 @@ const HOBBIES = [
 
 export default function ProfileTab() {
   const { profile, updateProfile } = useProfile();
+  const { lang, chooseLang, t } = useLang();
   const [currentUser, setCurrentUser] = useState(null);
   const [editingBio, setEditingBio] = useState(false);
 
@@ -148,6 +150,33 @@ export default function ProfileTab() {
               {profile.bio || <span className="text-gray-300 italic">No bio yet. Tap ✏️ to add one.</span>}
             </p>
           )}
+        </div>
+
+        {/* App Language */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="w-4 h-4 text-gray-400" />
+            <h3 className="font-semibold text-gray-800">{t.appLanguage}</h3>
+          </div>
+          <div className="flex gap-3">
+            {[
+              { code: 'he', label: 'עברית', flag: '🇮🇱' },
+              { code: 'ar', label: 'العربية', flag: '🇵🇸' },
+            ].map(opt => (
+              <button
+                key={opt.code}
+                onClick={() => chooseLang(opt.code)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-semibold text-sm transition-all"
+                style={lang === opt.code
+                  ? { borderColor: theme.colors.teal, backgroundColor: `${theme.colors.teal}15`, color: theme.colors.teal }
+                  : { borderColor: '#E5E7EB', color: '#6B7280', backgroundColor: 'white' }
+                }
+              >
+                <span>{opt.flag}</span>
+                <span>{opt.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Hobbies */}

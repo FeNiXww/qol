@@ -7,9 +7,11 @@ import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 import { SlidersHorizontal, X } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function Discover() {
   const { profile, loading: profileLoading } = useProfile();
+  const { t } = useLang();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [genderFilter, setGenderFilter] = useState(null);
@@ -109,7 +111,7 @@ export default function Discover() {
     );
   }
 
-  const oppositeNationality = profile.nationality === 'israeli' ? 'Palestinians' : 'Israelis';
+  const oppositeNationality = profile.nationality === 'israeli' ? t.palestinians : t.israelis;
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
@@ -125,7 +127,7 @@ export default function Discover() {
         <div>
           <h1 className="text-2xl font-black text-white">Discover</h1>
           <p className="text-xs mt-0.5" style={{ color: `${theme.colors.tealLight}` }}>
-            Meeting {oppositeNationality}
+            {t.meeting} {oppositeNationality}
           </p>
         </div>
         <button
