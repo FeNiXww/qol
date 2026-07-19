@@ -3,12 +3,14 @@ import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ChevronRight, Heart, Moon } from 'lucide-react';
+import { MessageCircle, ChevronRight, Heart, Moon, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
 import { useLang } from '@/contexts/LanguageContext';
 
 export default function Matches() {
+  const navigate = useNavigate();
   const { t, lang } = useLang();
   const dateFnsLocale = lang === 'ar' ? ar : he;
   const [matches, setMatches] = useState([]);
@@ -33,7 +35,7 @@ export default function Matches() {
   }, [currentUser?.id]);
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
+    <div className="flex flex-col h-full" style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="px-5 pb-5 flex-shrink-0"
@@ -43,10 +45,21 @@ export default function Matches() {
           boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
-        <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
-        <p className="text-xs font-medium mt-1" style={{ color: '#268ECE' }}>
-          {matches.length} {matches.length !== 1 ? t.connections : t.connection}
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
+            <p className="text-xs font-medium mt-0.5" style={{ color: '#268ECE' }}>
+              {matches.length} {matches.length !== 1 ? t.connections : t.connection}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <Settings className="w-4 h-4 text-white/80" />
+          </button>
+        </div>
       </div>
 
       {/* Content */}

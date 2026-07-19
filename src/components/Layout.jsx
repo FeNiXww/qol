@@ -47,7 +47,7 @@ export default function Layout() {
         <nav
           className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 safe-area-bottom"
           style={{
-            background: 'rgba(255,255,255,0.96)',
+            background: 'rgba(230,226,216,0.97)',
             backdropFilter: 'blur(20px)',
             borderTop: '1px solid rgba(0,0,0,0.06)',
             boxShadow: '0 -8px 32px rgba(0,0,0,0.08)',

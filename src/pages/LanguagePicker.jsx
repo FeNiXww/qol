@@ -37,7 +37,7 @@ export default function LanguagePicker() {
       className="flex flex-col items-center justify-center max-w-md mx-auto px-8"
       style={{
         height: '100dvh',
-        background: `linear-gradient(160deg, ${theme.colors.navy} 0%, #17998A 100%)`,
+        background: `linear-gradient(160deg, #132E4C 0%, #0D6470 100%)`,
       }}
     >
       {/* Logo */}

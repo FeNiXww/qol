@@ -5,11 +5,13 @@ import SwipeDeck from '@/components/qol/SwipeDeck';
 import MatchModal from '@/components/qol/MatchModal';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import QolLogo from '@/components/qol/QolLogo';
 import { useLang } from '@/contexts/LanguageContext';
 
 export default function Discover() {
+  const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
   const { t } = useLang();
   const [profiles, setProfiles] = useState([]);
@@ -133,7 +135,15 @@ export default function Discover() {
             </p>
           </div>
         </div>
-        <button
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <Settings className="w-4 h-4 text-white/80" />
+          </button>
+          <button
           onClick={() => setShowFilter(!showFilter)}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-sm font-semibold transition-all"
           style={
@@ -142,9 +152,10 @@ export default function Discover() {
               : { backgroundColor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.15)' }
           }
         >
-          <SlidersHorizontal className="w-4 h-4" />
-          {genderFilter ? t[genderFilter] : t.filter}
-        </button>
+            <SlidersHorizontal className="w-4 h-4" />
+            {genderFilter ? t[genderFilter] : t.filter}
+          </button>
+        </div>
       </div>
 
       {/* Gender filter dropdown */}
@@ -168,7 +179,7 @@ export default function Discover() {
       )}
 
       {/* Swipe deck */}
-      <div className="flex-1 flex flex-col pt-4 overflow-hidden">
+      <div className="flex-1 flex flex-col pt-4 overflow-hidden" style={{ background: '#E6E2D8' }}>
         <SwipeDeck
           profiles={profiles}
           onSwipe={handleSwipe}

@@ -37,6 +37,7 @@ import { ProfileProvider } from '@/contexts/ProfileContext';
 import { LanguageProvider, useLang } from '@/contexts/LanguageContext';
 import { base44 } from '@/api/base44Client';
 
+import Settings from '@/pages/Settings';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const AuthenticatedApp = () => {
@@ -99,6 +100,7 @@ const AuthenticatedApp = () => {
           </Route>
           <Route path="/game/:sessionId" element={<GameRoom />} />
           <Route path="/letter-match" element={<LetterMatch />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         {/* Catch-all */}

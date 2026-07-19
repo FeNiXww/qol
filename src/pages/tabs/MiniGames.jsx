@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, ChevronRight, BookOpen } from 'lucide-react';
+import { Gamepad2, ChevronRight, BookOpen, Settings } from 'lucide-react';
+
 import QolLogo from '@/components/qol/QolLogo';
 import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
@@ -75,16 +76,25 @@ export default function MiniGames() {
         className="px-5 pb-5 flex-shrink-0"
         style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
       >
-        <div className="flex items-center gap-2.5 mb-0.5">
-          <QolLogo size={36} />
-          <h1 className="text-2xl font-black text-white">{t.miniGamesTitle}</h1>
+        <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center gap-2.5">
+            <QolLogo size={36} />
+            <h1 className="text-2xl font-black text-white">{t.miniGamesTitle}</h1>
+          </div>
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <Settings className="w-4 h-4 text-white/80" />
+          </button>
         </div>
         <p className="text-xs font-medium mt-1" style={{ color: '#268ECE' }}>
           {t.learnTogether}
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6" style={{ background: '#E6E2D8' }}>
         {/* Pending game invitations */}
         <GameInvitations />
 
