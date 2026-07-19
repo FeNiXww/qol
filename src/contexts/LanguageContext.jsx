@@ -111,6 +111,13 @@ export const translations = {
     noMatchesOnline: 'אין התאמות מחוברות כעת. נסה שוב מאוחר יותר!',
     selectGameHint: 'בחר משחק למעלה כדי להתחיל!',
     playWith: 'שחק',
+    twoPlayerGames: 'משחקים לשניים',
+    pendingInvites: 'הזמנות ממתינות',
+    invitedYou: 'הזמין/ה אותך ל',
+    acceptInvite: 'קבל ושחק',
+    waitingForOpponent: 'ממתין שהיריב יצטרף…',
+    inviteSent: 'ההזמנה נשלחה אל',
+    cancel: 'ביטול',
 
     // Profile page
     profileTitle: 'פרופיל',
@@ -324,6 +331,13 @@ export const translations = {
     noMatchesOnline: 'لا يوجد تطابقات متصلون الآن. حاول مرة أخرى لاحقاً!',
     selectGameHint: 'اختر لعبة من أعلى للبدء!',
     playWith: 'العب',
+    twoPlayerGames: 'ألعاب للاعبين',
+    pendingInvites: 'دعوات معلّقة',
+    invitedYou: 'دعاك إلى',
+    acceptInvite: 'اقبل والعب',
+    waitingForOpponent: 'في انتظار انضمام الخصم…',
+    inviteSent: 'تم إرسال الدعوة إلى',
+    cancel: 'إلغاء',
 
     // Profile page
     profileTitle: 'الملف الشخصي',

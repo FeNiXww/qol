@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, ChevronRight, BookOpen } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
+import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
 
 const GAMES_CONFIG = [
@@ -79,9 +80,12 @@ export default function MiniGames() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+        {/* Pending game invitations */}
+        <GameInvitations />
+
         {/* Game picker */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.chooseGame}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.twoPlayerGames}</p>
           <div className="space-y-3">
             {GAMES.map(game => (
               <button
