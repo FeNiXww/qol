@@ -123,7 +123,7 @@ export default function Discover() {
           background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)`,
         }}
       >
-        <QolLogo size={36} className="mr-1" blend />
+        <QolLogo size={36} className="mr-1" />
         <div>
           <h1 className="text-2xl font-black text-white">{t.discoverTitle}</h1>
           <p className="text-xs mt-0.5" style={{ color: `${theme.colors.tealLight}` }}>
