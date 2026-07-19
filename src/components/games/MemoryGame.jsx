@@ -96,15 +96,17 @@ export default function MemoryGame({ session, isPlayerA, otherProfile }) {
     setLocalFlipped(newFlipped);
 
     // Sync the flip to the opponent in the background (don't block the UI).
+    // Always merge locally-matched pairs so a stale write never erases them.
+    const mergedMatched = Array.from(new Set([...board.matched, ...localMatched]));
     base44.entities.GameSession.update(session.id, {
-      board_state: JSON.stringify({ deck, flipped: newFlipped, matched: board.matched }),
+      board_state: JSON.stringify({ deck, flipped: newFlipped, matched: mergedMatched }),
     }).catch(() => {});
 
     if (newFlipped.length === 2) {
       setBusy(true);
       const [i1, i2] = newFlipped;
       const player = currentTurn;
-      const capturedMatched = board.matched;
+      const capturedMatched = Array.from(new Set([...board.matched, ...localMatched]));
       const capturedLocalMatched = [...localMatched];
       const capturedMyMatches = myMatches;
 
@@ -154,7 +156,7 @@ export default function MemoryGame({ session, isPlayerA, otherProfile }) {
   }
 
   const displayFlipped = myTurn ? localFlipped : board.flipped;
-  const displayMatched = myTurn ? [...board.matched, ...localMatched] : board.matched;
+  const displayMatched = Array.from(new Set([...board.matched, ...localMatched]));
   const myColor = isPlayerA ? theme.colors.teal : theme.colors.orange;
   const theirColor = isPlayerA ? theme.colors.orange : theme.colors.teal;
   const myScore = myMatches;
