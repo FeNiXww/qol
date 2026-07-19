@@ -1,12 +1,17 @@
 export const theme = {
   colors: {
-    teal: '#17998A',
-    tealLight: '#1DB8A6',
-    tealDark: '#0F7066',
-    orange: '#F4801F',
-    orangeLight: '#F9A55A',
-    navy: '#0D0E2B',
-    navyLight: '#1A1D4A',
+    // Palette (darkest → lightest + accent)
+    navy: '#132E4C',       // darkest
+    blue: '#268ECE',       // medium blue
+    tealDark: '#0D6470',   // dark teal
+    teal: '#16A499',       // teal (primary)
+    cream: '#E6E2D8',      // cream (light)
+    orange: '#FA7C27',     // orange accent
+
+    // Convenience aliases
+    tealLight: '#268ECE',
+    orangeLight: '#FB9A55',
+    navyLight: '#1E4870',
     white: '#FFFFFF',
     gray: {
       50: '#F9FAFB',
@@ -20,9 +25,9 @@ export const theme = {
       800: '#1F2937',
       900: '#111827',
     },
-    success: '#10B981',
+    success: '#16A499',
     error: '#EF4444',
-    warning: '#F59E0B',
+    warning: '#FA7C27',
   },
   hobbies: [
     'Music', 'Art', 'Cooking', 'Reading', 'Football', 'Basketball', 'Tennis', 'Swimming',

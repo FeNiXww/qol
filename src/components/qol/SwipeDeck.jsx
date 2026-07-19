@@ -51,7 +51,7 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
       <div className="flex-1 flex items-center justify-center px-8">
         <div className="text-center max-w-xs mx-auto">
           <div className="relative w-32 h-32 mx-auto mb-8">
-            <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e8f8f6, #fef3ec)' }}>
+            <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(22,164,153,0.12), rgba(250,124,39,0.12))' }}>
               <span className="text-6xl">🌍</span>
             </div>
             <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇮🇱</div>
@@ -62,7 +62,7 @@ export default function SwipeDeck({ profiles, onSwipe, onLoadMore, loading, empt
           <button
             onClick={() => onLoadMore?.()}
             className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg active:scale-95 transition-transform"
-            style={{ background: 'linear-gradient(135deg, #17998A, #F4801F)' }}
+            style={{ background: 'linear-gradient(135deg, #16A499, #FA7C27)' }}
           >
             <RefreshCw className="w-4 h-4" />
             {t.refresh}

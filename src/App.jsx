@@ -44,7 +44,7 @@ const AuthenticatedApp = () => {
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white">
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#E6E2D8' }}>
         <div className="text-center">
           <img
             src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/a3fa26d38_Untitleddesign.png"

@@ -104,7 +104,7 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
           ) : (
             <div
               className="w-full h-full flex items-center justify-center"
-              style={{ background: `linear-gradient(160deg, #0D9488 0%, #134e4a 60%, #1C2B5E 100%)` }}
+              style={{ background: `linear-gradient(160deg, #16A499 0%, #0D6470 60%, #132E4C 100%)` }}
             >
               <span className="text-white font-black" style={{ fontSize: 96, opacity: 0.25 }}>{name[0]?.toUpperCase()}</span>
             </div>
@@ -112,7 +112,7 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
           {/* Gradient overlay */}
           <div
             className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, rgba(10,16,40,0.85) 0%, rgba(10,16,40,0.2) 45%, transparent 70%)' }}
+            style={{ background: 'linear-gradient(to top, rgba(19,46,76,0.85) 0%, rgba(19,46,76,0.2) 45%, transparent 70%)' }}
           />
           {/* Name + nationality on photo */}
           <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
@@ -150,7 +150,7 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
                 <span
                   key={h}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold"
-                  style={{ background: '#F0FDFB', color: '#0D9488', border: '1.5px solid #CCFBF1' }}
+                  style={{ background: 'rgba(22,164,153,0.08)', color: '#0D6470', border: '1.5px solid rgba(22,164,153,0.25)' }}
                 >
                   <span>{HOBBY_EMOJIS[h] || '✨'}</span>
                   {t.hobbyTranslations?.[h] || h}

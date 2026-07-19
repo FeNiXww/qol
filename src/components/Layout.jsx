@@ -38,7 +38,7 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#F4FAF9' }}>
+    <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>
         <Outlet />
       </div>
@@ -67,7 +67,7 @@ export default function Layout() {
                       className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200"
                       style={
                         isActive
-                          ? { background: `linear-gradient(135deg, #0D9488, #F97316)`, boxShadow: `0 4px 16px rgba(13,148,136,0.35)` }
+                          ? { background: `linear-gradient(135deg, #16A499, #FA7C27)`, boxShadow: `0 4px 16px rgba(22,164,153,0.35)` }
                           : { background: 'transparent' }
                       }
                     >
@@ -78,12 +78,12 @@ export default function Layout() {
                       />
                     </div>
                     {path === '/matches' && hasUnread && (
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white" />
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-white" style={{ background: '#FA7C27' }} />
                     )}
                   </div>
                   <span
                     className="text-[10px] font-semibold tracking-wide transition-colors"
-                    style={{ color: isActive ? '#0D9488' : '#94A3B8' }}
+                    style={{ color: isActive ? '#0D6470' : '#94A3B8' }}
                   >
                     {label}
                   </span>

@@ -47,7 +47,7 @@ export default function GameRoom() {
 
   if (loading || !session || !currentUser) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen" style={{ background: '#E6E2D8' }}>
         <div className="w-8 h-8 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
       </div>
     );
@@ -77,7 +77,7 @@ export default function GameRoom() {
   if (session.status === 'waiting') {
     const avatarUrl = otherProfile?.avatar_url;
     return (
-      <div className="flex flex-col items-center justify-center h-screen px-8 text-center relative" style={{ background: '#F8FFFE' }}>
+      <div className="flex flex-col items-center justify-center h-screen px-8 text-center relative" style={{ background: '#E6E2D8' }}>
         <button onClick={cancelInvite} className="absolute left-4 text-gray-400 p-1" style={{ top: '52px' }}>
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -110,7 +110,7 @@ export default function GameRoom() {
     const abandonedByOpponent = session.abandoned_by_id && session.abandoned_by_id !== currentUser.id;
     if (abandonedByOpponent) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#F8FFFE' }}>
+        <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#E6E2D8' }}>
           <div className="text-6xl mb-4">👋</div>
           <h2 className="text-2xl font-black mb-2" style={{ color: theme.colors.navy }}>{t.opponentLeft}</h2>
           <p className="text-sm text-gray-500 mb-8">{t.opponentLeftDesc}</p>
@@ -127,7 +127,7 @@ export default function GameRoom() {
     const iWon = session.winner_id === currentUser.id;
     const isDraw = !session.winner_id;
     return (
-      <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#F8FFFE' }}>
+      <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#E6E2D8' }}>
         <div
           className="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-xl"
           style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
@@ -153,11 +153,11 @@ export default function GameRoom() {
   }
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: '#F8FFFE' }}>
+    <div className="flex flex-col h-screen" style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
-        style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy}, #1a2a5e)` }}
+        style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy}, ${theme.colors.tealDark})` }}
       >
         <button onClick={leaveGame} className="text-white/70 p-1">
           <ArrowLeft className="w-5 h-5" />

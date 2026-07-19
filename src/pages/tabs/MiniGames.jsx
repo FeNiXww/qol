@@ -69,17 +69,17 @@ export default function MiniGames() {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
+    <div className="flex flex-col h-full" style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="px-5 pb-5 flex-shrink-0"
-        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
+        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
       >
         <div className="flex items-center gap-2.5 mb-0.5">
           <QolLogo size={36} />
           <h1 className="text-2xl font-black text-white">{t.miniGamesTitle}</h1>
         </div>
-        <p className="text-xs font-medium mt-1" style={{ color: '#5EEAD4' }}>
+        <p className="text-xs font-medium mt-1" style={{ color: '#268ECE' }}>
           {t.learnTogether}
         </p>
       </div>
@@ -99,7 +99,7 @@ export default function MiniGames() {
                   key={g.id}
                   onClick={() => navigate('/letter-match')}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
-                  style={{ borderColor: '#F0FDFA' }}
+                  style={{ borderColor: 'rgba(22,164,153,0.12)' }}
                 >
                   <div
                     className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
@@ -128,7 +128,7 @@ export default function MiniGames() {
                 onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm"
                 style={{
-                  borderColor: selectedGame?.id === game.id ? game.color : '#F0FDFA',
+                  borderColor: selectedGame?.id === game.id ? game.color : 'rgba(22,164,153,0.12)',
                   boxShadow: selectedGame?.id === game.id ? `0 0 0 2px ${game.color}30` : undefined,
                 }}
               >

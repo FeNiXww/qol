@@ -39,18 +39,18 @@ export default function Matches() {
         className="px-5 pb-5 flex-shrink-0"
         style={{
           paddingTop: '52px',
-          background: 'linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)',
+          background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
         <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
-        <p className="text-xs font-medium mt-1" style={{ color: '#5EEAD4' }}>
+        <p className="text-xs font-medium mt-1" style={{ color: '#268ECE' }}>
           {matches.length} {matches.length !== 1 ? t.connections : t.connection}
         </p>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ background: '#F4FAF9' }}>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ background: '#E6E2D8' }}>
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />

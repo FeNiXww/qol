@@ -114,13 +114,13 @@ export default function Discover() {
   const oppositeNationality = profile.nationality === 'israeli' ? t.palestinians : t.israelis;
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
+    <div className="flex flex-col h-full" style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="flex items-center justify-between px-5 pb-4 flex-shrink-0"
         style={{
           paddingTop: '52px',
-          background: `linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)`,
+          background: `linear-gradient(145deg, #132E4C 0%, #0D6470 100%)`,
           boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
@@ -128,7 +128,7 @@ export default function Discover() {
           <QolLogo size={38} />
           <div>
             <h1 className="text-xl font-black text-white leading-tight">{t.discoverTitle}</h1>
-            <p className="text-xs font-medium" style={{ color: '#5EEAD4' }}>
+            <p className="text-xs font-medium" style={{ color: '#268ECE' }}>
               {t.meeting} {oppositeNationality}
             </p>
           </div>
@@ -138,7 +138,7 @@ export default function Discover() {
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-sm font-semibold transition-all"
           style={
             genderFilter
-              ? { background: 'linear-gradient(135deg, #F97316, #EA580C)', color: 'white', boxShadow: '0 4px 12px rgba(249,115,22,0.4)' }
+              ? { background: 'linear-gradient(135deg, #FA7C27, #E8651A)', color: 'white', boxShadow: '0 4px 12px rgba(250,124,39,0.4)' }
               : { backgroundColor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.15)' }
           }
         >
@@ -149,7 +149,7 @@ export default function Discover() {
 
       {/* Gender filter dropdown */}
       {showFilter && (
-        <div className="px-4 py-3 flex gap-2 flex-wrap" style={{ background: '#0D1F38', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-4 py-3 flex gap-2 flex-wrap" style={{ background: '#132E4C', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           {['all', 'male', 'female', 'other'].map(g => (
             <button
               key={g}
@@ -157,7 +157,7 @@ export default function Discover() {
               className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
               style={
                 (g === 'all' && !genderFilter) || genderFilter === g
-                  ? { background: 'linear-gradient(135deg, #0D9488, #0F766E)', color: 'white', boxShadow: '0 4px 12px rgba(13,148,136,0.4)' }
+                  ? { background: 'linear-gradient(135deg, #16A499, #0D6470)', color: 'white', boxShadow: '0 4px 12px rgba(22,164,153,0.4)' }
                   : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.12)' }
               }
             >

@@ -62,11 +62,11 @@ export default function ProfileTab() {
   };
 
   return (
-    <div className="flex flex-col min-h-full overflow-y-auto" style={{ background: '#F4FAF9' }}>
+    <div className="flex flex-col min-h-full overflow-y-auto" style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="px-5 pb-5 flex-shrink-0 flex items-center justify-between"
-        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
+        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
       >
         <h1 className="text-2xl font-black text-white">{t.profileTitle}</h1>
         <button
