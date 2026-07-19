@@ -28,6 +28,7 @@ export default function Chat() {
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearedAt, setClearedAt] = useState(null);
   const [translationOn, setTranslationOn] = useState(true);
+  const [sendError, setSendError] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -98,6 +99,7 @@ export default function Chat() {
   const handleSend = async () => {
     if (!text.trim() || sending || !profile || !currentUser) return;
     const msgText = text.trim();
+    setSendError(null);
     setText('');
     setSending(true);
 
@@ -122,14 +124,21 @@ export default function Chat() {
         senderNationality: profile.nationality,
         receiverNationality: receiverNat,
       });
-      // Replace optimistic with the real saved message
       setMessages(prev => {
         const updated = prev.map(m => m.id === optimistic.id ? { ...saved, status: 'sent' } : m);
         try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
         return updated;
       });
-    } catch {
-      setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...m, status: 'failed' } : m));
+    } catch (err) {
+      // Remove the optimistic message — nothing was sent
+      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
+      // Restore the text so user can edit and retry
+      setText(msgText);
+      if (err?.message === 'TRANSLATION_FAILED') {
+        setSendError("Your message couldn't be translated. Please try rephrasing it.");
+      } else {
+        setSendError('Failed to send message. Please try again.');
+      }
     } finally {
       setSending(false);
     }
@@ -243,6 +252,14 @@ export default function Chat() {
         ))}
         <div ref={bottomRef} />
       </div>
+
+      {/* Send error */}
+      {sendError && (
+        <div className="px-4 py-2 flex items-center gap-2 text-sm" style={{ background: '#FEF2F2' }}>
+          <span className="text-red-500 flex-1">{sendError}</span>
+          <button onClick={() => setSendError(null)} className="text-red-400 font-bold text-base leading-none">×</button>
+        </div>
+      )}
 
       {/* Input */}
       <div className="px-4 pb-6 pt-3 bg-white border-t border-gray-100 flex-shrink-0 shadow-lg">
