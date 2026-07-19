@@ -54,7 +54,7 @@ export default function Hobbies() {
       <div className="flex-1">
         <div className="flex flex-wrap gap-2.5 mb-4">
           {HOBBIES.map(h => (
-            <HobbyChip key={h} label={h} selected={selected.includes(h)} onToggle={() => toggle(h)} />
+            <HobbyChip key={h} label={t.hobbyTranslations?.[h] || h} selected={selected.includes(h)} onToggle={() => toggle(h)} />
           ))}
         </div>
         <p className="text-sm text-gray-400 text-center mt-4">

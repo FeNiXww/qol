@@ -125,7 +125,28 @@ export const translations = {
     adult: '✓ מבוגר',
     yearsOld: 'שנים',
 
+    // Hobby translations
+    hobbyTranslations: { Music: 'מוזיקה', Art: 'אמנות', Cooking: 'בישול', Reading: 'קריאה', Football: 'כדורגל', Basketball: 'כדורסל', Tennis: 'טניס', Swimming: 'שחייה', Hiking: 'טיול', Photography: 'צילום', Gaming: 'גיימינג', Dancing: 'ריקוד', Travel: 'טיול', Yoga: 'יוגה', Fitness: 'כושר', Cinema: 'קולנוע', Theatre: 'תיאטרון', Poetry: 'שירה', Chess: 'שחמט', Cycling: 'רכיבה', Painting: 'ציור', Volunteering: 'התנדבות', Languages: 'שפות', History: 'היסטוריה', Technology: 'טכנולוגיה' },
+
+    // Nationality labels
+    israeli: 'ישראלי',
+    palestinian: 'פלסטיני',
+
+    // Swipe actions
+    like: 'לייק',
+    pass: 'פסס',
+    interests: 'תחומי עניין',
+    stillExploring: 'עדיין מגלה תחביבים',
+    findingConnections: 'מוצא חיבורים…',
+
+    // Mini games
+    wordGuessName: 'ניחוש מילים',
+    wordGuessDesc: 'נחש את המילה בשפה השנייה. בתורות!',
+    translationDuelName: 'דו-קרב תרגום',
+    translationDuelDesc: 'תרגם משפט — השותף שלך מדרג את תשובתך!',
+
     // Discover
+    discoverTitle: 'גלה',
     meeting: 'פגישה עם',
     palestinians: 'פלסטינים',
     israelis: 'ישראלים',
@@ -220,6 +241,9 @@ export const translations = {
     interestsTitle: 'اهتماماتك',
     interestsSubtitle: 'اختر 3 هوايات على الأقل. تساعدك على التواصل مع الأشخاص الذين يشاركونك شغفك.',
     selected: 'محدد',
+    male: 'ذكر',
+    female: 'أنثى',
+    other: 'آخر',
     needMore: 'مطلوب المزيد',
     yourProfileTitle: 'ملفك الشخصي',
     yourProfileSubtitle: 'أضف صورة ونبذة حتى يتعرف عليك الناس.',
@@ -268,7 +292,28 @@ export const translations = {
     adult: '✓ بالغ',
     yearsOld: 'سنة',
 
+    // Hobby translations
+    hobbyTranslations: { Music: 'موسيقى', Art: 'فن', Cooking: 'طبخ', Reading: 'قراءة', Football: 'كرة قدم', Basketball: 'كرة سلة', Tennis: 'تنس', Swimming: 'سباحة', Hiking: 'مشي', Photography: 'تصوير', Gaming: 'ألعاب', Dancing: 'رقص', Travel: 'سفر', Yoga: 'يوغا', Fitness: 'لياقة', Cinema: 'سينما', Theatre: 'مسرح', Poetry: 'شعر', Chess: 'شطرنج', Cycling: 'دراجات', Painting: 'رسم', Volunteering: 'تطوع', Languages: 'لغات', History: 'تاريخ', Technology: 'تقنية' },
+
+    // Nationality labels
+    israeli: 'إسرائيلي',
+    palestinian: 'فلسطيني',
+
+    // Swipe actions
+    like: 'إعجاب',
+    pass: 'تخطى',
+    interests: 'الاهتمامات',
+    stillExploring: 'لا يزال يستكشف الاهتمامات',
+    findingConnections: 'جارٍ البحث عن اتصالات…',
+
+    // Mini games
+    wordGuessName: 'تخمين الكلمات',
+    wordGuessDesc: 'خمّن الكلمة باللغة الأخرى. بالتناوب!',
+    translationDuelName: 'مبارزة الترجمة',
+    translationDuelDesc: 'ترجم جملة — شريكك يقيّم إجابتك!',
+
     // Discover
+    discoverTitle: 'اكتشف',
     meeting: 'التعرف على',
     palestinians: 'فلسطينيين',
     israelis: 'إسرائيليين',

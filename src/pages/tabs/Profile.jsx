@@ -105,7 +105,7 @@ export default function ProfileTab() {
           <div>
             <h2 className="text-lg font-black text-gray-900">{name}</h2>
             <p className="text-sm text-gray-500">{flag} {natLabel}</p>
-            {age && <p className="text-xs text-gray-400">{age} {t.yearsOld}{profile.gender ? ` · ${profile.gender}` : ''}</p>}
+            {age && <p className="text-xs text-gray-400">{age} {t.yearsOld}{profile.gender ? ` · ${t[profile.gender] || profile.gender}` : ''}</p>}
             {profile.age_band && (
               <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${profile.age_band === 'minor' ? 'bg-blue-50 text-blue-600' : 'bg-teal-50 text-teal-700'}`}>
                 {profile.age_band === 'minor' ? t.minor : t.adult}
@@ -204,7 +204,7 @@ export default function ProfileTab() {
                 {HOBBIES.map(h => (
                   <HobbyChip
                     key={h}
-                    label={h}
+                    label={t.hobbyTranslations?.[h] || h}
                     selected={hobbies.includes(h)}
                     onToggle={() => setHobbies(prev => prev.includes(h) ? prev.filter(x => x !== h) : [...prev, h])}
                   />
@@ -218,7 +218,7 @@ export default function ProfileTab() {
             <div className="flex flex-wrap gap-2">
               {(profile.hobbies || []).length === 0
                 ? <p className="text-sm text-gray-300 italic">{t.noInterests}</p>
-                : (profile.hobbies || []).map(h => <HobbyChip key={h} label={h} selected disabled />)
+                : (profile.hobbies || []).map(h => <HobbyChip key={h} label={t.hobbyTranslations?.[h] || h} selected disabled />)
               }
             </div>
           )}

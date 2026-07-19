@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { theme } from '@/lib/theme';
+import { useLang } from '@/contexts/LanguageContext';
 
 const HOBBY_EMOJIS = {
   Music: '🎵', Art: '🎨', Cooking: '🍳', Reading: '📚', Football: '⚽', Basketball: '🏀',
@@ -11,6 +12,7 @@ const HOBBY_EMOJIS = {
 };
 
 const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style }, ref) {
+  const { t } = useLang();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-25, 0, 25]);
   const likeOpacity = useTransform(x, [0, 80], [0, 1]);
@@ -42,11 +44,12 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
     }
   };
 
-  const name = profile.display_name || (profile.nationality === 'israeli' ? 'Israeli' : 'Palestinian');
+  const name = profile.display_name || (profile.nationality === 'israeli' ? t.israeli : t.palestinian);
   const age = profile.birthdate
     ? Math.floor((new Date() - new Date(profile.birthdate)) / (365.25 * 24 * 60 * 60 * 1000))
     : null;
   const flag = profile.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+  const nationalityLabel = profile.nationality === 'israeli' ? t.israeli : t.palestinian;
   const hobbies = (profile.hobbies || []).slice(0, 8);
 
   return (
@@ -66,33 +69,27 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
             style={{ opacity: likeOpacity }}
             className="absolute top-6 left-6 z-10 border-4 border-green-400 rounded-xl px-3 py-1 rotate-[-20deg]"
           >
-            <span className="text-green-400 font-black text-2xl">LIKE</span>
+            <span className="text-green-400 font-black text-2xl">{t.like.toUpperCase()}</span>
           </motion.div>
           <motion.div
             style={{ opacity: passOpacity }}
             className="absolute top-6 right-6 z-10 border-4 border-red-400 rounded-xl px-3 py-1 rotate-[20deg]"
           >
-            <span className="text-red-400 font-black text-2xl">PASS</span>
+            <span className="text-red-400 font-black text-2xl">{t.pass.toUpperCase()}</span>
           </motion.div>
         </>
       )}
 
       {/* Card */}
       <div className="bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col" style={{ height: 500 }}>
-
         {/* Top: avatar + identity */}
         <div
           className="flex items-center gap-4 px-5 py-4"
           style={{ background: `linear-gradient(135deg, ${theme.colors.navy} 0%, #1a2a5e 100%)` }}
         >
-          {/* Avatar — small */}
           <div className="flex-shrink-0">
             {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={name}
-                className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20"
-              />
+              <img src={profile.avatar_url} alt={name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20" />
             ) : (
               <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white border-2 border-white/20"
@@ -102,13 +99,11 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
               </div>
             )}
           </div>
-
-          {/* Name + meta */}
           <div className="flex-1 min-w-0">
             <h2 className="text-white font-black text-xl leading-tight truncate">
               {name}{age ? `, ${age}` : ''}
             </h2>
-            <p className="text-white/60 text-sm mt-0.5">{flag} {profile.nationality === 'israeli' ? 'Israeli' : 'Palestinian'}</p>
+            <p className="text-white/60 text-sm mt-0.5">{flag} {nationalityLabel}</p>
           </div>
         </div>
 
@@ -121,11 +116,11 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
           <div className="pt-4" />
         )}
 
-        {/* Interests — main focus */}
+        {/* Interests */}
         <div className="flex-1 px-5 pb-5 flex flex-col justify-center">
           {hobbies.length > 0 ? (
             <>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Interests</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">{t.interests}</p>
               <div className="flex flex-wrap gap-3">
                 {hobbies.map((h, i) => (
                   <motion.span
@@ -134,14 +129,10 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ delay: i * 0.06, type: 'spring', stiffness: 300, damping: 18 }}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold border-2 shadow-sm"
-                    style={{
-                      backgroundColor: `${theme.colors.teal}15`,
-                      borderColor: `${theme.colors.teal}40`,
-                      color: theme.colors.navy,
-                    }}
+                    style={{ backgroundColor: `${theme.colors.teal}15`, borderColor: `${theme.colors.teal}40`, color: theme.colors.navy }}
                   >
                     <span className="text-2xl">{HOBBY_EMOJIS[h] || '✨'}</span>
-                    <span className="text-sm">{h}</span>
+                    <span className="text-sm">{t.hobbyTranslations?.[h] || h}</span>
                   </motion.span>
                 ))}
               </div>
@@ -149,7 +140,7 @@ const SwipeCard = forwardRef(function SwipeCard({ profile, onSwipe, isTop, style
           ) : (
             <div className="text-center py-4">
               <p className="text-4xl mb-2">🌱</p>
-              <p className="text-gray-400 text-sm">Still exploring interests</p>
+              <p className="text-gray-400 text-sm">{t.stillExploring}</p>
             </div>
           )}
         </div>

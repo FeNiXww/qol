@@ -7,26 +7,15 @@ import { Gamepad2, ChevronRight, Zap, BookOpen } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
 import { useLang } from '@/contexts/LanguageContext';
 
-const GAMES = [
-  {
-    id: 'word_guess',
-    name: 'Word Guess',
-    emoji: '🔤',
-    description: 'Guess the word in the other language. Take turns!',
-    color: theme.colors.teal,
-  },
-  {
-    id: 'translation_duel',
-    name: 'Translation Duel',
-    emoji: '⚔️',
-    description: 'Translate a phrase — your partner rates your answer!',
-    color: theme.colors.orange,
-  },
+const GAMES_CONFIG = [
+  { id: 'word_guess', emoji: '🔤', color: theme.colors.teal, nameKey: 'wordGuessName', descKey: 'wordGuessDesc' },
+  { id: 'translation_duel', emoji: '⚔️', color: theme.colors.orange, nameKey: 'translationDuelName', descKey: 'translationDuelDesc' },
 ];
 
 export default function MiniGames() {
   const navigate = useNavigate();
   const { t } = useLang();
+  const GAMES = GAMES_CONFIG.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] }));
   const [matches, setMatches] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
