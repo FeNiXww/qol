@@ -119,6 +119,20 @@ export const translations = {
     inviteSent: 'ההזמנה נשלחה אל',
     cancel: 'ביטול',
 
+    // Offline / letter match game
+    offlineGames: 'משחקים לשחקן יחיד',
+    letterMatchName: 'התאם אותיות',
+    letterMatchDesc: 'גרור אותיות עברית וערבית לזוגות — לשחקן יחיד',
+    matchLettersTitle: 'התאם אותיות',
+    howToPlay: 'איך משחקים:',
+    howToPlayDesc: 'גרור כל אות אל האות התואמת בשפה השנייה. הקש על אות כדי לשמוע אותה. 3 טעויות והמשחק נגמר.',
+    gotIt: 'הבנתי!',
+    youDidIt: 'עשית את זה!',
+    allMatched: 'כל האותיות הותאמו בהצלחה.',
+    playAgain: 'שחק שוב',
+    youLost: 'הפסדת',
+    lostDesc: 'עשית 3 טעויות. לא נורא, אפשר לנסות שוב!',
+
     // Profile page
     profileTitle: 'פרופיל',
     signOut: 'התנתק',
@@ -338,6 +352,20 @@ export const translations = {
     waitingForOpponent: 'في انتظار انضمام الخصم…',
     inviteSent: 'تم إرسال الدعوة إلى',
     cancel: 'إلغاء',
+
+    // Offline / letter match game
+    offlineGames: 'ألعاب للاعب واحد',
+    letterMatchName: 'طابق الحروف',
+    letterMatchDesc: 'اسحب الحروف العبرية والعربية لتطابقها — للاعب واحد',
+    matchLettersTitle: 'طابق الحروف',
+    howToPlay: 'كيفية اللعب:',
+    howToPlayDesc: 'اسحب كل حرف إلى الحرف المطابق باللغة الأخرى. اضغط على حرف لسماع نطقه. 3 أخطاء تنهي اللعبة.',
+    gotIt: 'فهمت!',
+    youDidIt: 'أحسنت!',
+    allMatched: 'تمت مطابقة جميع الحروف بنجاح.',
+    playAgain: 'العب مرة أخرى',
+    youLost: 'خسرت',
+    lostDesc: 'لقد أخطأت 3 مرات. لا بأس، يمكنك المحاولة مرة أخرى!',
 
     // Profile page
     profileTitle: 'الملف الشخصي',

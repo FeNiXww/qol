@@ -13,6 +13,10 @@ const GAMES_CONFIG = [
   { id: 'translation_duel', emoji: '⚔️', color: theme.colors.orange, nameKey: 'translationDuelName', descKey: 'translationDuelDesc' },
 ];
 
+const OFFLINE_GAMES = [
+  { id: 'letter_match', emoji: '🧩', color: theme.colors.navy, nameKey: 'letterMatchName', descKey: 'letterMatchDesc' },
+];
+
 export default function MiniGames() {
   const navigate = useNavigate();
   const { t } = useLang();
@@ -83,7 +87,37 @@ export default function MiniGames() {
         {/* Pending game invitations */}
         <GameInvitations />
 
-        {/* Game picker */}
+        {/* Offline / single-player games */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.offlineGames}</p>
+          <div className="space-y-3">
+            {OFFLINE_GAMES.map(game => {
+              const g = { ...game, name: t[game.nameKey], description: t[game.descKey] };
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => navigate('/letter-match')}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+                  style={{ borderColor: '#F0FDFA' }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                    style={{ background: `${g.color}18` }}
+                  >
+                    {g.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900">{g.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{g.description}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Two-player game picker */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.twoPlayerGames}</p>
           <div className="space-y-3">

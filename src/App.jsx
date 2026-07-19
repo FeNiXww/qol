@@ -29,6 +29,7 @@ import ProfileTab from '@/pages/tabs/Profile';
 import MiniGames from '@/pages/tabs/MiniGames';
 import Chat from '@/pages/Chat';
 import GameRoom from '@/pages/GameRoom';
+import LetterMatch from '@/pages/LetterMatch';
 
 // Layout & context
 import Layout from '@/components/Layout';
@@ -97,6 +98,7 @@ const AuthenticatedApp = () => {
             <Route path="/chat/:matchId" element={<Chat />} />
           </Route>
           <Route path="/game/:sessionId" element={<GameRoom />} />
+          <Route path="/letter-match" element={<LetterMatch />} />
         </Route>
 
         {/* Catch-all */}
