@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LOGO_URL = 'https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/561895cb0_Qollogo.png';
+const LOGO_URL = 'https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/a3fa26d38_Untitleddesign.png';
 
 export default function QolLogo({ size = 64, className = '', blend = false }) {
   return (

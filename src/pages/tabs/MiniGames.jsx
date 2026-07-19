@@ -72,14 +72,14 @@ export default function MiniGames() {
     <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
       {/* Header */}
       <div
-        className="px-6 pb-5 flex-shrink-0 shadow-sm"
-        style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)` }}
+        className="px-5 pb-5 flex-shrink-0"
+        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <QolLogo size={32} blend />
+        <div className="flex items-center gap-2.5 mb-0.5">
+          <QolLogo size={36} />
           <h1 className="text-2xl font-black text-white">{t.miniGamesTitle}</h1>
         </div>
-        <p className="text-xs mt-1" style={{ color: theme.colors.tealLight }}>
+        <p className="text-xs font-medium mt-1" style={{ color: '#5EEAD4' }}>
           {t.learnTogether}
         </p>
       </div>

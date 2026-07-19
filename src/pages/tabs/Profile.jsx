@@ -62,24 +62,25 @@ export default function ProfileTab() {
   };
 
   return (
-    <div className="flex flex-col min-h-full overflow-y-auto" style={{ background: '#F8FFFE' }}>
+    <div className="flex flex-col min-h-full overflow-y-auto" style={{ background: '#F4FAF9' }}>
       {/* Header */}
       <div
-        className="px-6 pb-5 flex-shrink-0 shadow-sm flex items-center justify-between"
-        style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)` }}
+        className="px-5 pb-5 flex-shrink-0 flex items-center justify-between"
+        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
       >
         <h1 className="text-2xl font-black text-white">{t.profileTitle}</h1>
         <button
           onClick={() => base44.auth.logout('/sign-in')}
-          className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full transition-all"
+          style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)' }}
         >
-          <LogOut className="w-4 h-4" /> {t.signOut}
+          <LogOut className="w-3.5 h-3.5" /> {t.signOut}
         </button>
       </div>
 
       <div className="px-5 py-5 space-y-4">
         {/* Avatar + Identity */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-4">
+        <div className="bg-white rounded-2xl p-5 flex items-center gap-4" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
           <div className="relative flex-shrink-0">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt={name} className="w-20 h-20 rounded-full object-cover border-2 border-gray-100" />
@@ -115,7 +116,7 @@ export default function ProfileTab() {
         </div>
 
         {/* Bio */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-800">{t.aboutMe}</h3>
             {editingBio ? (
@@ -153,7 +154,7 @@ export default function ProfileTab() {
         </div>
 
         {/* App Language */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center gap-2 mb-4">
             <Globe className="w-4 h-4 text-gray-400" />
             <h3 className="font-semibold text-gray-800">{t.appLanguage}</h3>
@@ -180,7 +181,7 @@ export default function ProfileTab() {
         </div>
 
         {/* Hobbies */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-800">{t.interests}</h3>
             {editingHobbies ? (

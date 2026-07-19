@@ -36,20 +36,21 @@ export default function Matches() {
     <div className="flex flex-col h-full" style={{ background: '#F8FFFE' }}>
       {/* Header */}
       <div
-        className="px-6 pb-5 flex-shrink-0 shadow-sm"
+        className="px-5 pb-5 flex-shrink-0"
         style={{
           paddingTop: '52px',
-          background: `linear-gradient(135deg, ${theme.colors.navy} 0%, ${theme.colors.navyLight} 100%)`,
+          background: 'linear-gradient(145deg, #0A1628 0%, #1C3A5E 100%)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
         <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
-        <p className="text-xs mt-1" style={{ color: theme.colors.tealLight }}>
+        <p className="text-xs font-medium mt-1" style={{ color: '#5EEAD4' }}>
           {matches.length} {matches.length !== 1 ? t.connections : t.connection}
         </p>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ background: '#F4FAF9' }}>
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
@@ -85,8 +86,8 @@ export default function Matches() {
               <Link
                 key={match.id}
                 to={`/chat/${match.id}`}
-                className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border transition-all hover:shadow-md"
-                style={{ borderColor: '#F0FDFA' }}
+                className="flex items-center gap-4 p-4 bg-white rounded-2xl transition-all active:scale-[0.98]"
+                style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.04)' }}
               >
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">

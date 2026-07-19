@@ -47,9 +47,9 @@ const AuthenticatedApp = () => {
       <div className="fixed inset-0 flex items-center justify-center bg-white">
         <div className="text-center">
           <img
-            src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/561895cb0_Qollogo.png"
+            src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/a3fa26d38_Untitleddesign.png"
             alt="QOL"
-            className="w-16 h-16 object-contain mx-auto mb-4 animate-pulse"
+            className="w-20 h-20 object-contain mx-auto mb-4 animate-pulse"
           />
 
           <div className="w-8 h-8 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
