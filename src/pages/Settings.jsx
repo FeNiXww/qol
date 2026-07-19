@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 const LANGS = [
   { code: 'he', label: 'עברית', sublabel: 'Hebrew', flag: '🇮🇱' },
   { code: 'ar', label: 'العربية', sublabel: 'Arabic', flag: '🇵🇸' },
+  { code: 'en', label: 'English', sublabel: 'English', flag: '🌐' },
 ];
 
 export default function Settings() {

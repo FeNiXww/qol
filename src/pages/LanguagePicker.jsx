@@ -5,20 +5,9 @@ import { useLang } from '@/contexts/LanguageContext';
 import { theme } from '@/lib/theme';
 
 const options = [
-  {
-    code: 'he',
-    label: 'עברית',
-    sublabel: 'Hebrew',
-    flag: '🇮🇱',
-    dir: 'rtl',
-  },
-  {
-    code: 'ar',
-    label: 'العربية',
-    sublabel: 'Arabic',
-    flag: '🇵🇸',
-    dir: 'rtl',
-  },
+  { code: 'he', label: 'עברית', sublabel: 'Hebrew', flag: '🇮🇱', dir: 'rtl' },
+  { code: 'ar', label: 'العربية', sublabel: 'Arabic', flag: '🇵🇸', dir: 'rtl' },
+  { code: 'en', label: 'English', sublabel: 'English', flag: '🌐', dir: 'ltr' },
 ];
 
 export default function LanguagePicker() {
@@ -107,7 +96,7 @@ export default function LanguagePicker() {
         className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl transition-all active:scale-95 disabled:opacity-30"
         style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
       >
-        {selected === 'he' ? 'המשך →' : selected === 'ar' ? 'استمر ←' : 'Continue'}
+        {selected === 'he' ? 'המשך →' : selected === 'ar' ? 'استمر ←' : selected === 'en' ? 'Continue →' : 'Continue'}
       </motion.button>
     </div>
   );
