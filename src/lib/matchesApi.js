@@ -33,11 +33,9 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
   const fromLang = getNativeLang(senderNationality);
   const toLang = getNativeLang(receiverNationality);
 
-  // Translate and update match timestamp in parallel — Google Translate is near-instant
-  const [translatedText] = await Promise.all([
-    translateText(text, fromLang, toLang),
-    base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() }),
-  ]);
+  // Translate first — if it fails (unclear message), nothing is sent or updated
+  const translatedText = await translateText(text, fromLang, toLang);
+  await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });
 
   const msg = await base44.entities.Message.create({
     match_id: matchId,

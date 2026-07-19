@@ -118,7 +118,7 @@ export default function Chat() {
       // Restore the text so user can edit and retry
       setText(msgText);
       if (err?.message === 'TRANSLATION_FAILED') {
-        setSendError("Your message couldn't be translated. Please try rephrasing it.");
+        setSendError("Your message wasn't clear and couldn't be translated — it was not sent. Please rephrase it.");
       } else {
         setSendError('Failed to send message. Please try again.');
       }
