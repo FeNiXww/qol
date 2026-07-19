@@ -72,24 +72,7 @@ export default function Chat() {
       }
     });
 
-    // Polling fallback every 4 seconds to catch any missed realtime events
-    const poll = setInterval(async () => {
-      try {
-        const msgs = await getMessages(matchId);
-        setMessages(prev => {
-          const prevIds = new Set(prev.map(m => m.id));
-          const hasNew = msgs.some(m => !prevIds.has(m.id));
-          if (!hasNew) return prev;
-          // Merge: keep optimistic messages, add any new ones from server
-          const optimistics = prev.filter(m => m.id.startsWith('opt-'));
-          const merged = [...msgs, ...optimistics];
-          try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
-          return merged;
-        });
-      } catch {}
-    }, 4000);
-
-    return () => { unsub(); clearInterval(poll); };
+    return () => { unsub(); };
   }, [matchId]);
 
   useEffect(() => {
