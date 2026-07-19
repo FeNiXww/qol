@@ -140,7 +140,7 @@ export default function Discover() {
           }
         >
           <SlidersHorizontal className="w-4 h-4" />
-          {genderFilter ? genderFilter.charAt(0).toUpperCase() + genderFilter.slice(1) : 'Filter'}
+          {genderFilter ? t[genderFilter] : t.filter}
         </button>
       </div>
 
@@ -158,7 +158,7 @@ export default function Discover() {
                   : { borderColor: '#E5E7EB', color: '#6B7280', backgroundColor: 'white' }
               }
             >
-              {g.charAt(0).toUpperCase() + g.slice(1)}
+              {g === 'all' ? t.filter : t[g]}
             </button>
           ))}
         </div>
