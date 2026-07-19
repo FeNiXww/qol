@@ -214,6 +214,7 @@ export const translations = {
     opponentLeft: 'היריב עזב את המשחק',
     opponentLeftDesc: 'המשחק הסתיים מכיוון שהשחקן השני עזב.',
     backToGames: 'חזור למשחקים',
+    won: 'ניצח',
     wordGuessGameName: '🔤 ניחוש מילים',
     translationDuelGameName: '⚔️ דו-קרב תרגום',
 
@@ -464,6 +465,7 @@ export const translations = {
     opponentLeft: 'غادر الخصم اللعبة',
     opponentLeftDesc: 'انتهت اللعبة لأن اللاعب الآخر غادر.',
     backToGames: 'العودة إلى الألعاب',
+    won: 'فاز',
     wordGuessGameName: '🔤 تخمين الكلمات',
     translationDuelGameName: '⚔️ مبارزة الترجمة',
 

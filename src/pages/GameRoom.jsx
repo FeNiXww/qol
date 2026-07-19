@@ -17,7 +17,6 @@ export default function GameRoom() {
   const [myProfile, setMyProfile] = useState(null);
   const [otherProfile, setOtherProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [abandoned, setAbandoned] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -41,10 +40,7 @@ export default function GameRoom() {
 
     // Real-time sync
     const unsub = base44.entities.GameSession.subscribe(event => {
-      const evtId = event.id || event.data?.id;
-      if (evtId !== sessionId) return;
-      if (event.type === 'delete') { setAbandoned(true); return; }
-      if (event.data) setSession(event.data);
+      if (event.data?.id === sessionId) setSession(event.data);
     });
     return unsub;
   }, [sessionId, currentUser?.id]);
@@ -64,6 +60,16 @@ export default function GameRoom() {
 
   const cancelInvite = async () => {
     try { await base44.entities.GameSession.delete(session.id); } catch (e) { /* ignore */ }
+    navigate('/games');
+  };
+
+  const leaveGame = async () => {
+    try {
+      await base44.entities.GameSession.update(session.id, {
+        status: 'finished',
+        abandoned_by_id: currentUser.id,
+      });
+    } catch (e) { /* ignore */ }
     navigate('/games');
   };
 
@@ -101,6 +107,23 @@ export default function GameRoom() {
   }
 
   if (session.status === 'finished') {
+    const abandonedByOpponent = session.abandoned_by_id && session.abandoned_by_id !== currentUser.id;
+    if (abandonedByOpponent) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#F8FFFE' }}>
+          <div className="text-6xl mb-4">👋</div>
+          <h2 className="text-2xl font-black mb-2" style={{ color: theme.colors.navy }}>{t.opponentLeft}</h2>
+          <p className="text-sm text-gray-500 mb-8">{t.opponentLeftDesc}</p>
+          <button
+            onClick={() => navigate('/games')}
+            className="px-8 py-3 rounded-2xl text-white font-bold shadow-lg"
+            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+          >
+            {t.backToGames}
+          </button>
+        </div>
+      );
+    }
     const iWon = session.winner_id === currentUser.id;
     const isDraw = !session.winner_id;
     return (
@@ -112,7 +135,7 @@ export default function GameRoom() {
           <Trophy className="w-12 h-12 text-white" />
         </div>
         <h2 className="text-3xl font-black mb-2" style={{ color: theme.colors.navy }}>
-          {isDraw ? t.itsDraw : iWon ? t.youWon : t.goodGame}
+          {isDraw ? t.itsDraw : iWon ? t.youWon : `${otherName} ${t.won}`}
         </h2>
         <p className="text-gray-500 mb-2">{t.finalScore}</p>
         <p className="text-2xl font-bold mb-8" style={{ color: theme.colors.teal }}>
@@ -129,25 +152,6 @@ export default function GameRoom() {
     );
   }
 
-  if (abandoned) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-6 text-center" style={{ background: '#F8FFFE' }}>
-        <div className="bg-white rounded-3xl px-7 py-8 flex flex-col items-center shadow-2xl w-full max-w-xs">
-          <div className="text-5xl mb-3">👋</div>
-          <h2 className="text-xl font-black mb-2" style={{ color: theme.colors.navy }}>{t.opponentLeft}</h2>
-          <p className="text-sm text-gray-500 mb-6">{t.opponentLeftDesc}</p>
-          <button
-            onClick={() => navigate('/games')}
-            className="px-8 py-3 rounded-xl text-white font-bold shadow-md"
-            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-          >
-            {t.backToGames}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-screen" style={{ background: '#F8FFFE' }}>
       {/* Header */}
@@ -155,14 +159,16 @@ export default function GameRoom() {
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
         style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy}, #1a2a5e)` }}
       >
-        <button onClick={cancelInvite} className="text-white/70 p-1">
+        <button onClick={leaveGame} className="text-white/70 p-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
           <p className="font-bold text-white text-sm">
             {session.game_type === 'word_guess' ? t.wordGuessGameName : session.game_type === 'translation_duel' ? t.translationDuelGameName : t.memoryGameName}
           </p>
-          <p className="text-xs text-white/50">{t.roundOf} {session.current_round} {t.of} {session.total_rounds}</p>
+          {session.game_type !== 'memory' && (
+            <p className="text-xs text-white/50">{t.roundOf} {session.current_round} {t.of} {session.total_rounds}</p>
+          )}
         </div>
         {/* Scores */}
         <div className="flex items-center gap-2">

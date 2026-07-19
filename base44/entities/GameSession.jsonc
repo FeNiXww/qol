@@ -76,6 +76,10 @@
         "b"
       ],
       "description": "Whose turn it is in the memory game"
+    },
+    "abandoned_by_id": {
+      "type": "string",
+      "description": "User id of the player who left the game mid-match (triggers the opponent-left popup)"
     }
   },
   "required": [
