@@ -56,7 +56,7 @@ export default function GameInvitations() {
         {invites.map(inv => {
           const name = inv.inviterProfile?.display_name || t.opponent;
           const flag = inv.inviterProfile?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
-          const gameName = inv.game_type === 'word_guess' ? t.wordGuessName : t.translationDuelName;
+          const gameName = inv.game_type === 'word_guess' ? t.wordGuessName : inv.game_type === 'translation_duel' ? t.translationDuelName : t.memoryGameName;
           const isAccepting = accepting === inv.id;
           return (
             <button

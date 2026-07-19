@@ -15,7 +15,8 @@
       "type": "string",
       "enum": [
         "word_guess",
-        "translation_duel"
+        "translation_duel",
+        "memory"
       ]
     },
     "status": {
@@ -63,6 +64,18 @@
     },
     "winner_id": {
       "type": "string"
+    },
+    "board_state": {
+      "type": "string",
+      "description": "JSON-encoded memory game board (deck, flipped indices, matched pair ids)"
+    },
+    "current_turn": {
+      "type": "string",
+      "enum": [
+        "a",
+        "b"
+      ],
+      "description": "Whose turn it is in the memory game"
     }
   },
   "required": [

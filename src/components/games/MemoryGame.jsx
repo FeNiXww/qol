@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { useLang } from '@/contexts/LanguageContext';
 import MemoryCard from './MemoryCard';
@@ -47,133 +48,135 @@ function buildDeck() {
   return shuffle(cards);
 }
 
-export default function MemoryGame() {
+export default function MemoryGame({ session, isPlayerA, otherProfile }) {
   const { t } = useLang();
-  const [cards, setCards] = useState([]);
-  const [flipped, setFlipped] = useState([]);
-  const [matched, setMatched] = useState([]);
-  const [turn, setTurn] = useState(1);
-  const [score1, setScore1] = useState(0);
-  const [score2, setScore2] = useState(0);
   const [busy, setBusy] = useState(false);
+  const initRef = useRef(false);
 
-  const start = useCallback(() => {
-    setCards(buildDeck());
-    setFlipped([]);
-    setMatched([]);
-    setTurn(1);
-    setScore1(0);
-    setScore2(0);
-    setBusy(false);
-  }, []);
+  let board = null;
+  try {
+    board = session.board_state ? JSON.parse(session.board_state) : null;
+  } catch (e) {
+    board = null;
+  }
 
-  useEffect(() => { start(); }, [start]);
+  const currentTurn = session.current_turn || 'a';
+  const myTurn = isPlayerA ? currentTurn === 'a' : currentTurn === 'b';
+  const myScore = isPlayerA ? session.score_a : session.score_b;
+  const theirScore = isPlayerA ? session.score_b : session.score_a;
+  const otherName = otherProfile?.display_name || t.opponent;
 
-  const onCardClick = (idx) => {
-    if (busy) return;
-    if (matched.includes(cards[idx].pairId)) return;
-    if (flipped.includes(idx)) return;
-    if (flipped.length >= 2) return;
+  // Player A builds the shared deck once the game goes active.
+  useEffect(() => {
+    if (isPlayerA && !session.board_state && !initRef.current) {
+      initRef.current = true;
+      const deck = buildDeck();
+      base44.entities.GameSession.update(session.id, {
+        board_state: JSON.stringify({ deck, flipped: [], matched: [] }),
+        current_turn: 'a',
+      }).catch(() => {});
+    }
+  }, [session.id, session.board_state, isPlayerA]);
 
-    const next = [...flipped, idx];
-    setFlipped(next);
+  const onCardClick = async (idx) => {
+    if (busy || !board || !myTurn) return;
+    if (board.matched.includes(board.deck[idx].pairId)) return;
+    if (board.flipped.includes(idx)) return;
+    if (board.flipped.length >= 2) return;
 
-    if (next.length === 2) {
-      setBusy(true);
-      const [i1, i2] = next;
-      const player = turn;
-      if (cards[i1].pairId === cards[i2].pairId) {
-        setTimeout(() => {
-          setMatched(m => [...m, cards[i1].pairId]);
-          setFlipped([]);
+    const deck = board.deck;
+    const matchedNow = board.matched;
+    const player = currentTurn;
+    const newFlipped = [...board.flipped, idx];
+
+    setBusy(true);
+    await base44.entities.GameSession.update(session.id, {
+      board_state: JSON.stringify({ deck, flipped: newFlipped, matched: matchedNow }),
+    });
+
+    if (newFlipped.length === 2) {
+      const [i1, i2] = newFlipped;
+      if (deck[i1].pairId === deck[i2].pairId) {
+        setTimeout(async () => {
+          const matched = [...matchedNow, deck[i1].pairId];
+          const scoreA = player === 'a' ? session.score_a + 1 : session.score_a;
+          const scoreB = player === 'b' ? session.score_b + 1 : session.score_b;
+          const allMatched = matched.length === PAIRS;
+          const update = {
+            board_state: JSON.stringify({ deck, flipped: [], matched }),
+            score_a: scoreA,
+            score_b: scoreB,
+          };
+          if (allMatched) {
+            update.status = 'finished';
+            update.winner_id = scoreA > scoreB
+              ? session.player_a_id
+              : scoreB > scoreA
+                ? session.player_b_id
+                : null;
+          }
+          await base44.entities.GameSession.update(session.id, update);
           setBusy(false);
-          if (player === 1) setScore1(s => s + 1); else setScore2(s => s + 1);
         }, 650);
       } else {
-        setTimeout(() => {
-          setFlipped([]);
+        setTimeout(async () => {
+          await base44.entities.GameSession.update(session.id, {
+            board_state: JSON.stringify({ deck, flipped: [], matched: matchedNow }),
+            current_turn: player === 'a' ? 'b' : 'a',
+          });
           setBusy(false);
-          setTurn(player === 1 ? 2 : 1);
         }, 1000);
       }
+    } else {
+      setBusy(false);
     }
   };
 
-  const allMatched = cards.length > 0 && matched.length === PAIRS;
-  const p1Color = theme.colors.teal;
-  const p2Color = theme.colors.orange;
+  if (!board) {
+    return (
+      <div className="flex items-center justify-center h-full py-20">
+        <div className="w-8 h-8 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
+      </div>
+    );
+  }
+
+  const myColor = isPlayerA ? theme.colors.teal : theme.colors.orange;
+  const theirColor = isPlayerA ? theme.colors.orange : theme.colors.teal;
 
   return (
     <div className="flex flex-col h-full px-4 pt-3 pb-5" style={{ background: '#F8FFFE' }}>
       {/* Scoreboard + turn */}
       <div className="flex items-stretch gap-2 mb-4">
-        <PlayerScore label={t.player1} score={score1} color={p1Color} active={turn === 1 && !allMatched} />
-        <div className="flex-1 flex items-center justify-center">
+        <PlayerScore label={t.you} score={myScore} color={myColor} active={myTurn} />
+        <div className="flex-1 flex items-center justify-center min-w-0">
           <motion.div
-            key={`${turn}-${allMatched}`}
+            key={currentTurn}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-sm"
-            style={{ background: turn === 1 ? p1Color : p2Color }}
+            className="px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-sm text-center max-w-full"
+            style={{ background: myTurn ? myColor : theirColor }}
           >
-            {t.playerTurn} {turn}
+            {myTurn ? t.yourTurn : `${t.waitingFor} ${otherName}`}
           </motion.div>
         </div>
-        <PlayerScore label={t.player2} score={score2} color={p2Color} active={turn === 2 && !allMatched} />
+        <PlayerScore label={otherName} score={theirScore} color={theirColor} active={!myTurn} />
       </div>
 
       {/* Grid */}
       <div className="flex-1 flex items-center justify-center">
         <div className="grid grid-cols-4 gap-2 sm:gap-3 w-full max-w-md">
-          {cards.map((card, idx) => (
+          {board.deck.map((card, idx) => (
             <MemoryCard
               key={card.uid}
               card={card}
-              flipped={flipped.includes(idx)}
-              matched={matched.includes(card.pairId)}
+              flipped={board.flipped.includes(idx)}
+              matched={board.matched.includes(card.pairId)}
               onClick={() => onCardClick(idx)}
-              disabled={busy}
+              disabled={busy || !myTurn}
             />
           ))}
         </div>
       </div>
-
-      {/* Game over */}
-      <AnimatePresence>
-        {allMatched && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-6"
-            style={{ background: 'rgba(0,0,0,0.45)' }}
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="bg-white rounded-3xl px-7 py-8 flex flex-col items-center shadow-2xl w-full max-w-xs"
-            >
-              <div className="text-5xl mb-3">{score1 === score2 ? '🤝' : '🏆'}</div>
-              <p className="text-2xl font-black mb-1 text-center" style={{ color: theme.colors.navy }}>
-                {score1 === score2 ? t.tie : `${t.player} ${score1 > score2 ? 1 : 2} ${t.winner}`}
-              </p>
-              <p className="text-gray-500 mb-5 text-sm">{t.finalScore}</p>
-              <div className="flex gap-6 mb-6">
-                <ScorePill label={t.player1} score={score1} color={p1Color} />
-                <ScorePill label={t.player2} score={score2} color={p2Color} />
-              </div>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={start}
-                className="px-10 py-3 rounded-xl text-white font-bold shadow-md"
-                style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-              >
-                {t.playAgain}
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -181,23 +184,14 @@ export default function MemoryGame() {
 function PlayerScore({ label, score, color, active }) {
   return (
     <div
-      className="flex flex-col items-center justify-center px-2 py-2 rounded-2xl flex-1 transition-all"
+      className="flex flex-col items-center justify-center px-2 py-2 rounded-2xl flex-1 transition-all min-w-0"
       style={{
         background: active ? `${color}15` : '#fff',
         border: active ? `2px solid ${color}` : '2px solid #EEF2F1',
       }}
     >
-      <p className="text-[10px] font-bold" style={{ color: active ? color : '#9CA3AF' }}>{label}</p>
+      <p className="text-[10px] font-bold truncate w-full text-center" style={{ color: active ? color : '#9CA3AF' }}>{label}</p>
       <p className="text-xl font-black" style={{ color }}>{score}</p>
-    </div>
-  );
-}
-
-function ScorePill({ label, score, color }) {
-  return (
-    <div className="flex flex-col items-center">
-      <p className="text-[10px] font-bold text-gray-400">{label}</p>
-      <p className="text-2xl font-black" style={{ color }}>{score}</p>
     </div>
   );
 }

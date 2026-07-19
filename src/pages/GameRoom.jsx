@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import WordGuessGame from '@/components/games/WordGuessGame';
 import TranslationDuelGame from '@/components/games/TranslationDuelGame';
+import MemoryGame from '@/components/games/MemoryGame';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 
@@ -136,7 +137,7 @@ export default function GameRoom() {
         </button>
         <div className="flex-1">
           <p className="font-bold text-white text-sm">
-            {session.game_type === 'word_guess' ? t.wordGuessGameName : t.translationDuelGameName}
+            {session.game_type === 'word_guess' ? t.wordGuessGameName : session.game_type === 'translation_duel' ? t.translationDuelGameName : t.memoryGameName}
           </p>
           <p className="text-xs text-white/50">{t.roundOf} {session.current_round} {t.of} {session.total_rounds}</p>
         </div>
@@ -170,6 +171,14 @@ export default function GameRoom() {
             session={session}
             currentUser={currentUser}
             myProfile={myProfile}
+            otherProfile={otherProfile}
+            isPlayerA={isPlayerA}
+          />
+        )}
+        {session.game_type === 'memory' && (
+          <MemoryGame
+            session={session}
+            currentUser={currentUser}
             otherProfile={otherProfile}
             isPlayerA={isPlayerA}
           />

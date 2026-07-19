@@ -144,6 +144,7 @@ export const translations = {
     playerTurn: 'תור שחקן',
     tie: 'תיקו!',
     winner: 'מנצח',
+    yourTurn: 'תורך!',
 
     // Profile page
     profileTitle: 'פרופיל',
@@ -390,6 +391,7 @@ export const translations = {
     playerTurn: 'دور اللاعب',
     tie: 'تعادل!',
     winner: 'فاز',
+    yourTurn: 'دورك!',
 
     // Profile page
     profileTitle: 'الملف الشخصي',
