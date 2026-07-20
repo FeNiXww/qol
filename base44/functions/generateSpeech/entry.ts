@@ -5,10 +5,10 @@ const VOICE_BY_LANGUAGE = {
   fr: 'Alain',
   de: 'Johanna',
   es: 'Miguel',
-  ja: 'Ryo',
-  zh: 'Yifan',
-  ko: 'Jimin',
-  he: 'Etan',
+  ja: 'Satoshi',
+  zh: 'Yichen',
+  ko: 'Hyunwoo',
+  he: 'Oren',
   ar: 'Omar',
 };
 
