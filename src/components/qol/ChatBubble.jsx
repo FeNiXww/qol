@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Languages, Flag, X, BookPlus } from 'lucide-react';
 import { useDictT } from '@/lib/dictionaryI18n';
 import generateTTS from '@/utils/tts';
+import QolLogo from '@/components/qol/QolLogo';
 
 function isImageUrl(text) {
   return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(text?.trim());
@@ -38,7 +39,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
           <img src={message.original_text} alt="sent image" className="max-w-full max-h-full rounded-xl object-contain" />
         </div>
       )}
-      <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
+      <div className={`flex mb-3 items-center gap-1.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className={`max-w-[78%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
           <div
             className={`rounded-2xl shadow-sm cursor-pointer overflow-hidden ${
@@ -84,15 +85,6 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </>
             )}
 
-            {message.translated_text && !isMine && (
-          <button
-            className="text-xs mt-1 text-gray-400 hover:text-gray-600 transition-colors" //
-            onClick={() => generateTTS(message.original_text)}
-          >
-            Listen
-          </button>
-        )}
-
             {/* Time + status */}
             <div className={`flex items-center gap-1 mt-1.5 ${isMine ? 'justify-end' : 'justify-start'} ${isImage ? 'px-2 pb-1' : ''}`}>
               {isFailed && <span className="text-xs text-red-300">Failed</span>}
@@ -126,6 +118,15 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
             </div>
           )}
         </div>
+        {!isMine && !isImage && (
+          <button
+            onClick={() => generateTTS(message.original_text)}
+            className="flex-shrink-0 opacity-60 hover:opacity-100 active:scale-90 transition-all"
+            title="Listen"
+          >
+            <QolLogo size={22} />
+          </button>
+        )}
       </div>
     </>
   );
