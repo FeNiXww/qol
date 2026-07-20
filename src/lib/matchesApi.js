@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { getExistingUserIds } from './userExistence';
 
 export async function getMatches(myUserId) {
   const matchesA = await base44.entities.Match.filter({ user_a_id: myUserId }, '-last_message_at', 50);
@@ -12,10 +13,18 @@ export async function getMatches(myUserId) {
   const enriched = await Promise.all(all.map(async (match) => {
     const otherId = match.user_a_id === myUserId ? match.user_b_id : match.user_a_id;
     const profiles = await base44.entities.Profile.filter({ created_by_id: otherId });
-    return { ...match, otherProfile: profiles[0] || null };
+    return { ...match, otherId, otherProfile: profiles[0] || null };
   }));
 
-  return enriched.filter(m => m.otherProfile);
+  const withProfiles = enriched.filter(m => m.otherProfile);
+
+  // Hide matches whose other user was deleted from the database
+  const existingIds = await getExistingUserIds(
+    withProfiles.flatMap(m => [m.otherId, m.otherProfile.created_by_id])
+  );
+  return withProfiles.filter(m =>
+    existingIds.has(m.otherId) || existingIds.has(m.otherProfile.created_by_id)
+  );
 }
 
 // A profile is considered online if its heartbeat is within the last 2 minutes
