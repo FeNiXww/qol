@@ -7,6 +7,7 @@ import ChatBubble from '@/components/qol/ChatBubble';
 import ReportMessageModal from '@/components/qol/ReportMessageModal';
 import { theme } from '@/lib/theme';
 import { ArrowLeft, Send, Globe, Eraser, GlobeLock } from 'lucide-react';
+import { useDictT } from '@/lib/dictionaryI18n';
 
 const MAX_CHARS = 200;
 
@@ -29,6 +30,8 @@ export default function Chat() {
   const [clearedAt, setClearedAt] = useState(null);
   const [translationOn, setTranslationOn] = useState(true);
   const [sendError, setSendError] = useState(null);
+  const [dictToast, setDictToast] = useState(false);
+  const dt = useDictT();
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -125,6 +128,20 @@ export default function Chat() {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleAddToDictionary = async (msg) => {
+    if (!currentUser || !msg.translated_text) return;
+    const textHe = msg.original_lang === 'he' ? msg.original_text : msg.translated_text;
+    const textAr = msg.original_lang === 'ar' ? msg.original_text : msg.translated_text;
+    await base44.entities.DictionaryWord.create({
+      user_id: currentUser.id,
+      text_he: textHe,
+      text_ar: textAr,
+      known: false,
+    });
+    setDictToast(true);
+    setTimeout(() => setDictToast(false), 2000);
   };
 
   const handleClearChat = async () => {
@@ -230,11 +247,19 @@ export default function Chat() {
             message={msg}
             isMine={msg.sender_id === currentUser?.id}
             onReport={setReportingMessage}
+            onAddWord={handleAddToDictionary}
             translationOn={translationOn}
           />
         ))}
         <div ref={bottomRef} />
       </div>
+
+      {/* Added to dictionary toast */}
+      {dictToast && (
+        <div className="absolute left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg" style={{ bottom: 110, background: theme.colors.teal }}>
+          📖 {dt.addedToDictionary}
+        </div>
+      )}
 
       {/* Send error */}
       {sendError && (

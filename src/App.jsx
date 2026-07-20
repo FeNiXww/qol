@@ -30,6 +30,7 @@ import MiniGames from '@/pages/tabs/MiniGames';
 import Chat from '@/pages/Chat';
 import GameRoom from '@/pages/GameRoom';
 import LetterMatch from '@/pages/LetterMatch';
+import DictionaryPractice from '@/pages/DictionaryPractice';
 
 // Layout & context
 import Layout from '@/components/Layout';
@@ -100,6 +101,7 @@ const AuthenticatedApp = () => {
           </Route>
           <Route path="/game/:sessionId" element={<GameRoom />} />
           <Route path="/letter-match" element={<LetterMatch />} />
+          <Route path="/dictionary" element={<DictionaryPractice />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
 

@@ -8,6 +8,7 @@ import { Gamepad2, ChevronRight, BookOpen, Settings } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
 import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
+import { useDictT } from '@/lib/dictionaryI18n';
 
 const GAMES_CONFIG = [
   { id: 'word_guess', emoji: '🔤', color: theme.colors.teal, nameKey: 'wordGuessName', descKey: 'wordGuessDesc' },
@@ -16,13 +17,18 @@ const GAMES_CONFIG = [
 ];
 
 const OFFLINE_GAMES = [
-  { id: 'letter_match', emoji: '🧩', color: theme.colors.navy, nameKey: 'letterMatchName', descKey: 'letterMatchDesc' },
+  { id: 'letter_match', emoji: '🧩', color: theme.colors.navy, nameKey: 'letterMatchName', descKey: 'letterMatchDesc', path: '/letter-match' },
 ];
 
 export default function MiniGames() {
   const navigate = useNavigate();
   const { t } = useLang();
+  const dt = useDictT();
   const GAMES = GAMES_CONFIG.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] }));
+  const soloGames = [
+    ...OFFLINE_GAMES.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] })),
+    { id: 'dictionary', emoji: '📖', color: theme.colors.teal, name: dt.dictionaryName, description: dt.dictionaryDesc, path: '/dictionary' },
+  ];
   const [matches, setMatches] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -102,12 +108,11 @@ export default function MiniGames() {
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.offlineGames}</p>
           <div className="space-y-3">
-            {OFFLINE_GAMES.map(game => {
-              const g = { ...game, name: t[game.nameKey], description: t[game.descKey] };
+            {soloGames.map(g => {
               return (
                 <button
                   key={g.id}
-                  onClick={() => navigate('/letter-match')}
+                  onClick={() => navigate(g.path)}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
                   style={{ borderColor: 'rgba(22,164,153,0.12)' }}
                 >

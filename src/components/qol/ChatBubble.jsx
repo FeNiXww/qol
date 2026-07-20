@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { theme } from '@/lib/theme';
 import { format } from 'date-fns';
-import { Languages, Flag, X } from 'lucide-react';
+import { Languages, Flag, X, BookPlus } from 'lucide-react';
+import { useDictT } from '@/lib/dictionaryI18n';
 
 function isImageUrl(text) {
   return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(text?.trim());
 }
 
-export default function ChatBubble({ message, isMine, onReport, translationOn = true }) {
+export default function ChatBubble({ message, isMine, onReport, onAddWord, translationOn = true }) {
+  const dt = useDictT();
   const [showOriginal, setShowOriginal] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -46,7 +48,7 @@ export default function ChatBubble({ message, isMine, onReport, translationOn = 
             style={isMine && !isImage ? { backgroundColor: isFailed ? '#9CA3AF' : theme.colors.teal } : (isMine && isImage ? { backgroundColor: theme.colors.teal } : {})}
             onMouseEnter={() => !isMine && setHovered(true)}
             onMouseLeave={() => !isMine && setHovered(false)}
-            onClick={() => isImage ? setLightbox(true) : (!isMine && setShowActions(p => !p))}
+            onClick={() => isImage ? setLightbox(true) : setShowActions(p => !p)}
           >
             {isImage ? (
               <img src={message.original_text} alt="sent image" className="rounded-xl max-w-[200px] max-h-[200px] object-cover" />
@@ -91,14 +93,27 @@ export default function ChatBubble({ message, isMine, onReport, translationOn = 
             </div>
           </div>
 
-          {/* Report action — appears when tapping a received message */}
-          {!isMine && showActions && (
-            <button
-              onClick={() => { setShowActions(false); onReport?.(message); }}
-              className="flex items-center gap-1 mt-1 px-2 py-1 rounded-lg text-xs text-red-400 hover:bg-red-50 transition-colors"
-            >
-              <Flag className="w-3 h-3" /> Report
-            </button>
+          {/* Actions — appear when tapping a message */}
+          {showActions && !isImage && (
+            <div className={`flex items-center gap-2 mt-1 ${isMine ? 'flex-row-reverse' : ''}`}>
+              {message.translated_text && (
+                <button
+                  onClick={() => { setShowActions(false); onAddWord?.(message); }}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs hover:bg-teal-50 transition-colors"
+                  style={{ color: theme.colors.teal }}
+                >
+                  <BookPlus className="w-3 h-3" /> {dt.addToDictionary}
+                </button>
+              )}
+              {!isMine && (
+                <button
+                  onClick={() => { setShowActions(false); onReport?.(message); }}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-red-400 hover:bg-red-50 transition-colors"
+                >
+                  <Flag className="w-3 h-3" /> Report
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
