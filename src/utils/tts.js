@@ -9,4 +9,4 @@ export default async function generateTTS(text, lang) {
     language: lang
   });
   return audio;
-}
+} 

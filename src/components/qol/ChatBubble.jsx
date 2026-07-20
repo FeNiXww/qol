@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { theme } from '@/lib/theme';
 import { format } from 'date-fns';
-import { Languages, Flag, X, BookPlus } from 'lucide-react';
+import { Languages, Flag, X, BookPlus, Loader2 } from 'lucide-react';
 import { useDictT } from '@/lib/dictionaryI18n';
 import generateTTS from '@/utils/tts';
+import QolLogo from '@/components/qol/QolLogo';
 
 function isImageUrl(text) {
   return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(text?.trim());
@@ -15,6 +16,18 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const [showActions, setShowActions] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [lightbox, setLightbox] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+
+  const handleSpeak = async (e) => {
+    e.stopPropagation();
+    if (speaking) return;
+    setSpeaking(true);
+    try {
+      await generateTTS(message.original_text, message.original_lang);
+    } finally {
+      setSpeaking(false);
+    }
+  };
 
   const isImage = isImageUrl(message.original_text);
 
@@ -55,9 +68,23 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               <img src={message.original_text} alt="sent image" className="rounded-xl max-w-[200px] max-h-[200px] object-cover" />
             ) : (
               <>
-                <p className="text-sm leading-relaxed" dir={isRTL ? 'rtl' : 'ltr'}>
-                  {isSending ? <span className="opacity-70">{mainText}</span> : mainText}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm leading-relaxed flex-1" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {isSending ? <span className="opacity-70">{mainText}</span> : mainText}
+                  </p>
+                  {!isMine && (
+                    <button
+                      onClick={handleSpeak}
+                      disabled={speaking}
+                      className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all disabled:opacity-70"
+                      title="Listen"
+                    >
+                      {speaking
+                        ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: theme.colors.teal }} />
+                        : <QolLogo size={16} blend />}
+                    </button>
+                  )}
+                </div>
 
                 {/* Translation toggle */}
                 {!isMine && subText && (
@@ -84,13 +111,18 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </>
             )}
 
-            {message.translated_text && !isMine && (
-          <button
-            className="text-xs mt-1 text-gray-400 hover:text-gray-600 transition-colors" //
-            onClick={() => generateTTS(message.original_text, message.original_lang)}
-          >
-            Listen
-          </button>
+            {!isMine && (
+                    <button
+                      onClick={() => generateTTS(message.original_text, message.original_lang)}
+                      disabled={speaking}
+                      className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all disabled:opacity-70"
+                      title="Listen"
+                    >
+                      {speaking
+                        ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: theme.colors.teal }} />
+                        : <QolLogo size={16} blend />}
+                    </button>
+                  )}
         )}
 
             {/* Time + status */}
@@ -126,6 +158,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
             </div>
           )}
         </div>
+
       </div>
     </>
   );

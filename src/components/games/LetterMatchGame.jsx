@@ -23,23 +23,27 @@ function pickRandomPairs() {
 
 function generateLetters(width, height) {
   const pairs = pickRandomPairs();
+  const PAD = 8;
+  const CELL = LETTER_SIZE + 14;
+  const w = Math.max(width - PAD * 2, CELL);
+  const h = Math.max(height - PAD * 2, CELL);
+  const cols = Math.max(1, Math.floor(w / CELL));
+  const rows = Math.max(1, Math.floor(h / CELL));
+  // If the board is too small for all pairs, use fewer pairs so nothing overlaps
+  while (pairs.length > 2 && cols * rows < pairs.length * 2) pairs.pop();
+  const cells = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push({ r, c });
+  cells.sort(() => Math.random() - 0.5);
+  const cellW = w / cols;
+  const cellH = h / rows;
   const result = [];
-  const placed = [];
-  const MIN_DIST = 74;
-  const PAD = 12;
-  const w = Math.max(width, LETTER_SIZE + PAD * 2 + 1);
-  const h = Math.max(height, LETTER_SIZE + PAD * 2 + 1);
+  let ci = 0;
   for (let i = 1; i <= pairs.length; i++) {
     const [heLetter, arLetter] = pairs[i - 1];
     for (const lang of ['hebrew', 'arabic']) {
-      let x = 0, y = 0, attempts = 0, overlaps = true;
-      while (overlaps && attempts < 100) {
-        x = PAD + Math.random() * (w - LETTER_SIZE - PAD * 2);
-        y = PAD + Math.random() * (h - LETTER_SIZE - PAD * 2);
-        overlaps = placed.some(p => Math.abs(p.x - x) < MIN_DIST && Math.abs(p.y - y) < MIN_DIST);
-        attempts++;
-      }
-      placed.push({ x, y });
+      const cell = cells[ci++];
+      const x = PAD + cell.c * cellW + Math.random() * Math.max(0, cellW - LETTER_SIZE);
+      const y = PAD + cell.r * cellH + Math.random() * Math.max(0, cellH - LETTER_SIZE);
       result.push({
         id: i,
         language: lang,
@@ -67,6 +71,7 @@ export default function LetterMatchGame() {
   const letterEls = useRef({});
   const generatedRef = useRef(false);
   const [dims, setDims] = useState({ w: 0, h: 0 });
+  const [totalPairs, setTotalPairs] = useState(PAIRS_PER_ROUND);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -87,7 +92,9 @@ export default function LetterMatchGame() {
     // Don't clear letterEls: React reuses DOM nodes by key across resets, so
     // ref callbacks won't re-fire for them. The callbacks add/delete entries
     // on mount/unmount, keeping the map correct without a manual wipe.
-    setLetters(generateLetters(w, h));
+    const generated = generateLetters(w, h);
+    setTotalPairs(generated.length / 2);
+    setLetters(generated);
   }, []);
 
   useEffect(() => {
@@ -145,7 +152,7 @@ export default function LetterMatchGame() {
   };
 
   const lives = Array.from({ length: MAX_MISTAKES });
-  const matchedPairs = PAIRS_PER_ROUND - letters.length / 2;
+  const matchedPairs = totalPairs - letters.length / 2;
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#F5F0E8' }}>
@@ -156,11 +163,11 @@ export default function LetterMatchGame() {
             <motion.div
               className="h-full rounded-full"
               style={{ background: `linear-gradient(90deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-              animate={{ width: `${(matchedPairs / PAIRS_PER_ROUND) * 100}%` }}
+              animate={{ width: `${(matchedPairs / totalPairs) * 100}%` }}
               transition={{ type: 'spring', stiffness: 200, damping: 25 }}
             />
           </div>
-          <span className="text-xs font-bold text-gray-400 flex-shrink-0">{matchedPairs}/{PAIRS_PER_ROUND}</span>
+          <span className="text-xs font-bold text-gray-400 flex-shrink-0">{matchedPairs}/{totalPairs}</span>
         </div>
         <motion.div
           key={mistakeTick}
@@ -184,6 +191,7 @@ export default function LetterMatchGame() {
               <motion.div
                 key={key}
                 drag
+                dragConstraints={boardRef}
                 dragMomentum={false}
                 dragElastic={0}
                 onDragEnd={() => onDragEnd(key)}

@@ -38,7 +38,11 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
   };
 
   const removeWord = async (id) => {
-    await base44.entities.DictionaryWord.delete(id);
+    try {
+      await base44.entities.DictionaryWord.delete(id);
+    } catch {
+      // Word was already deleted — just refresh the list
+    }
     onChanged();
   };
 

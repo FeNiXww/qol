@@ -115,7 +115,9 @@ export default function Chat() {
         receiverNationality: receiverNat,
       });
       setMessages(prev => {
-        const updated = prev.map(m => m.id === optimistic.id ? { ...saved, status: 'sent' } : m);
+        // Remove any copy already added by the realtime subscription to avoid duplicates
+        const withoutDup = prev.filter(m => m.id !== saved.id);
+        const updated = withoutDup.map(m => m.id === optimistic.id ? { ...saved, status: 'sent' } : m);
         try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
         return updated;
       });
