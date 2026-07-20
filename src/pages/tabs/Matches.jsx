@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
+import { getUnreadMatchIds } from '@/lib/unread';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
@@ -16,6 +17,7 @@ export default function Matches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const [unreadIds, setUnreadIds] = useState(new Set());
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -28,10 +30,12 @@ export default function Matches() {
       const data = await getMatches(currentUser.id);
       setMatches(data);
       setLoading(false);
+      setUnreadIds(await getUnreadMatchIds(data, currentUser.id));
     };
     load();
     const unsub = base44.entities.Match.subscribe(() => load());
-    return unsub;
+    const unsubMsg = base44.entities.Message.subscribe(() => load());
+    return () => { unsub(); unsubMsg(); };
   }, [currentUser?.id]);
 
   return (
@@ -135,6 +139,12 @@ export default function Matches() {
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <span className="text-base">{flag}</span>
                     <p className="font-bold text-gray-900 truncate">{name}</p>
+                    {unreadIds.has(match.id) && (
+                      <span
+                        className="flex-shrink-0 w-2.5 h-2.5 rounded-full animate-pulse"
+                        style={{ backgroundColor: theme.colors.orange }}
+                      />
+                    )}
                   </div>
                   <p className="text-xs text-gray-400 truncate flex items-center gap-1">
                     <MessageCircle className="w-3 h-3 flex-shrink-0" />

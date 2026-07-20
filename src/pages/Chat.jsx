@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useProfile } from '@/contexts/ProfileContext';
 import { base44 } from '@/api/base44Client';
 import { getMessages, sendMessage } from '@/lib/matchesApi';
+import { markMatchRead } from '@/lib/unread';
 import ChatBubble from '@/components/qol/ChatBubble';
 import ReportMessageModal from '@/components/qol/ReportMessageModal';
 import { theme } from '@/lib/theme';
@@ -84,7 +85,8 @@ export default function Chat() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    markMatchRead(matchId);
+  }, [messages, matchId]);
 
   const handleSend = async () => {
     if (!text.trim() || sending || !profile || !currentUser) return;
