@@ -1,6 +1,6 @@
 import { InworldTTS } from '@inworld/tts';
 
-async function speakWithInworld(text, language) {
+export async function generateTTS(text, language) {
   const API_KEY = "SGZJNk9laDRDaG9YTjRoSGtzLVRRbjRLaEtQVm5PbGk6b19lemJUMlBSX040SzFtcDJ0VDNTNw==";
   const VOICE_BY_LANGUAGE = {
     "en": "Dennis",
