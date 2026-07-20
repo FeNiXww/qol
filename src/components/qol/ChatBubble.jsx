@@ -33,13 +33,6 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
     }
   };
 
-  async function playTTS(text, language) {
-  const { audioContent } = await generateTTS(text, language); // however you invoke the Base44 backend fn from the client
-  const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
-  await audio.play();
-  return audio;
-}
-
   const isImage = isImageUrl(message.original_text);
 
   const mainText = isMine
