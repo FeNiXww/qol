@@ -1,7 +1,7 @@
 import { base44 } from '@/api/base44Client';
 
 export async function generateTTS(text, language) {
-  const { data } = await base44.functions.generateSpeech({ text, language });
+  const { data } = await base44.functions.invoke('generateSpeech', { text, language });
 
   if (data?.error) {
     throw new Error(data.error);
