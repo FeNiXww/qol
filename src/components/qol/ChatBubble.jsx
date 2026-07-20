@@ -121,10 +121,10 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
         {!isMine && !isImage && (
           <button
             onClick={() => generateTTS(message.original_text)}
-            className="flex-shrink-0 opacity-60 hover:opacity-100 active:scale-90 transition-all"
+            className="flex-shrink-0 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center hover:shadow-md active:scale-90 transition-all"
             title="Listen"
           >
-            <QolLogo size={22} />
+            <QolLogo size={20} blend />
           </button>
         )}
       </div>
