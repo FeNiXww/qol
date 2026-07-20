@@ -1,8 +1,5 @@
-import { InworldTTS } from '@inworld/tts';
-import "dotenv/config"; 
-
 export async function generateTTS(text, language) {
-  const API_KEY = process.env.INWORLD_API_KEY;
+  const API_KEY = import.meta.env.VITE_INWORLD_API_KEY;
   const VOICE_BY_LANGUAGE = {
     "en": "Dennis",
     "fr": "Alain",
@@ -48,3 +45,5 @@ export async function generateTTS(text, language) {
 
   return audio;
 }
+
+export default generateTTS;
