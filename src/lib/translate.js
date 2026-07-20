@@ -41,6 +41,37 @@ Rules:
   return result.translation.trim();
 }
 
+// Phonetic transcriptions so speakers of one language can read the other aloud.
+// Returns { translit_he, translit_ar } — never throws (returns empty strings on failure).
+export async function getTransliterations(textHe, textAr) {
+  try {
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Given this Hebrew word/phrase and its Arabic translation:
+Hebrew: """${textHe}"""
+Arabic: """${textAr}"""
+
+Provide phonetic transcriptions so each side can pronounce the other's word:
+- "translit_he": how the HEBREW word sounds, written using ARABIC letters (for an Arabic speaker to read aloud).
+- "translit_ar": how the ARABIC word sounds, written using HEBREW letters (for a Hebrew speaker to read aloud).
+Keep them short and phonetic, no explanations.`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          translit_he: { type: 'string' },
+          translit_ar: { type: 'string' },
+        },
+        required: ['translit_he', 'translit_ar'],
+      },
+    });
+    return {
+      translit_he: result?.translit_he?.trim() || '',
+      translit_ar: result?.translit_ar?.trim() || '',
+    };
+  } catch {
+    return { translit_he: '', translit_ar: '' };
+  }
+}
+
 export function getNativeLang(nationality) {
   return nationality === 'israeli' ? 'he' : 'ar';
 }

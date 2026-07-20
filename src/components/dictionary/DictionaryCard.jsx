@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { useDictT } from '@/lib/dictionaryI18n';
 
-export default function DictionaryCard({ word, front, back, onSwipe }) {
+export default function DictionaryCard({ word, front, back, frontTranslit, onSwipe }) {
   const dt = useDictT();
   const [flipped, setFlipped] = useState(false);
   const x = useMotionValue(0);
@@ -62,6 +62,9 @@ export default function DictionaryCard({ word, front, back, onSwipe }) {
         <p className="text-white font-black text-4xl leading-tight" dir="auto">
           {flipped ? back : front}
         </p>
+        {!flipped && frontTranslit && (
+          <p className="text-white/70 text-base font-medium mt-3" dir="auto">🗣 {frontTranslit}</p>
+        )}
         <p className="text-white/60 text-xs font-semibold mt-6">
           {flipped ? '🔄' : `👆 ${dt.tapToFlip}`}
         </p>

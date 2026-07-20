@@ -134,10 +134,13 @@ export default function Chat() {
     if (!currentUser || !msg.translated_text) return;
     const textHe = msg.original_lang === 'he' ? msg.original_text : msg.translated_text;
     const textAr = msg.original_lang === 'ar' ? msg.original_text : msg.translated_text;
+    const { getTransliterations } = await import('@/lib/translate');
+    const translits = await getTransliterations(textHe, textAr);
     await base44.entities.DictionaryWord.create({
       user_id: currentUser.id,
       text_he: textHe,
       text_ar: textAr,
+      ...translits,
       known: false,
     });
     setDictToast(true);

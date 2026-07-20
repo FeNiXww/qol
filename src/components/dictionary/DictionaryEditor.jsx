@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Trash2, Plus, Loader2 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useDictT } from '@/lib/dictionaryI18n';
-import { translateText } from '@/lib/translate';
+import { translateText, getTransliterations } from '@/lib/translate';
 
 export default function DictionaryEditor({ words, userId, myLang = 'he', onChanged }) {
   const dt = useDictT();
@@ -18,10 +18,14 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
     const foreignLang = myLang === 'he' ? 'ar' : 'he';
     try {
       const translated = await translateText(word.trim(), myLang, foreignLang);
+      const textHe = myLang === 'he' ? word.trim() : translated;
+      const textAr = myLang === 'ar' ? word.trim() : translated;
+      const translits = await getTransliterations(textHe, textAr);
       await base44.entities.DictionaryWord.create({
         user_id: userId,
-        text_he: myLang === 'he' ? word.trim() : translated,
-        text_ar: myLang === 'ar' ? word.trim() : translated,
+        text_he: textHe,
+        text_ar: textAr,
+        ...translits,
         known: false,
       });
       setWord('');
