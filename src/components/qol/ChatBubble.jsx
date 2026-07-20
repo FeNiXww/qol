@@ -62,7 +62,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
                   </p>
                   {!isMine && (
                     <button
-                      onClick={e => { e.stopPropagation(); generateTTS(message.original_text); }}
+                      onClick={e => { e.stopPropagation(); generateTTS(message.original_text, message.original_lang); }}
                       className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all"
                       title="Listen"
                     >
