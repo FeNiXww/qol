@@ -21,7 +21,11 @@ async function speakWithBrowser(text, lang) {
   utterance.lang = voice.lang;
   utterance.rate = 0.9;
   window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
+  await new Promise(resolve => {
+    utterance.onend = resolve;
+    utterance.onerror = resolve;
+    window.speechSynthesis.speak(utterance);
+  });
   return true;
 }
 
@@ -40,5 +44,9 @@ export default async function generateTTS(text, languageCode) {
     ...(languageCode && SUPPORTED_LANGS.includes(languageCode) ? { language_code: languageCode } : {}),
   });
   const audio = new Audio(url);
-  await audio.play();
+  await new Promise((resolve) => {
+    audio.onended = resolve;
+    audio.onerror = resolve;
+    audio.play().catch(resolve);
+  });
 }
