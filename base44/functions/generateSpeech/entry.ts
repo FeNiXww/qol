@@ -1,5 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import { InworldTTS } from 'npm:@inworld/tts@1.1.1';
+
+const VOICE_BY_LANGUAGE = {
+  en: 'Dennis',
+  fr: 'Alain',
+  de: 'Johanna',
+  es: 'Miguel',
+  ja: 'Ryo',
+  zh: 'Yifan',
+  ko: 'Jimin',
+  he: 'Etan',
+  ar: 'Omar',
+};
 
 Deno.serve(async (req) => {
   try {
@@ -7,23 +18,39 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { text, lang } = await req.json();
+    const { text, language } = await req.json();
     if (!text || !text.trim()) {
       return Response.json({ error: 'Missing text' }, { status: 400 });
     }
 
-    const tts = InworldTTS({ apiKey: Deno.env.get('INWORLD_API_KEY') });
-    const params = { text, voice: 'Ashley' };
-    if (lang) params.language = lang;
-    const audio = await tts.generate(params);
+    const voiceId = VOICE_BY_LANGUAGE[language] || 'Dennis';
 
-    // Encode audio bytes to base64
-    const bytes = new Uint8Array(audio);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i += 0x8000) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    const response = await fetch('https://api.inworld.ai/tts/v1/voice', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${Deno.env.get('INWORLD_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        voiceId,
+        modelId: 'inworld-tts-2',
+        language,
+        audioConfig: {
+          audioEncoding: 'MP3',
+          sampleRateHertz: 24000,
+        },
+        applyTextNormalization: 'ON',
+      }),
+    });
+
+    if (!response.ok) {
+      const details = await response.text();
+      return Response.json({ error: `Inworld TTS failed: ${response.status} ${details}` }, { status: 502 });
     }
-    return Response.json({ audio: btoa(binary) });
+
+    const { audioContent } = await response.json();
+    return Response.json({ audioContent });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
