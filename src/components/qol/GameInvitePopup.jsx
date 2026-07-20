@@ -73,7 +73,7 @@ export default function GameInvitePopup() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -120, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 26 }}
-          className="fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] max-w-md"
+          className="fixed left-3 right-3 mx-auto z-50 max-w-md"
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
         >
           <div
