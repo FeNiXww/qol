@@ -146,7 +146,7 @@ export default function GameRoom() {
           className="px-8 py-3 rounded-2xl text-white font-bold shadow-lg"
           style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
         >
-          {t.playAgain}
+          {t.backToGames}
         </button>
       </div>
     );
