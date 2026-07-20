@@ -111,20 +111,6 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </>
             )}
 
-            {!isMine && (
-                    <button
-                      onClick={() => generateTTS(message.original_text, message.original_lang)}
-                      disabled={speaking}
-                      className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all disabled:opacity-70"
-                      title="Listen"
-                    >
-                      {speaking
-                        ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: theme.colors.teal }} />
-                        : <QolLogo size={16} blend />}
-                    </button>
-                  )}
-        )}
-
             {/* Time + status */}
             <div className={`flex items-center gap-1 mt-1.5 ${isMine ? 'justify-end' : 'justify-start'} ${isImage ? 'px-2 pb-1' : ''}`}>
               {isFailed && <span className="text-xs text-red-300">Failed</span>}
