@@ -5,6 +5,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 import GameInvitePopup from '@/components/qol/GameInvitePopup';
+import NewMessageNotifier from '@/components/qol/NewMessageNotifier';
 
 export default function Layout() {
   const location = useLocation();
@@ -41,6 +42,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       <GameInvitePopup />
+      <NewMessageNotifier />
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>
         <Outlet />
       </div>
