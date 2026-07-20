@@ -39,7 +39,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
           <img src={message.original_text} alt="sent image" className="max-w-full max-h-full rounded-xl object-contain" />
         </div>
       )}
-      <div className={`flex mb-3 items-center gap-1.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
+      <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className={`max-w-[78%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
           <div
             className={`rounded-2xl shadow-sm cursor-pointer overflow-hidden ${
@@ -56,9 +56,20 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               <img src={message.original_text} alt="sent image" className="rounded-xl max-w-[200px] max-h-[200px] object-cover" />
             ) : (
               <>
-                <p className="text-sm leading-relaxed" dir={isRTL ? 'rtl' : 'ltr'}>
-                  {isSending ? <span className="opacity-70">{mainText}</span> : mainText}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm leading-relaxed flex-1" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {isSending ? <span className="opacity-70">{mainText}</span> : mainText}
+                  </p>
+                  {!isMine && (
+                    <button
+                      onClick={e => { e.stopPropagation(); generateTTS(message.original_text); }}
+                      className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all"
+                      title="Listen"
+                    >
+                      <QolLogo size={16} blend />
+                    </button>
+                  )}
+                </div>
 
                 {/* Translation toggle */}
                 {!isMine && subText && (
@@ -118,15 +129,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
             </div>
           )}
         </div>
-        {!isMine && !isImage && (
-          <button
-            onClick={() => generateTTS(message.original_text)}
-            className="flex-shrink-0 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center hover:shadow-md active:scale-90 transition-all"
-            title="Listen"
-          >
-            <QolLogo size={20} blend />
-          </button>
-        )}
+
       </div>
     </>
   );
