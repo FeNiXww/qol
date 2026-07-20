@@ -87,7 +87,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
             {message.translated_text && !isMine && (
           <button
             className="text-xs mt-1 text-gray-400 hover:text-gray-600 transition-colors" //
-            onClick={() => generateTTS(message.original_text)}
+            onClick={() => generateTTS(message.original_text, message.original_lang)}
           >
             Listen
           </button>
