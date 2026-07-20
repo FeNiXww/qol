@@ -6,17 +6,31 @@ import { useLang } from '@/contexts/LanguageContext';
 const MAX_MISTAKES = 3;
 const LETTER_SIZE = 52;
 
-const hebrewLetters = { 1: 'א', 2: 'ב', 3: 'ג', 4: 'ד', 5: 'ו', 6: 'ז', 7: 'מ', 8: 'נ', 9: 'פ', 10: 'ש' };
-const arabicLetters = { 1: 'ا', 2: 'ب', 3: 'ج', 4: 'د', 5: 'و', 6: 'ز', 7: 'م', 8: 'ن', 9: 'ف', 10: 'ش' };
+const PAIRS_PER_ROUND = 10;
+
+// Full Hebrew ↔ Arabic cognate letter pairs — each round picks a random subset
+const LETTER_PAIRS = [
+  ['א', 'ا'], ['ב', 'ب'], ['ג', 'ج'], ['ד', 'د'], ['ה', 'ه'], ['ו', 'و'],
+  ['ז', 'ز'], ['ח', 'ح'], ['ט', 'ط'], ['י', 'ي'], ['כ', 'ك'], ['ל', 'ل'],
+  ['מ', 'م'], ['נ', 'ن'], ['ס', 'س'], ['ע', 'ع'], ['פ', 'ف'], ['צ', 'ص'],
+  ['ק', 'ق'], ['ר', 'ر'], ['ש', 'ش'], ['ת', 'ت'],
+];
+
+function pickRandomPairs() {
+  const shuffled = [...LETTER_PAIRS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, PAIRS_PER_ROUND);
+}
 
 function generateLetters(width, height) {
+  const pairs = pickRandomPairs();
   const result = [];
   const placed = [];
   const MIN_DIST = 74;
   const PAD = 12;
   const w = Math.max(width, LETTER_SIZE + PAD * 2 + 1);
   const h = Math.max(height, LETTER_SIZE + PAD * 2 + 1);
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= pairs.length; i++) {
+    const [heLetter, arLetter] = pairs[i - 1];
     for (const lang of ['hebrew', 'arabic']) {
       let x = 0, y = 0, attempts = 0, overlaps = true;
       while (overlaps && attempts < 100) {
@@ -29,7 +43,7 @@ function generateLetters(width, height) {
       result.push({
         id: i,
         language: lang,
-        letter: lang === 'hebrew' ? hebrewLetters[i] : arabicLetters[i],
+        letter: lang === 'hebrew' ? heLetter : arLetter,
         x, y,
       });
     }
@@ -48,6 +62,7 @@ export default function LetterMatchGame() {
   const [won, setWon] = useState(false);
   const [lost, setLost] = useState(false);
   const [showTutorial, setShowTutorial] = useState(true);
+  const [mistakeTick, setMistakeTick] = useState(0);
   const boardRef = useRef(null);
   const letterEls = useRef({});
   const generatedRef = useRef(false);
@@ -102,6 +117,7 @@ export default function LetterMatchGame() {
   };
 
   const handleMistake = () => {
+    setMistakeTick(t => t + 1);
     setMistakes(prev => {
       const next = prev + 1;
       if (next >= MAX_MISTAKES) setTimeout(() => setLost(true), 250);
@@ -129,47 +145,73 @@ export default function LetterMatchGame() {
   };
 
   const lives = Array.from({ length: MAX_MISTAKES });
+  const matchedPairs = PAIRS_PER_ROUND - letters.length / 2;
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#F5F0E8' }}>
-      {/* Lives bar */}
-      <div className="flex items-center justify-end px-5 py-2.5 bg-white border-b" style={{ borderColor: '#E8E0D2' }}>
-        <div className="flex gap-1">
+      {/* Progress + lives bar */}
+      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b" style={{ borderColor: '#E8E0D2' }}>
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="flex-1 max-w-[140px] h-2 rounded-full overflow-hidden" style={{ background: '#EEE7DA' }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: `linear-gradient(90deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+              animate={{ width: `${(matchedPairs / PAIRS_PER_ROUND) * 100}%` }}
+              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            />
+          </div>
+          <span className="text-xs font-bold text-gray-400 flex-shrink-0">{matchedPairs}/{PAIRS_PER_ROUND}</span>
+        </div>
+        <motion.div
+          key={mistakeTick}
+          animate={mistakeTick > 0 ? { x: [0, -6, 6, -4, 4, 0] } : false}
+          transition={{ duration: 0.4 }}
+          className="flex gap-1"
+        >
           {lives.map((_, i) => (
             <span key={i} className="text-lg leading-none">{i < MAX_MISTAKES - mistakes ? '❤️' : '🖤'}</span>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Board */}
       <div ref={boardRef} className="relative flex-1 overflow-hidden touch-none" style={{ background: '#F5F0E8' }}>
-        {letters.map(l => {
-          const key = `${l.language}-${l.id}`;
-          const isHebrew = l.language === 'hebrew';
-          return (
-            <motion.div
-              key={key}
-              drag
-              dragMomentum={false}
-              dragElastic={0}
-              onDragEnd={() => onDragEnd(key)}
-              onTap={() => speak(l.letter, l.language)}
-              whileTap={{ scale: 1.08 }}
-              whileDrag={{ zIndex: 50, scale: 1.12 }}
-              ref={(el) => { if (el) letterEls.current[key] = el; else delete letterEls.current[key]; }}
-              className="absolute flex items-center justify-center rounded-xl shadow-md cursor-grab active:cursor-grabbing select-none"
-              style={{
-                left: l.x,
-                top: l.y,
-                width: LETTER_SIZE,
-                height: LETTER_SIZE,
-                background: isHebrew ? theme.colors.teal : theme.colors.orange,
-              }}
-            >
-              <span className="text-white font-semibold leading-none" style={{ fontSize: 26 }}>{l.letter}</span>
-            </motion.div>
-          );
-        })}
+        <AnimatePresence>
+          {letters.map((l, idx) => {
+            const key = `${l.language}-${l.id}`;
+            const isHebrew = l.language === 'hebrew';
+            return (
+              <motion.div
+                key={key}
+                drag
+                dragMomentum={false}
+                dragElastic={0}
+                onDragEnd={() => onDragEnd(key)}
+                onTap={() => speak(l.letter, l.language)}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0, rotate: 90, transition: { duration: 0.3 } }}
+                transition={{ type: 'spring', stiffness: 320, damping: 22, delay: idx * 0.02 }}
+                whileTap={{ scale: 1.08 }}
+                whileDrag={{ zIndex: 50, scale: 1.15, boxShadow: '0 12px 28px rgba(0,0,0,0.25)' }}
+                ref={(el) => { if (el) letterEls.current[key] = el; else delete letterEls.current[key]; }}
+                className="absolute flex items-center justify-center rounded-2xl cursor-grab active:cursor-grabbing select-none"
+                style={{
+                  left: l.x,
+                  top: l.y,
+                  width: LETTER_SIZE,
+                  height: LETTER_SIZE,
+                  background: isHebrew
+                    ? `linear-gradient(145deg, ${theme.colors.teal}, #0D6470)`
+                    : `linear-gradient(145deg, ${theme.colors.orange}, #D95F10)`,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.25)',
+                }}
+              >
+                <span className="text-white font-bold leading-none drop-shadow-sm" style={{ fontSize: 26 }}>{l.letter}</span>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
 
       {/* Modals */}
