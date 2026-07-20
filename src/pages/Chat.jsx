@@ -9,6 +9,7 @@ import { ArrowLeft, Send } from 'lucide-react';
 
 const MAX_CHARS = 200;
 
+
 export default function Chat() {
   const { matchId } = useParams();
   const navigate = useNavigate();
@@ -20,6 +21,9 @@ export default function Chat() {
   const [currentUser, setCurrentUser] = useState(null);
   const [match, setMatch] = useState(null);
   const bottomRef = useRef(null);
+
+
+
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});

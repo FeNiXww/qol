@@ -1,8 +1,9 @@
 import React from 'react';
 import { theme } from '@/lib/theme';
 import { format } from 'date-fns';
+import generateTTS from '@/utils/tts';
 
-export default function ChatBubble({ message, isMine }) {
+export default function ChatBubble({ message, isMine}) {
   const displayText = isMine ? message.original_text : (message.translated_text || message.original_text);
   const lang = isMine ? message.original_lang : message.translated_lang;
   const isRTL = lang === 'he' || lang === 'ar';
@@ -27,6 +28,14 @@ export default function ChatBubble({ message, isMine }) {
         <p className={`text-xs mt-1 opacity-60 ${isMine ? 'text-right' : 'text-left'}`}>
           {time}
         </p>
+        {message.translated_text && !isMine && (
+          <button
+            className="text-xs mt-1 text-gray-400 hover:text-gray-600 transition-colors" //
+            onClick={() => generateTTS(message.original_text)}
+          >
+            Listen
+          </button>
+        )}
       </div>
     </div>
   );
