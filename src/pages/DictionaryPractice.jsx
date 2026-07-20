@@ -72,7 +72,7 @@ export default function DictionaryPractice() {
             <div className="w-8 h-8 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
           </div>
         ) : editing ? (
-          <DictionaryEditor words={words} userId={currentUser?.id} onChanged={loadWords} />
+          <DictionaryEditor words={words} userId={currentUser?.id} myLang={myLang} onChanged={loadWords} />
         ) : words.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">📖</p>
