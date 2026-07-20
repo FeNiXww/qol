@@ -18,16 +18,12 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const [lightbox, setLightbox] = useState(false);
   const [speaking, setSpeaking] = useState(false);
 
-  const handleSpeak = async (e) => {
-    e.stopPropagation();
-    if (speaking) return;
-    setSpeaking(true);
-    try {
-      await generateTTS(message.original_text, message.original_lang);
-    } finally {
-      setSpeaking(false);
-    }
-  };
+  const handleSpeak = async function playTTS(text, language) {
+  const { audioContent } = await generateTTS(text, language); 
+  const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+  await audio.play();
+  return audio;
+};
 
   const isImage = isImageUrl(message.original_text);
 
