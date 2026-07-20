@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import QolLogo from '@/components/qol/QolLogo';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function SignIn() {
-  const navigate = useNavigate();
+  const { t } = useLang();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -20,30 +22,23 @@ export default function SignIn() {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = '/';
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      setError(err.message || t.passwordMismatch);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white">
-      {/* Logo area */}
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white" dir={t.dir}>
       <div className="mb-10 text-center">
-        <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-        >
-          <span className="text-white text-4xl font-black">Q</span>
-        </div>
-        <h1 className="text-3xl font-black" style={{ color: theme.colors.navy }}>QOL</h1>
-        <p className="text-gray-400 text-sm mt-1">Connecting people, bridging worlds</p>
+        <QolLogo size={80} className="mx-auto mb-4" />
+        <h1 className="text-3xl font-black" style={{ color: theme.colors.navy }}>{t.signInTitle}</h1>
+        <p className="text-gray-400 text-sm mt-1">{t.signInSubtitle}</p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.emailLabel}</label>
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -53,13 +48,12 @@ export default function SignIn() {
               required
               placeholder="you@example.com"
               className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent text-sm"
-              style={{ '--tw-ring-color': theme.colors.teal }}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.passwordLabel}</label>
           <div className="relative">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -77,9 +71,7 @@ export default function SignIn() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm">{error}</div>
         )}
 
         <button
@@ -88,14 +80,14 @@ export default function SignIn() {
           className="w-full py-4 rounded-2xl font-bold text-white text-base transition-all shadow-md mt-2"
           style={{ backgroundColor: theme.colors.teal }}
         >
-          {loading ? 'Signing in…' : 'Sign In'}
+          {loading ? t.signingIn : t.signInBtn}
         </button>
       </form>
 
       <p className="mt-6 text-sm text-gray-500">
-        Don't have an account?{' '}
+        {t.noAccount}{' '}
         <Link to="/sign-up" className="font-semibold" style={{ color: theme.colors.teal }}>
-          Sign up
+          {t.signUp}
         </Link>
       </p>
     </div>

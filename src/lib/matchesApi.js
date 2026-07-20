@@ -18,6 +18,12 @@ export async function getMatches(myUserId) {
   return enriched.filter(m => m.otherProfile);
 }
 
+// A profile is considered online if its heartbeat is within the last 2 minutes
+export function isProfileOnline(profile, windowMs = 120_000) {
+  if (!profile?.last_seen_at) return false;
+  return Date.now() - new Date(profile.last_seen_at).getTime() < windowMs;
+}
+
 export async function getMessages(matchId) {
   return base44.entities.Message.filter({ match_id: matchId }, 'created_date', 200);
 }
@@ -27,7 +33,9 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
   const fromLang = getNativeLang(senderNationality);
   const toLang = getNativeLang(receiverNationality);
 
+  // Translate first — if it fails (unclear message), nothing is sent or updated
   const translatedText = await translateText(text, fromLang, toLang);
+  await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });
 
   const msg = await base44.entities.Message.create({
     match_id: matchId,
@@ -38,9 +46,6 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
     translated_lang: toLang,
     status: 'sent',
   });
-
-  // Update match last_message_at
-  await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });
 
   return msg;
 }

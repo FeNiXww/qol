@@ -5,10 +5,12 @@ import { theme } from '@/lib/theme';
 import PrimaryButton from '@/components/qol/PrimaryButton';
 import { Camera, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
-  const { updateProfile, profile } = useProfile();
+  const { updateProfile } = useProfile();
+  const { t } = useLang();
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -34,11 +36,7 @@ export default function ProfileSetup() {
   const handleComplete = async () => {
     setLoading(true);
     try {
-      await updateProfile({
-        bio,
-        avatar_url: avatar || null,
-        onboarding_step: 'complete',
-      });
+      await updateProfile({ bio, avatar_url: avatar || null, onboarding_step: 'complete' });
       window.location.href = '/';
     } finally {
       setLoading(false);
@@ -46,20 +44,20 @@ export default function ProfileSetup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-6 py-12 bg-white">
+    <div className="min-h-screen flex flex-col px-6 py-12 bg-white" dir={t.dir}>
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
+          <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
         </div>
-        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>Your profile</h1>
-        <p className="text-gray-400 mt-2 text-sm">Add a photo and bio so people can get to know you.</p>
+        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>{t.yourProfileTitle}</h1>
+        <p className="text-gray-400 mt-2 text-sm">{t.yourProfileSubtitle}</p>
       </div>
 
       <div className="flex-1 space-y-6">
-        {/* Avatar upload */}
         <div className="flex flex-col items-center">
           <div className="relative mb-4">
             {avatarPreview ? (
@@ -74,24 +72,23 @@ export default function ProfileSetup() {
               className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md"
               style={{ backgroundColor: theme.colors.teal }}
             >
-              {uploading ? (
-                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4" />
-              )}
+              {uploading
+                ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                : <Upload className="w-4 h-4" />}
             </button>
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-          <p className="text-sm text-gray-400">Tap to add a profile photo</p>
+          <p className="text-sm text-gray-400">{t.tapToAddPhoto}</p>
         </div>
 
-        {/* Bio */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Bio <span className="text-gray-400 font-normal">(optional)</span></label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {t.bioLabel} <span className="text-gray-400 font-normal">{t.bioOptional}</span>
+          </label>
           <textarea
             value={bio}
             onChange={e => setBio(e.target.value)}
-            placeholder="A few words about yourself — your interests, your city, what you're looking for in a connection…"
+            placeholder={t.bioPlaceholder}
             rows={5}
             maxLength={300}
             className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent text-sm resize-none"
@@ -102,10 +99,10 @@ export default function ProfileSetup() {
 
       <div className="mt-8">
         <PrimaryButton onClick={handleComplete} loading={loading || uploading}>
-          Complete profile
+          {t.completeProfile}
         </PrimaryButton>
         <button onClick={handleComplete} className="w-full py-3 mt-3 text-gray-400 text-sm">
-          Skip for now
+          {t.skipForNow}
         </button>
       </div>
     </div>

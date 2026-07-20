@@ -1,0 +1,33 @@
+{
+  "name": "DictionaryWord",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner of this dictionary word"
+    },
+    "text_he": {
+      "type": "string"
+    },
+    "text_ar": {
+      "type": "string"
+    },
+    "translit_he": {
+      "type": "string",
+      "description": "Pronunciation of the Hebrew word written in Arabic letters"
+    },
+    "translit_ar": {
+      "type": "string",
+      "description": "Pronunciation of the Arabic word written in Hebrew letters"
+    },
+    "known": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "text_he",
+    "text_ar"
+  ]
+}

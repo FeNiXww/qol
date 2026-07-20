@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import PrimaryButton from '@/components/qol/PrimaryButton';
+import QolLogo from '@/components/qol/QolLogo';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function YourName() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +24,10 @@ export default function YourName() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-6 py-12 bg-white">
+    <div className="min-h-screen flex flex-col px-6 py-12 bg-white" dir={t.dir}>
+      <div className="flex justify-center mb-6">
+        <QolLogo size={52} />
+      </div>
       <div className="mb-10">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: theme.colors.teal }} />
@@ -30,8 +36,8 @@ export default function YourName() {
           <div className="h-1.5 w-8 rounded-full bg-gray-200" />
           <div className="h-1.5 w-8 rounded-full bg-gray-200" />
         </div>
-        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>What's your name?</h1>
-        <p className="text-gray-400 mt-2 text-sm">This is how other users will see you.</p>
+        <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>{t.whatsYourName}</h1>
+        <p className="text-gray-400 mt-2 text-sm">{t.nameSubtitle}</p>
       </div>
 
       <div className="flex-1">
@@ -40,7 +46,7 @@ export default function YourName() {
           value={name}
           onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleContinue()}
-          placeholder="Your first name"
+          placeholder={t.namePlaceholder}
           maxLength={40}
           autoFocus
           className="w-full px-5 py-4 rounded-2xl border-2 text-lg font-semibold text-gray-900 bg-gray-50 focus:outline-none transition-all"
@@ -50,7 +56,7 @@ export default function YourName() {
 
       <div className="mt-8">
         <PrimaryButton onClick={handleContinue} disabled={!name.trim()} loading={loading}>
-          Continue
+          {t.continue}
         </PrimaryButton>
       </div>
     </div>

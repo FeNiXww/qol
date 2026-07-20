@@ -63,6 +63,11 @@
     },
     "display_name": {
       "type": "string"
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Heartbeat timestamp for online presence"
     }
   },
   "required": [

@@ -18,16 +18,27 @@ import AboutYou from '@/pages/onboarding/AboutYou';
 import Hobbies from '@/pages/onboarding/Hobbies';
 import ProfileSetup from '@/pages/onboarding/ProfileSetup';
 
+// Landing
+import Landing from '@/pages/Landing';
+import LanguagePicker from '@/pages/LanguagePicker';
+
 // Tab pages
 import Discover from '@/pages/tabs/Discover';
 import Matches from '@/pages/tabs/Matches';
 import ProfileTab from '@/pages/tabs/Profile';
+import MiniGames from '@/pages/tabs/MiniGames';
 import Chat from '@/pages/Chat';
+import GameRoom from '@/pages/GameRoom';
+import LetterMatch from '@/pages/LetterMatch';
+import DictionaryPractice from '@/pages/DictionaryPractice';
 
 // Layout & context
 import Layout from '@/components/Layout';
 import { ProfileProvider } from '@/contexts/ProfileContext';
+import { LanguageProvider, useLang } from '@/contexts/LanguageContext';
+import { base44 } from '@/api/base44Client';
 
+import Settings from '@/pages/Settings';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const AuthenticatedApp = () => {
@@ -35,12 +46,14 @@ const AuthenticatedApp = () => {
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white">
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#E6E2D8' }}>
         <div className="text-center">
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #17998A, #F4801F)' }}>
-            <span className="text-white text-3xl font-black">Q</span>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a5874b8ce4d2dc8cf35eb52/a3fa26d38_Untitleddesign.png"
+            alt="QOL"
+            className="w-20 h-20 object-contain mx-auto mb-4 animate-pulse"
+          />
+
           <div className="w-8 h-8 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
         </div>
       </div>
@@ -48,20 +61,29 @@ const AuthenticatedApp = () => {
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
+    if (authError.type === 'user_not_registered') {
+      base44.auth.logout();
+      window.location.href = '/sign-up';
+      return null;
+    }
+    // For auth_required or any other auth error, clear the stale token then redirect
+    base44.auth.logout();
+    window.location.href = '/language';
+    return null;
   }
 
   return (
     <ProfileProvider currentUser={currentUser}>
       <Routes>
-        {/* Public auth routes */}
+        {/* Public routes */}
+        <Route path="/language" element={<LanguagePicker />} />
+        <Route path="/welcome" element={<Landing />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
         {/* Protected routes */}
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/sign-in" replace />} />}>
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/welcome" replace />} />}>
           {/* Onboarding */}
           <Route path="/onboarding/name" element={<YourName />} />
           <Route path="/onboarding/nationality" element={<Nationality />} />
@@ -73,13 +95,18 @@ const AuthenticatedApp = () => {
           <Route element={<Layout />}>
             <Route path="/" element={<Discover />} />
             <Route path="/matches" element={<Matches />} />
+            <Route path="/games" element={<MiniGames />} />
             <Route path="/profile" element={<ProfileTab />} />
             <Route path="/chat/:matchId" element={<Chat />} />
           </Route>
+          <Route path="/game/:sessionId" element={<GameRoom />} />
+          <Route path="/letter-match" element={<LetterMatch />} />
+          <Route path="/dictionary" element={<DictionaryPractice />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/language" replace />} />
       </Routes>
     </ProfileProvider>
   );
@@ -88,6 +115,7 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <AuthProvider>
+      <LanguageProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
@@ -95,6 +123,7 @@ function App() {
         </Router>
         <Toaster />
       </QueryClientProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

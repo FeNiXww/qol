@@ -1,0 +1,47 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "reporter_id": {
+      "type": "string"
+    },
+    "reported_user_id": {
+      "type": "string"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "message_id": {
+      "type": "string"
+    },
+    "message_text": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "offensive",
+        "harassment",
+        "hate_speech",
+        "spam",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "dismissed"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "reporter_id",
+    "reported_user_id",
+    "match_id",
+    "message_id",
+    "reason"
+  ]
+}
