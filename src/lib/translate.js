@@ -51,8 +51,10 @@ Hebrew: """${textHe}"""
 Arabic: """${textAr}"""
 
 Provide phonetic transcriptions so each side can pronounce the other's word:
-- "translit_he": how the HEBREW word sounds, written using ARABIC letters (for an Arabic speaker to read aloud).
-- "translit_ar": how the ARABIC word sounds, written using HEBREW letters (for a Hebrew speaker to read aloud).
+- "translit_he": the pronunciation of the HEBREW word "${textHe}", written ONLY in ARABIC letters (so an Arabic speaker can read it aloud). It must NOT contain any Hebrew letters.
+- "translit_ar": the pronunciation of the ARABIC word "${textAr}", written ONLY in HEBREW letters (so a Hebrew speaker can read it aloud). It must NOT contain any Arabic letters.
+
+Example: Hebrew "שלום" → translit_he: "شالوم". Arabic "مرحبا" → translit_ar: "מרחבא".
 Keep them short and phonetic, no explanations.`,
       response_json_schema: {
         type: 'object',
@@ -63,9 +65,14 @@ Keep them short and phonetic, no explanations.`,
         required: ['translit_he', 'translit_ar'],
       },
     });
+    let translitHe = result?.translit_he?.trim() || '';
+    let translitAr = result?.translit_ar?.trim() || '';
+    // Validate scripts: translit_he must be Arabic letters, translit_ar must be Hebrew letters
+    if (/[\u0590-\u05FF]/.test(translitHe)) translitHe = '';
+    if (/[\u0600-\u06FF]/.test(translitAr)) translitAr = '';
     return {
-      translit_he: result?.translit_he?.trim() || '',
-      translit_ar: result?.translit_ar?.trim() || '',
+      translit_he: translitHe,
+      translit_ar: translitAr,
     };
   } catch {
     return { translit_he: '', translit_ar: '' };
