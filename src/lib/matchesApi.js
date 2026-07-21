@@ -8,18 +8,28 @@ export async function getMatches(myUserId) {
     new Date(b.last_message_at) - new Date(a.last_message_at)
   );
 
-  // For each match, get the other user's profile
-  // Try both user_id and created_by_id since profiles use either field
-  const enriched = await Promise.all(all.map(async (match) => {
-    const otherId = match.user_a_id === myUserId ? match.user_b_id : match.user_a_id;
-    let profileList = await base44.entities.Profile.filter({ user_id: otherId });
-    if (!profileList.length) {
-      profileList = await base44.entities.Profile.filter({ created_by_id: otherId });
-    }
-    return { ...match, otherId, otherProfile: profileList[0] || null };
-  }));
+  // Collect all other user IDs
+  const otherIds = all.map(match => match.user_a_id === myUserId ? match.user_b_id : match.user_a_id);
+  const uniqueOtherIds = [...new Set(otherIds)];
 
-  // Return all matches, even those without a profile (show as "Deleted user")
+  // Fetch all profiles in two bulk queries (by user_id and by created_by_id)
+  const [byUserId, byCreatorId] = await Promise.all([
+    base44.entities.Profile.filter({ user_id: { $in: uniqueOtherIds } }),
+    base44.entities.Profile.filter({ created_by_id: { $in: uniqueOtherIds } }),
+  ]);
+
+  // Build a lookup map: userId -> profile
+  const profileMap = {};
+  [...byCreatorId, ...byUserId].forEach(p => {
+    const key = p.user_id || p.created_by_id;
+    if (key) profileMap[key] = p;
+  });
+
+  const enriched = all.map(match => {
+    const otherId = match.user_a_id === myUserId ? match.user_b_id : match.user_a_id;
+    return { ...match, otherId, otherProfile: profileMap[otherId] || null };
+  });
+
   return enriched;
 }
 
