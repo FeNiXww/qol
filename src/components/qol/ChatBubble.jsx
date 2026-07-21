@@ -44,7 +44,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const isFailed = message.status === 'failed';
   const isSending = message.status === 'sending';
 
-  const actionColor = '#6B7280';
+  const actionColor = '#6B7280'; 
 
   return (
     <>
@@ -99,7 +99,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </span>
             </button>
 
-            {/* Translation toggle — only for received messages with translation */}
+            {/* Translation toggle */}
             {!isMine && subText && (
               <button
                 onClick={() => { setShowOriginal(p => !p); setShowModal(false); }}
@@ -112,7 +112,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </button>
             )}
 
-            {/* Add to dictionary — only for translated messages */}
+            {/* Add to dictionary */}
             {message.translated_text && (
               <>
                 <div className="h-px bg-gray-100 mx-2" />
@@ -126,7 +126,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </>
             )}
 
-            {/* Report — only for received messages */}
+            {/* Report */}
             {!isMine && (
               <>
                 <div className="h-px bg-gray-100 mx-2" />
@@ -142,7 +142,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
           </div>
         </>
       )}
-
+      
       {/* bubble */}
       <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className={`max-w-[78%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
