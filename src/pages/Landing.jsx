@@ -36,7 +36,7 @@ export default function Landing() {
       <div className="flex justify-end px-6 pt-12 flex-shrink-0">
         <button
           onClick={() => navigate('/sign-up')}
-          className="text-white/40 text-sm font-medium hover:text-white/70 transition-colors">
+          className="text-white/40 font-medium hover:text-white/70 transition-colors text-2xl">
           
           {t.skip}
         </button>
