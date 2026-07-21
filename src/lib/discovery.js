@@ -1,6 +1,5 @@
 import { base44 } from '@/api/base44Client';
 import { getAgeBand, getOppositeNationality } from './ageUtils';
-import { getExistingUserIds } from './userExistence';
 
 // Score hobby overlap
 function scoreProfile(profile, myHobbies) {
@@ -39,12 +38,8 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
     return !swipedIds.has(pUserId) && pUserId !== myUserId;
   });
 
-  // Hide profiles whose user was deleted from the database
-  const existingIds = await getExistingUserIds(filtered.flatMap(p => [p.user_id, p.created_by_id]));
-  const active = filtered.filter(p => existingIds.has(p.user_id) || existingIds.has(p.created_by_id));
-
   // Score and sort with randomness
-  const scored = active
+  const scored = filtered
     .map(p => ({ ...p, _score: scoreProfile(p, myProfile.hobbies || []) }))
     .sort((a, b) => b._score - a._score)
     .slice(0, limit);

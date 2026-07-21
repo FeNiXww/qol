@@ -66,12 +66,17 @@ export default function Discover() {
     }
   }, [profile, genderFilter]);
 
-  useEffect(() => {
-    if (!profile) return;
+  const resetAndLoad = useCallback(() => {
     setProfiles([]);
     swipedIdsRef.current = new Set();
     setLoading(true);
-    loadMore();
+    fetchingRef.current = false;
+    setTimeout(() => loadMore(), 0);
+  }, [loadMore]);
+
+  useEffect(() => {
+    if (!profile) return;
+    resetAndLoad();
   }, [profile?.id, genderFilter]);
 
   const handleSwipe = async (targetProfile, direction) => {
@@ -184,6 +189,7 @@ export default function Discover() {
           profiles={profiles}
           onSwipe={handleSwipe}
           onLoadMore={loadMore}
+          onRefresh={resetAndLoad}
           loading={loading}
           empty={!loading && profiles.length === 0}
         />

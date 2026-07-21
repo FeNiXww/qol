@@ -144,11 +144,16 @@ function ProfileCard({ profile, onConnect, onPass, isActive }) {
   );
 }
 
-export default function ScrollDeck({ profiles, onSwipe, onLoadMore, loading, empty }) {
+export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, loading, empty }) {
   const { t } = useLang();
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef(null);
   const touchStartY = useRef(null);
+
+  // Reset index when profiles list is cleared (refresh)
+  useEffect(() => {
+    if (profiles.length === 0) setCurrentIndex(0);
+  }, [profiles.length]);
 
   // Auto-load more when near end
   useEffect(() => {
@@ -207,7 +212,7 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, loading, emp
           <h3 className="text-2xl font-black text-gray-800 mb-3">{t.youMetEveryone}</h3>
           <p className="text-gray-400 text-sm leading-relaxed mb-8">{t.comeBackSoon}</p>
           <button
-            onClick={() => onLoadMore?.()}
+            onClick={() => onRefresh?.()}
             className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg active:scale-95 transition-transform"
             style={{ background: 'linear-gradient(135deg, #16A499, #FA7C27)' }}
           >
@@ -236,7 +241,7 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, loading, emp
           <h3 className="text-2xl font-black text-gray-800 mb-3">{t.youMetEveryone}</h3>
           <p className="text-gray-400 text-sm leading-relaxed mb-8">{t.comeBackSoon}</p>
           <button
-            onClick={() => onLoadMore?.()}
+            onClick={() => onRefresh?.()}
             className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg active:scale-95 transition-transform"
             style={{ background: 'linear-gradient(135deg, #16A499, #FA7C27)' }}
           >
