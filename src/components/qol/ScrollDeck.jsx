@@ -85,14 +85,14 @@ function ProfileCard({ profile, onConnect, onPass }) {
 
         {/* Action buttons */}
         <div className="pb-8 px-6 flex items-center justify-center gap-10">
-          <motion.button
-            whileTap={{ scale: 0.88 }}
-            onClick={() => onPass(profile)}
-            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg hidden"
-            style={{ background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.2)' }}>
-            
-            <span className="text-2xl">👋</span>
-          </motion.button>
+          
+
+
+
+
+
+
+          
 
           <motion.button
             whileTap={{ scale: 0.88 }}
