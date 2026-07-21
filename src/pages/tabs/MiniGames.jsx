@@ -34,7 +34,7 @@ export default function MiniGames() {
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
   const [creating, setCreating] = useState(false);
-  const [refreshTick, setRefreshTick] = useState(0);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -46,11 +46,11 @@ export default function MiniGames() {
       setMatches(data);
       setLoading(false);
     });
-  }, [currentUser?.id, refreshTick]);
+  }, [currentUser?.id]);
 
-  // Re-evaluate online status every 30s without refetching all matches
+  // Re-evaluate online status every 30s by re-rendering only — no re-fetch
   useEffect(() => {
-    const interval = setInterval(() => setRefreshTick(t => t + 1), 30_000);
+    const interval = setInterval(() => setTick(n => n + 1), 30_000);
     return () => clearInterval(interval);
   }, []);
 
