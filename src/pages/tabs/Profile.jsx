@@ -90,13 +90,13 @@ export default function ProfileTab() {
               
               <Settings className="w-4 h-4 text-white/80" />
             </button>
-            <button
-              onClick={() => base44.auth.logout('/sign-in')}
-              className="w-9 h-9 rounded-full flex items-center justify-center hidden"
-              style={{ background: 'rgba(207,46,38,0.25)', border: '1px solid rgba(207,46,38,0.4)' }}>
-              
-              <LogOut className="w-4 h-4 text-red-300" />
-            </button>
+            
+
+
+
+
+
+            
           </div>
         </div>
 
