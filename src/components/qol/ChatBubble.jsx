@@ -44,8 +44,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const isFailed = message.status === 'failed';
   const isSending = message.status === 'sending';
 
-  const actionColor = '#6B7280'; // gray-500 — slightly brighter than translate text
-
+  const actionColor = '#6B7280';
   return (
     <>
       {/* lightbox */}
@@ -78,7 +77,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
             }`}
             style={{
               top: bubbleRef.current
-                ? bubbleRef.current.getBoundingClientRect().top + window.scrollY
+                ? bubbleRef.current.getBoundingClientRect().bottom + window.scrollY
                 : '50%',
             }}
           >
