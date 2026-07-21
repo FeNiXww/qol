@@ -14,108 +14,106 @@ function ProfileCard({ profile, onConnect, onPass }) {
 
   return (
     <>
-      <div className="relative flex items-center justify-center" style={{ width: '100%', height: '100%' }}>
-        <div
-          className="relative rounded-[32px] overflow-hidden shadow-2xl flex flex-col"
-          style={{
-            width: '88%',
-            maxWidth: 360,
-            height: 520,
-            background: 'linear-gradient(160deg, #0D6470 0%, #132E4C 100%)',
-          }}
-        >
-          {/* Avatar + hobby ring */}
-          <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8">
-            <div className="relative mb-6">
-              {hobbies.slice(0, 6).map((_, i) => {
-                const angle = (i / Math.max(hobbies.slice(0, 6).length, 1)) * 2 * Math.PI - Math.PI / 2;
-                const radius = 82;
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
-                return (
-                  <span
-                    key={i}
-                    className="absolute text-2xl"
-                    style={{
-                      left: `calc(50% + ${x}px - 14px)`,
-                      top: `calc(50% + ${y}px - 14px)`,
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                    }}
-                  >
-                    {emojis[i % emojis.length]}
-                  </span>
-                );
-              })}
-              <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-xl relative z-10">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-5xl font-black text-white"
-                    style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-                  >
-                    {name[0]?.toUpperCase()}
-                  </div>
-                )}
-              </div>
+      <div
+        className="relative rounded-[32px] overflow-hidden shadow-2xl flex flex-col"
+        style={{
+          width: '88vw',
+          maxWidth: 360,
+          height: 500,
+          background: 'linear-gradient(160deg, #0D6470 0%, #132E4C 100%)',
+        }}
+      >
+        {/* Avatar + hobby ring */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8">
+          <div className="relative mb-6">
+            {hobbies.slice(0, 6).map((_, i) => {
+              const angle = (i / Math.max(hobbies.slice(0, 6).length, 1)) * 2 * Math.PI - Math.PI / 2;
+              const radius = 82;
+              const x = Math.cos(angle) * radius;
+              const y = Math.sin(angle) * radius;
+              return (
+                <span
+                  key={i}
+                  className="absolute text-2xl"
+                  style={{
+                    left: `calc(50% + ${x}px - 14px)`,
+                    top: `calc(50% + ${y}px - 14px)`,
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                  }}
+                >
+                  {emojis[i % emojis.length]}
+                </span>
+              );
+            })}
+            <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-xl relative z-10">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-5xl font-black text-white"
+                  style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+                >
+                  {name[0]?.toUpperCase()}
+                </div>
+              )}
             </div>
-
-            <h2 className="text-3xl font-black text-white mb-1 text-center">
-              Hi, I'm {name} {flag}
-            </h2>
-
-            {profile.bio ? (
-              <p className="text-white/60 text-sm text-center leading-relaxed px-4 line-clamp-2 mb-3">
-                {profile.bio}
-              </p>
-            ) : (
-              <div className="mb-3" />
-            )}
-
-            {hobbies.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 justify-center px-4">
-                {hobbies.slice(0, 4).map(h => (
-                  <span
-                    key={h}
-                    className="text-xs px-3 py-1 rounded-full font-semibold"
-                    style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)' }}
-                  >
-                    {h}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Action buttons */}
-          <div className="pb-8 px-6 flex items-center justify-center gap-10">
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={() => onPass(profile)}
-              className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20"
-              style={{ background: 'rgba(255,255,255,0.12)' }}
-            >
-              <span className="text-2xl">👋</span>
-            </motion.button>
+          <h2 className="text-3xl font-black text-white mb-1 text-center">
+            Hi, I'm {name} {flag}
+          </h2>
 
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={() => onConnect(profile)}
-              className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-            >
-              <UserCheck className="w-9 h-9 text-white" />
-            </motion.button>
+          {profile.bio ? (
+            <p className="text-white/60 text-sm text-center leading-relaxed px-4 line-clamp-2 mb-3">
+              {profile.bio}
+            </p>
+          ) : (
+            <div className="mb-3" />
+          )}
 
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={() => setShowDetail(true)}
-              className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20"
-              style={{ background: 'rgba(255,255,255,0.12)' }}
-            >
-              <span className="text-2xl">👁️</span>
-            </motion.button>
-          </div>
+          {hobbies.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 justify-center px-4">
+              {hobbies.slice(0, 4).map(h => (
+                <span
+                  key={h}
+                  className="text-xs px-3 py-1 rounded-full font-semibold"
+                  style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)' }}
+                >
+                  {h}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="pb-8 px-6 flex items-center justify-center gap-10">
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => onPass(profile)}
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20"
+            style={{ background: 'rgba(255,255,255,0.12)' }}
+          >
+            <span className="text-2xl">👋</span>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => onConnect(profile)}
+            className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl"
+            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+          >
+            <UserCheck className="w-9 h-9 text-white" />
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => setShowDetail(true)}
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20"
+            style={{ background: 'rgba(255,255,255,0.12)' }}
+          >
+            <span className="text-2xl">👁️</span>
+          </motion.button>
         </div>
       </div>
 
@@ -134,15 +132,14 @@ function ProfileCard({ profile, onConnect, onPass }) {
 export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, loading, empty }) {
   const { t } = useLang();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = going forward, -1 = going back
+  const [direction, setDirection] = useState(1);
   const touchStartY = useRef(null);
+  const touchStartX = useRef(null);
 
-  // Reset index when profiles list is cleared (refresh)
   useEffect(() => {
     if (profiles.length === 0) setCurrentIndex(0);
   }, [profiles.length]);
 
-  // Auto-load more when near end
   useEffect(() => {
     if (profiles.length > 0 && currentIndex >= profiles.length - 2) {
       onLoadMore?.();
@@ -169,26 +166,27 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
     goNext();
   };
 
-  // TikTok-style vertical touch swipe
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
   };
+
   const handleTouchEnd = (e) => {
     if (touchStartY.current === null) return;
-    const delta = touchStartY.current - e.changedTouches[0].clientY;
-    if (delta > 60) {
-      // Swipe UP → next profile
-      goNext();
-    } else if (delta < -60) {
-      // Swipe DOWN → previous profile
-      goPrev();
+    const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+    const deltaX = Math.abs(touchStartX.current - e.changedTouches[0].clientX);
+    // Only handle vertical swipes (deltaY must dominate over horizontal)
+    if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > deltaX) {
+      if (deltaY > 0) goNext();
+      else goPrev();
     }
     touchStartY.current = null;
+    touchStartX.current = null;
   };
 
   if (loading && profiles.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="w-full flex items-center justify-center" style={{ height: 540 }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-400 text-sm">{t.findingConnections}</p>
@@ -198,7 +196,7 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
   }
 
   const EmptyState = () => (
-    <div className="flex-1 flex items-center justify-center px-8">
+    <div className="w-full flex items-center justify-center px-8" style={{ height: 540 }}>
       <div className="text-center max-w-xs mx-auto">
         <div className="relative w-32 h-32 mx-auto mb-8">
           <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(22,164,153,0.12), rgba(250,124,39,0.12))' }}>
@@ -227,31 +225,34 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
   if (!currentProfile && !loading) return <EmptyState />;
   if (!currentProfile) return null;
 
-  const totalVisible = Math.min(profiles.length, 5);
   const startDot = Math.max(0, currentIndex - 2);
+  const totalVisible = Math.min(profiles.length, 5);
 
   return (
     <div
-      className="flex-1 flex flex-col overflow-hidden"
-      style={{ minHeight: 0 }}
+      className="w-full flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
+      {/* Card area — fixed height so cards are always visible */}
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ height: 540 }}
+      >
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentProfile.id}
             custom={direction}
             variants={{
-              enter: (d) => ({ y: d > 0 ? '100%' : '-100%', opacity: 0 }),
+              enter: (d) => ({ y: d > 0 ? 540 : -540, opacity: 0 }),
               center: { y: 0, opacity: 1 },
-              exit: (d) => ({ y: d > 0 ? '-100%' : '100%', opacity: 0 }),
+              exit: (d) => ({ y: d > 0 ? -540 : 540, opacity: 0 }),
             }}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{ duration: 0.32, ease: 'easeInOut' }}
-            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            className="absolute inset-0 flex items-center justify-center"
           >
             <ProfileCard
               profile={currentProfile}
@@ -262,9 +263,9 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
         </AnimatePresence>
       </div>
 
-      {/* Vertical scroll dots indicator */}
+      {/* Dots */}
       {profiles.length > 1 && (
-        <div className="flex justify-center gap-1.5 pb-3">
+        <div className="flex justify-center gap-1.5 pb-3 pt-1">
           {profiles.slice(startDot, startDot + totalVisible).map((_, i) => {
             const idx = startDot + i;
             return (
