@@ -74,7 +74,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
             onClick={() => setShowModal(false)}
           />
           <div
-            className={`relative z-50 bg-white rounded-2xl shadow-xl border border-gray-100 py-1 min-w-[180px] ${
+            className={`fixed z-50 bg-white rounded-2xl shadow-xl border border-gray-100 py-1 min-w-[180px] ${
               isMine ? 'right-4' : 'left-4'
             }`}
             style={{
