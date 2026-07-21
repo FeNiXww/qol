@@ -23,6 +23,17 @@ function ProfileCard({ profile, onConnect, onPass }) {
           background: 'linear-gradient(160deg, #0D6470 0%, #132E4C 100%)'
         }}>
         
+        {/* View profile button — top left */}
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={() => setShowDetail(true)}
+          className="absolute top-4 left-4 flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-2xl z-10"
+          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}
+        >
+          <span className="text-lg leading-none">👁️</span>
+          <span className="text-[10px] font-semibold text-white/80 leading-none">view</span>
+        </motion.button>
+
         {/* Avatar + hobby ring */}
         <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8">
           <div className="relative mb-6" style={{ width: 200, height: 200 }}>
@@ -85,14 +96,14 @@ function ProfileCard({ profile, onConnect, onPass }) {
 
         {/* Action buttons */}
         <div className="pb-8 px-6 flex items-center justify-center gap-10">
-          
-
-
-
-
-
-
-          
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => onPass(profile)}
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg hidden"
+            style={{ background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.2)' }}>
+            
+            <span className="text-2xl">👋</span>
+          </motion.button>
 
           <motion.button
             whileTap={{ scale: 0.88 }}
@@ -103,14 +114,7 @@ function ProfileCard({ profile, onConnect, onPass }) {
             <UserCheck className="w-9 h-9 text-white" />
           </motion.button>
 
-          <motion.button
-            whileTap={{ scale: 0.88 }}
-            onClick={() => setShowDetail(true)}
-            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
-            style={{ background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.2)' }}>
-            
-            <span className="text-2xl">👁️</span>
-          </motion.button>
+
         </div>
       </div>
 
