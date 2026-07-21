@@ -4,7 +4,7 @@ import { getUnreadMatchIds } from '@/lib/unread';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ChevronRight, Heart, Moon, Settings } from 'lucide-react';
+import { MessageCircle, ChevronRight, UserCheck, Moon, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
@@ -51,7 +51,7 @@ export default function Matches() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
+            <h1 className="text-2xl font-black text-white">{t.connectionsTitle || t.matchesTitle || 'Connections'}</h1>
             <p className="text-xs font-medium mt-0.5" style={{ color: '#268ECE' }}>
               {matches.length} {matches.length !== 1 ? t.connections : t.connection}
             </p>
@@ -78,7 +78,7 @@ export default function Matches() {
               className="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${theme.colors.teal}20, ${theme.colors.orange}20)` }}
             >
-              <Heart className="w-10 h-10" style={{ color: theme.colors.teal }} />
+              <UserCheck className="w-10 h-10" style={{ color: theme.colors.teal }} />
             </div>
             <h3 className="text-xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.noMatchesYet}</h3>
             <p className="text-gray-400 text-sm leading-relaxed">{t.noMatchesMsg}</p>
