@@ -7,10 +7,12 @@ export async function generateTTS(text, language) {
     throw new Error(data.error);
   }
 
-  const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
-  await audio.play();
-
-  return audio;
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+    audio.addEventListener("ended", resolve);
+    audio.addEventListener("error", reject);
+    audio.play().catch(reject);
+  });
 }
 
 export default generateTTS;
