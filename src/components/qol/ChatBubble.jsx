@@ -65,10 +65,9 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
         </div>
       )}
 
-      {/* actions modal — WhatsApp style, anchored next to bubble */}
+      {/* actions modal anchored next to bubble */}
       {showModal && (
         <>
-          {/* backdrop — invisible, closes modal on outside click */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setShowModal(false)}
@@ -98,7 +97,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </span>
             </button>
 
-            {/* Translation toggle — only for received messages with translation */}
+            {/* Translation toggle */}
             {!isMine && subText && (
               <button
                 onClick={() => { setShowOriginal(p => !p); setShowModal(false); }}
@@ -111,7 +110,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </button>
             )}
 
-            {/* Add to dictionary — only for translated messages */}
+            {/* Add to dictionary */}
             {message.translated_text && (
               <>
                 <div className="h-px bg-gray-100 mx-2" />
@@ -125,7 +124,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               </>
             )}
 
-            {/* Report — only for received messages */}
+            {/* Report */}
             {!isMine && (
               <>
                 <div className="h-px bg-gray-100 mx-2" />
