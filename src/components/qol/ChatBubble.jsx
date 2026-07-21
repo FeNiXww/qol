@@ -64,6 +64,8 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
         </div>
       )}
 
+      {/* bubble */}
+      <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
       {/* actions modal anchored next to bubble */}
       {showModal && (
         <>
@@ -139,9 +141,6 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
           </div>
         </>
       )}
-
-      {/* bubble */}
-      <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className={`max-w-[78%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
           <div
             ref={bubbleRef}
