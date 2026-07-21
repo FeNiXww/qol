@@ -18,20 +18,17 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const bubbleRef = useRef(null);
 
   const handleSpeak = async (e) => {
-    e?.stopPropagation();
-    if (speaking) return;
-    setSpeaking(true);
-    try {
-      const { audioContent } = await generateTTS(message.original_text, message.original_lang);
-      const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
-      audio.addEventListener("ended", () => setSpeaking(false));
-      audio.addEventListener("error", () => setSpeaking(false));
-      await audio.play();
-    } catch (err) {
-      console.error("TTS failed:", err);
-      setSpeaking(false);
-    }
-  };
+  e?.stopPropagation();
+  if (speaking) return;
+  setSpeaking(true);
+  try {
+    await generateTTS(message.original_text, message.original_lang);
+  } catch (err) {
+    console.error("TTS failed:", err);
+  } finally {
+    setSpeaking(false);
+  }
+};
 
   const isImage = isImageUrl(message.original_text);
   const mainText = isMine
