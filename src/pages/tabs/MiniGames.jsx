@@ -9,7 +9,6 @@ import QolLogo from '@/components/qol/QolLogo';
 import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
 import { useDictT } from '@/lib/dictionaryI18n';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const GAMES_CONFIG = [
   { id: 'word_guess', emoji: '🔤', color: theme.colors.teal, nameKey: 'wordGuessName', descKey: 'wordGuessDesc' },
@@ -141,9 +140,12 @@ export default function MiniGames() {
             {GAMES.map(game => (
               <button
                 key={game.id}
-                onClick={() => setSelectedGame(game)}
+                onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm"
-                style={{ borderColor: 'rgba(22,164,153,0.12)' }}
+                style={{
+                  borderColor: selectedGame?.id === game.id ? game.color : 'rgba(22,164,153,0.12)',
+                  boxShadow: selectedGame?.id === game.id ? `0 0 0 2px ${game.color}30` : undefined,
+                }}
               >
                 <div
                   className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
@@ -155,28 +157,20 @@ export default function MiniGames() {
                   <p className="font-bold text-gray-900">{game.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{game.description}</p>
                 </div>
-                <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
+                {selectedGame?.id === game.id && (
+                  <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: game.color }} />
+                )}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Hint */}
-        <div className="flex flex-col items-center py-10 text-center text-gray-400">
-          <BookOpen className="w-12 h-12 mb-3 opacity-30" />
-          <p className="text-sm">{t.selectGameHint}</p>
-        </div>
-      </div>
-
-      {/* Invite-user popup — shown after a game is tapped */}
-      <Dialog open={!!selectedGame} onOpenChange={(open) => !open && setSelectedGame(null)}>
-        <DialogContent className="max-w-sm rounded-2xl max-h-[80vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedGame ? `${t.pickMatch} — ${selectedGame.name}` : t.pickMatch}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto flex-1 -mx-1 px-1">
+        {/* Match picker — shown after game selected */}
+        {selectedGame && (
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+              {t.pickMatch}
+            </p>
             {loading ? (
               <div className="flex justify-center py-8">
                 <div className="w-7 h-7 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
@@ -192,44 +186,52 @@ export default function MiniGames() {
                   );
                 }
                 return (
-                  <div className="space-y-2 py-1">
-                    {onlineMatches.map(match => {
-                      const other = match.otherProfile;
-                      const name = other?.display_name || 'Connection';
-                      const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
-                      return (
-                        <button
-                          key={match.id}
-                          onClick={() => startGame(match, selectedGame.id)}
-                          disabled={creating}
-                          className="w-full flex items-center gap-3 p-4 bg-white rounded-2xl shadow-sm border border-gray-50 text-left transition-all hover:shadow-md active:scale-[0.98]"
+              <div className="space-y-2">
+                {onlineMatches.map(match => {
+                  const other = match.otherProfile;
+                  const name = other?.display_name || 'Connection';
+                  const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+                  return (
+                    <button
+                      key={match.id}
+                      onClick={() => startGame(match, selectedGame.id)}
+                      disabled={creating}
+                      className="w-full flex items-center gap-3 p-4 bg-white rounded-2xl shadow-sm border border-gray-50 text-left transition-all hover:shadow-md active:scale-[0.98]"
+                    >
+                      {other?.avatar_url ? (
+                        <img src={other.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
+                      ) : (
+                        <div
+                          className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
                         >
-                          {other?.avatar_url ? (
-                            <img src={other.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
-                          ) : (
-                            <div
-                              className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-                              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-                            >
-                              {name[0]?.toUpperCase()}
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-gray-900">{flag} {name}</p>
-                            <p className="text-xs text-gray-400">{t.playWith} {selectedGame.name}</p>
-                          </div>
-                          <span className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0 ring-2 ring-white" />
-                          <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
-                        </button>
-                      );
-                    })}
-                  </div>
+                          {name[0]?.toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900">{flag} {name}</p>
+                        <p className="text-xs text-gray-400">{t.playWith} {selectedGame.name}</p>
+                      </div>
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0 ring-2 ring-white" />
+                      <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
+                    </button>
+                  );
+                })}
+              </div>
                 );
               })()
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+
+        {/* Hint when no game selected */}
+        {!selectedGame && (
+          <div className="flex flex-col items-center py-10 text-center text-gray-400">
+            <BookOpen className="w-12 h-12 mb-3 opacity-30" />
+            <p className="text-sm">{t.selectGameHint}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
