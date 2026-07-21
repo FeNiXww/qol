@@ -83,7 +83,7 @@ const AuthenticatedApp = () => {
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
         {/* Protected routes */}
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/welcome" replace />} />}>
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/language" replace />} />}>
           {/* Onboarding */}
           <Route path="/onboarding/name" element={<YourName />} />
           <Route path="/onboarding/nationality" element={<Nationality />} />
