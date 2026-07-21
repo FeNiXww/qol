@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { getUnreadMatchIds } from '@/lib/unread';
 import { base44 } from '@/api/base44Client';
@@ -25,17 +25,30 @@ export default function Matches() {
 
   useEffect(() => {
     if (!currentUser) return;
+    const debounceRef = { timer: null };
+
     const load = async () => {
-      setLoading(true);
       const data = await getMatches(currentUser.id);
       setMatches(data);
       setLoading(false);
       setUnreadIds(await getUnreadMatchIds(data, currentUser.id));
     };
+
+    const debouncedLoad = () => {
+      clearTimeout(debounceRef.timer);
+      debounceRef.timer = setTimeout(load, 2000);
+    };
+
+    setLoading(true);
     load();
-    const unsub = base44.entities.Match.subscribe(() => load());
-    const unsubMsg = base44.entities.Message.subscribe(() => load());
-    return () => { unsub(); unsubMsg(); };
+
+    const unsub = base44.entities.Match.subscribe(debouncedLoad);
+    const unsubMsg = base44.entities.Message.subscribe(debouncedLoad);
+    return () => {
+      clearTimeout(debounceRef.timer);
+      unsub();
+      unsubMsg();
+    };
   }, [currentUser?.id]);
 
   return (
