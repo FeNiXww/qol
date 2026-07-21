@@ -66,13 +66,21 @@ export default function Discover() {
     }
   }, [profile, genderFilter]);
 
-  const resetAndLoad = useCallback(() => {
+  const resetAndLoad = useCallback(async () => {
     setProfiles([]);
     swipedIdsRef.current = new Set();
-    setLoading(true);
     fetchingRef.current = false;
-    setTimeout(() => loadMore(), 0);
-  }, [loadMore]);
+    setLoading(true);
+    if (!profile) return;
+    fetchingRef.current = true;
+    try {
+      const batch = await fetchDiscoverBatch({ myProfile: profile, genderFilter, limit: 10 });
+      setProfiles(batch);
+    } finally {
+      fetchingRef.current = false;
+      setLoading(false);
+    }
+  }, [profile, genderFilter]);
 
   useEffect(() => {
     if (!profile) return;

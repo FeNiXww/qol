@@ -94,7 +94,7 @@ export default function Matches() {
           matches.map(match => {
             const other = match.otherProfile;
             const name = other?.display_name || 'Connection';
-            const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+            const flag = other ? (other.nationality === 'israeli' ? '🇮🇱' : '🇵🇸') : '🌍';
             const timeAgo = match.last_message_at
               ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true, locale: dateFnsLocale })
               : t.newMatch;

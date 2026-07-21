@@ -9,13 +9,18 @@ export async function getMatches(myUserId) {
   );
 
   // For each match, get the other user's profile
+  // Try both user_id and created_by_id since profiles use either field
   const enriched = await Promise.all(all.map(async (match) => {
     const otherId = match.user_a_id === myUserId ? match.user_b_id : match.user_a_id;
-    const profiles = await base44.entities.Profile.filter({ created_by_id: otherId });
-    return { ...match, otherId, otherProfile: profiles[0] || null };
+    let profileList = await base44.entities.Profile.filter({ user_id: otherId });
+    if (!profileList.length) {
+      profileList = await base44.entities.Profile.filter({ created_by_id: otherId });
+    }
+    return { ...match, otherId, otherProfile: profileList[0] || null };
   }));
 
-  return enriched.filter(m => m.otherProfile);
+  // Return all matches, even those without a profile (show as "Deleted user")
+  return enriched;
 }
 
 // A profile is considered online if its heartbeat is within the last 2 minutes

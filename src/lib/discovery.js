@@ -20,10 +20,10 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
   const swipes = await base44.entities.Swipe.filter({ swiper_id: myUserId });
   const swipedIds = new Set(swipes.map(s => s.target_id));
 
-  // Query candidates: opposite nationality, same age band, complete profile
+  // Query candidates: opposite nationality, complete profile
+  // Note: don't filter by age_band here — it may not be set on all profiles
   let query = {
     nationality: oppositeNationality,
-    age_band: myAgeBand,
     onboarding_step: 'complete',
   };
   if (genderFilter) {
