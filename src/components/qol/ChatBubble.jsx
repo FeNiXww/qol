@@ -44,7 +44,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const isFailed = message.status === 'failed';
   const isSending = message.status === 'sending';
 
-  const actionColor = '#6B7280'; // gray-500 — slightly brighter than translate text
+  const actionColor = '#6B7280';
 
   return (
     <>
@@ -65,22 +65,23 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
         </div>
       )}
 
-      {/* actions modal — WhatsApp style, anchored next to bubble */}
+      {/* actions modal anchored next to bubble */}
       {showModal && (
         <>
-          {/* backdrop — invisible, closes modal on outside click */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setShowModal(false)}
           />
           <div
+
             className={`fixed z-50 bg-white rounded-2xl shadow-xl border border-gray-100 py-1 min-w-[180px] ${
-              isMine ? 'right-4' : 'left-4'
+              isMine ? (bubbleRef.current ? bubbleRef.current.offsetWidth + 16 : 16 ): (bubbleRef.current ? window.innerWidth - bubbleRef.current.getBoundingClientRect().right + 16 : 16)
             }`}
             style={{
               top: bubbleRef.current
-                ? bubbleRef.current.getBoundingClientRect().top + window.scrollY
+                ? bubbleRef.current.getBoundingClientRect().top + window.scrollY + bubbleRef.current.offsetHeight / 2
                 : '50%',
+
             }}
           >
             {/* TTS */}
