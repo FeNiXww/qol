@@ -14,14 +14,13 @@ function ProfileCard({ profile, onConnect, onPass }) {
 
   return (
     <>
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative flex items-center justify-center" style={{ width: '100%', height: '100%' }}>
         <div
           className="relative rounded-[32px] overflow-hidden shadow-2xl flex flex-col"
           style={{
             width: '88%',
             maxWidth: 360,
-            height: '88%',
-            maxHeight: 580,
+            height: 520,
             background: 'linear-gradient(160deg, #0D6470 0%, #132E4C 100%)',
           }}
         >
@@ -234,10 +233,11 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
   return (
     <div
       className="flex-1 flex flex-col overflow-hidden"
+      style={{ minHeight: 0 }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentProfile.id}
@@ -251,7 +251,7 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
             animate="center"
             exit="exit"
             transition={{ duration: 0.32, ease: 'easeInOut' }}
-            className="absolute inset-0 flex items-center justify-center"
+            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <ProfileCard
               profile={currentProfile}

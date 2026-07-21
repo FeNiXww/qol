@@ -192,7 +192,7 @@ export default function Discover() {
       )}
 
       {/* Scroll deck */}
-      <div className="flex-1 flex flex-col pt-2 overflow-hidden" style={{ background: '#E6E2D8' }}>
+      <div className="flex-1 flex flex-col pt-2 overflow-hidden" style={{ background: '#E6E2D8', minHeight: 0 }}>
         <ScrollDeck
           profiles={profiles}
           onSwipe={handleSwipe}
