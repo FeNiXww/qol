@@ -25,7 +25,7 @@ export default function Settings() {
         <button onClick={() => navigate(-1)} className="text-white/70 p-1 -ml-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-black text-white">{t.appLanguage}</h1>
+        <h1 className="text-2xl font-black text-white">Settings</h1>
       </div>
 
       <div className="flex-1 px-5 py-6 space-y-5" style={{ background: '#E6E2D8' }}>
