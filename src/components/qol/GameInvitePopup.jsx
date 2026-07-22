@@ -85,7 +85,7 @@ export default function GameInvitePopup() {
             ) : (
               <div
                 className="w-11 h-11 rounded-full flex items-center justify-center text-white flex-shrink-0"
-                style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+                style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
               >
                 <Gamepad2 className="w-5 h-5" />
               </div>

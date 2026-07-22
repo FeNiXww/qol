@@ -122,7 +122,7 @@ export default function ProfileTab() {
             <div
               className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black text-white"
               style={{
-                background: 'linear-gradient(135deg, #16A499, #FA7C27)',
+                background: 'linear-gradient(135deg, #132E4C, #1E4870)',
                 border: '3px solid rgba(255,255,255,0.4)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.25)'
               }}>

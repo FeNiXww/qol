@@ -98,7 +98,7 @@ export default function Matches() {
             <Link
               to="/"
               className="mt-6 px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-md"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+              style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
             >
               {t.goToDiscover}
             </Link>
@@ -126,7 +126,7 @@ export default function Matches() {
                   ) : (
                     <div
                       className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                      style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+                      style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
                     >
                       {name[0]?.toUpperCase()}
                     </div>

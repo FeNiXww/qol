@@ -73,7 +73,7 @@ export default function Layout() {
                       className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200"
                       style={
                         isActive
-                          ? { background: `linear-gradient(135deg, #16A499, #FA7C27)`, boxShadow: `0 4px 16px rgba(22,164,153,0.35)` }
+                          ? { background: `linear-gradient(135deg, #132E4C, #1E4870)`, boxShadow: `0 4px 16px rgba(22,164,153,0.35)` }
                           : { background: 'transparent' }
                       }
                     >

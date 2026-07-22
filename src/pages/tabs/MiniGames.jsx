@@ -235,7 +235,7 @@ export default function MiniGames() {
                       ) : (
                         <div
                           className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-                          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+                          style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
                         >
                           {name[0]?.toUpperCase()}
                         </div>

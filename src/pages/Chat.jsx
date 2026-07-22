@@ -190,7 +190,7 @@ export default function Chat() {
         ) : (
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-white/30"
-            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+            style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
           >
             {name[0]?.toUpperCase()}
           </div>

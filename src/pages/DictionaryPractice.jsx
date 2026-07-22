@@ -83,7 +83,7 @@ export default function DictionaryPractice() {
             <button
               onClick={() => setEditing(true)}
               className="px-6 py-3 rounded-2xl text-white font-bold text-sm shadow-lg active:scale-95 transition-transform"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+              style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
             >
               {dt.addWord}
             </button>
@@ -95,7 +95,7 @@ export default function DictionaryPractice() {
             <button
               onClick={() => setIndex(0)}
               className="px-6 py-3 rounded-2xl text-white font-bold text-sm shadow-lg active:scale-95 transition-transform"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+              style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
             >
               {dt.practiceAgain}
             </button>

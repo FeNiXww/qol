@@ -62,7 +62,7 @@ function ProfileCard({ profile, onConnect, onPass }) {
 
               <div
                 className="w-full h-full flex items-center justify-center text-5xl font-black text-white"
-                style={{ background: `linear-gradient(135deg, #16A499, #FA7C27)` }}>
+                style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}>
                 
                   {name[0]?.toUpperCase()}
                 </div>
@@ -115,7 +115,7 @@ function ProfileCard({ profile, onConnect, onPass }) {
               setTimeout(() => { setBurst(false); onConnect(profile); }, 450);
             }}
             className="relative w-20 h-20 rounded-full flex items-center justify-center shadow-2xl overflow-visible"
-            style={{ background: 'linear-gradient(135deg, #16A499, #FA7C27)' }}>
+            style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
             {burst && (
               <>
                 {[0,60,120,180,240,300].map(deg => (
@@ -226,7 +226,7 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
           <button
             onClick={() => onRefresh?.()}
             className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #16A499, #FA7C27)' }}>
+            style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
             
             <RefreshCw className="w-4 h-4" />
             {t.refresh}

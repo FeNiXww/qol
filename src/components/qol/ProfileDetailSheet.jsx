@@ -62,7 +62,7 @@ export default function ProfileDetailSheet({ profile, onClose, onLike, onPass })
             ) : (
               <div
                 className="w-full h-full flex items-center justify-center rounded-t-3xl"
-                style={{ background: 'linear-gradient(160deg, #16A499 0%, #0D6470 60%, #132E4C 100%)' }}
+                style={{ background: 'linear-gradient(160deg, #1E4870 0%, #132E4C 100%)' }}
               >
                 <span className="text-white font-black" style={{ fontSize: 96, opacity: 0.25 }}>{name[0]?.toUpperCase()}</span>
               </div>

@@ -20,7 +20,7 @@ export default function MatchModal({ match, myProfile, onClose }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-6"
-        style={{ background: `linear-gradient(135deg, ${theme.colors.teal}F0, ${theme.colors.orange}F0)` }}
+        style={{ background: `linear-gradient(135deg, #132E4CF0, #1E4870F0)` }}
         onClick={onClose}
       >
         <motion.div
@@ -75,7 +75,7 @@ export default function MatchModal({ match, myProfile, onClose }) {
           <button
             onClick={() => { onClose(); navigate(`/chat/${match.id}`); }}
             className="w-full py-4 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 mb-3"
-            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+            style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
           >
             <MessageCircle className="w-5 h-5" />
             Send a message

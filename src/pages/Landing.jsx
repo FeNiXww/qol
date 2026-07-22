@@ -101,7 +101,7 @@ export default function Landing() {
         <button
           onClick={next}
           className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl transition-all active:scale-95"
-          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}>
+          style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}>
           
           {isLast ? t.joinMovement : t.next}
         </button>
