@@ -81,20 +81,22 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
 
             }}
           >
-            {/* TTS */}
-            <button
-              onClick={() => { setShowModal(false); handleSpeak(); }}
-              disabled={speaking}
-              className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
-              {speaking
-                ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: actionColor }} />
-                : <Mic className="w-4 h-4" style={{ color: actionColor }} />
-              }
-              <span className="text-sm" style={{ color: actionColor }}>
-                {speaking ? 'Playing...' : 'Listen'}
-              </span>
-            </button>
+            {/* TTS — only for received messages */}
+            {!isMine && (
+              <button
+                onClick={() => { setShowModal(false); handleSpeak(); }}
+                disabled={speaking}
+                className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                {speaking
+                  ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: actionColor }} />
+                  : <Mic className="w-4 h-4" style={{ color: actionColor }} />
+                }
+                <span className="text-sm" style={{ color: actionColor }}>
+                  {speaking ? 'Playing...' : 'Listen'}
+                </span>
+              </button>
+            )}
 
             {/* Translation toggle */}
             {!isMine && subText && (
