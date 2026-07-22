@@ -263,9 +263,9 @@ export default function Premium() {
           <p className="text-white/40 text-xs mb-1">
             {lang === 'he' ? 'בטל בכל עת' : lang === 'ar' ? 'إلغاء في أي وقت' : 'Cancel anytime'}
           </p>
-          <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mt-1 hidden" style={{ background: 'rgba(245,158,11,0.2)', color: '#F59E0B' }}>
-            {lang === 'he' ? '✨ הצעה לזמן מוגבל' : lang === 'ar' ? '✨ عرض لفترة محدودة' : '✨ Limited time offer'}
-          </div>
+          
+
+          
         </div>
 
         {isPremium ?
