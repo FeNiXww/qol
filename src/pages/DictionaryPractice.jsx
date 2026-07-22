@@ -47,7 +47,7 @@ export default function DictionaryPractice() {
   const done = !loading && words.length > 0 && index >= words.length;
 
   return (
-    <div className="flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
+    <div className="flex flex-col h-full" dir={dir} style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0"
