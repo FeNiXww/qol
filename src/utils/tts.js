@@ -1,74 +1,57 @@
-// Browser-based text-to-speech using the Web Speech API (SpeechSynthesis).
+// Text-to-speech via the Base44 Core.GenerateSpeech integration.
 //
-// Why not the server GenerateSpeech integration?
-//  - Its language_code enum rejects Hebrew ('he' / 'iw' / 'he-IL' all fail
-//    validation), so Hebrew had no working path.
-//  - It consumes integration credits and trips rate limits under load.
-// The browser SpeechSynthesis API natively supports Hebrew (he-IL), Arabic
-// (ar), and English, works offline, and is the recommended approach for
-// in-page playback.
+// Returns an MP3 URL and plays it through an <audio> element, which produces
+// reliable audio on every device — unlike the browser SpeechSynthesis API,
+// which silently does nothing when the device has no Hebrew/Arabic voice
+// installed.
 //
-// IMPORTANT for iOS: speechSynthesis.speak() must run synchronously inside
-// the user-gesture call stack. Any `await` before .speak() can break the
-// gesture chain and the utterance never plays. Kant off voice resolution —
-// it doesn't block playback; the browser will pick a default voice if none
-// is matched yet.
+// Language handling:
+//  - Arabic / English: pass an explicit language_code (supported by the
+//    service).
+//  - Hebrew: the service rejects 'he', so we omit language_code and rely on
+//    its multilingual auto-detection (Hebrew script is detected reliably).
 
-const LANG_MAP = {
-  he: 'he-IL',
-  ar: 'ar-SA',
-  en: 'en-US',
+import { base44 } from '@/api/base44Client';
+
+const VOICE = 'river';
+const LANG_CODE = {
+  ar: 'ar',
+  en: 'en',
+  // he intentionally omitted -> auto-detect
 };
 
-let cachedVoices = null;
+let currentAudio = null;
 
-export function getVoices() {
-  if (cachedVoices && cachedVoices.length) return cachedVoices;
-  const v = window.speechSynthesis?.getVoices?.() || [];
-  if (v.length) cachedVoices = v;
-  return v;
-}
+export default async function generateTTS(text, language) {
+  if (!text) return;
 
-// Voices load asynchronously in some browsers.
-if (typeof window !== 'undefined' && window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = () => {
-    cachedVoices = window.speechSynthesis.getVoices();
-  };
-}
-
-function pickVoice(lang) {
-  const voices = getVoices();
-  if (!voices.length) return null;
-  const base = lang.slice(0, 2).toLowerCase();
-  return (
-    voices.find((x) => x.lang === lang) ||
-    voices.find((x) => x.lang?.toLowerCase().startsWith(base)) ||
-    null
-  );
-}
-
-export default function generateTTS(text, language) {
-  if (!text) return Promise.resolve();
-  if (typeof window === 'undefined' || !window.speechSynthesis) {
-    return Promise.reject(new Error('Speech synthesis not supported'));
+  // Stop anything currently playing so repeated taps replay cleanly.
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
   }
 
-  const targetLang = LANG_MAP[language] || LANG_MAP.en;
+  const payload = { text, voice: VOICE };
+  if (LANG_CODE[language]) payload.language_code = LANG_CODE[language];
 
-  // Synchronously build + speak so we stay inside the tap's gesture stack.
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = targetLang;
-  const voice = pickVoice(targetLang);
-  if (voice) utter.voice = voice;
-  utter.rate = 0.95;
-  utter.pitch = 1;
+  const res = await base44.integrations.Core.GenerateSpeech(payload);
+  const url = res?.url;
+  if (!url) throw new Error('No audio URL returned');
 
-  return new Promise((resolve) => {
-    utter.onend = () => resolve();
-    utter.onerror = () => resolve();
-    // Some browsers pause the queue if not resumed; resume defensively.
-    try { window.speechSynthesis.resume(); } catch {}
-    window.speechSynthesis.speak(utter);
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.onended = () => {
+      if (currentAudio === audio) currentAudio = null;
+      resolve();
+    };
+    audio.onerror = () => {
+      if (currentAudio === audio) currentAudio = null;
+      reject(new Error('Audio playback failed'));
+    };
+    audio.play().catch((e) => {
+      if (currentAudio === audio) currentAudio = null;
+      reject(e);
+    });
   });
 }
