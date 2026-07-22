@@ -8,7 +8,7 @@ export default async function generateTTS(text, language) {
   const { url } = await base44.integrations.Core.GenerateSpeech({
     text,
     language_code: langCode,
-    voice: language === 'he' ? 'honey' : 'river',
+    voice: 'river',
   });
 
   return new Promise((resolve, reject) => {
