@@ -1,14 +1,13 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { theme } from '@/lib/theme';
+import confetti from 'canvas-confetti';
+import { RefreshCw, Volume2 } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 
 const MAX_MISTAKES = 3;
-const LETTER_SIZE = 52;
+const PAIRS_PER_ROUND = 5;
 
-const PAIRS_PER_ROUND = 10;
-
-// Full Hebrew ↔ Arabic cognate letter pairs — each round picks a random subset
+// Hebrew ↔ Arabic cognate letter pairs
 const LETTER_PAIRS = [
   ['א', 'ا'], ['ב', 'ب'], ['ג', 'ج'], ['ד', 'د'], ['ה', 'ه'], ['ו', 'و'],
   ['ז', 'ز'], ['ח', 'ح'], ['ט', 'ط'], ['י', 'ي'], ['כ', 'ك'], ['ל', 'ل'],
@@ -16,210 +15,226 @@ const LETTER_PAIRS = [
   ['ק', 'ق'], ['ר', 'ر'], ['ש', 'ش'], ['ת', 'ت'],
 ];
 
-function pickRandomPairs() {
-  const shuffled = [...LETTER_PAIRS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, PAIRS_PER_ROUND);
-}
+const HE_GRADIENT = 'linear-gradient(145deg, #132E4C, #1E4870)';
+const AR_GRADIENT = 'linear-gradient(145deg, #16A499, #0D6470)';
 
-function generateLetters(width, height) {
-  const pairs = pickRandomPairs();
-  const PAD = 8;
-  const CELL = LETTER_SIZE + 14;
-  const w = Math.max(width - PAD * 2, CELL);
-  const h = Math.max(height - PAD * 2, CELL);
-  const cols = Math.max(1, Math.floor(w / CELL));
-  const rows = Math.max(1, Math.floor(h / CELL));
-  // If the board is too small for all pairs, use fewer pairs so nothing overlaps
-  while (pairs.length > 2 && cols * rows < pairs.length * 2) pairs.pop();
-  const cells = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push({ r, c });
-  cells.sort(() => Math.random() - 0.5);
-  const cellW = w / cols;
-  const cellH = h / rows;
-  const result = [];
-  let ci = 0;
-  for (let i = 1; i <= pairs.length; i++) {
-    const [heLetter, arLetter] = pairs[i - 1];
-    for (const lang of ['hebrew', 'arabic']) {
-      const cell = cells[ci++];
-      const x = PAD + cell.c * cellW + Math.random() * Math.max(0, cellW - LETTER_SIZE);
-      const y = PAD + cell.r * cellH + Math.random() * Math.max(0, cellH - LETTER_SIZE);
-      result.push({
-        id: i,
-        language: lang,
-        letter: lang === 'hebrew' ? heLetter : arLetter,
-        x, y,
-      });
-    }
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return result;
+  return a;
 }
 
-function rectsOverlap(a, b) {
-  return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
+function makeRound() {
+  const chosen = shuffle(LETTER_PAIRS).slice(0, PAIRS_PER_ROUND);
+  const pairs = chosen.map((p, i) => ({ id: i + 1, he: p[0], ar: p[1] }));
+  const ids = pairs.map(p => p.id);
+  let heOrder = shuffle(ids);
+  let arOrder = shuffle(ids);
+  // Make sure the two orders aren't identical (so it's not purely positional)
+  let guard = 0;
+  while (arOrder.join() === heOrder.join() && guard++ < 10) arOrder = shuffle(ids);
+  return { pairs, heOrder, arOrder };
+}
+
+function speakLetter(letter, lang) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(letter);
+    u.lang = lang === 'he' ? 'he-IL' : 'ar-SA';
+    u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  } catch { /* ignore */ }
 }
 
 export default function LetterMatchGame() {
   const { t } = useLang();
-  const [letters, setLetters] = useState([]);
+  const [pairs, setPairs] = useState([]);
+  const [heOrder, setHeOrder] = useState([]);
+  const [arOrder, setArOrder] = useState([]);
+  const [matched, setMatched] = useState(new Set());
+  const [selected, setSelected] = useState(null); // { id, side }
   const [mistakes, setMistakes] = useState(0);
+  const [wrong, setWrong] = useState(null); // { a: key, b: key }
   const [won, setWon] = useState(false);
   const [lost, setLost] = useState(false);
   const [showTutorial, setShowTutorial] = useState(true);
-  const [mistakeTick, setMistakeTick] = useState(0);
-  const boardRef = useRef(null);
-  const letterEls = useRef({});
-  const generatedRef = useRef(false);
-  const [dims, setDims] = useState({ w: 0, h: 0 });
-  const [totalPairs, setTotalPairs] = useState(PAIRS_PER_ROUND);
 
-  useLayoutEffect(() => {
-    const measure = () => {
-      if (!boardRef.current) return;
-      const r = boardRef.current.getBoundingClientRect();
-      setDims({ w: r.width, h: r.height });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (boardRef.current) ro.observe(boardRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  const newGame = useCallback((w, h) => {
+  const newGame = useCallback(() => {
+    const r = makeRound();
+    setPairs(r.pairs);
+    setHeOrder(r.heOrder);
+    setArOrder(r.arOrder);
+    setMatched(new Set());
+    setSelected(null);
+    setMistakes(0);
+    setWrong(null);
     setWon(false);
     setLost(false);
-    setMistakes(0);
-    // Don't clear letterEls: React reuses DOM nodes by key across resets, so
-    // ref callbacks won't re-fire for them. The callbacks add/delete entries
-    // on mount/unmount, keeping the map correct without a manual wipe.
-    const generated = generateLetters(w, h);
-    setTotalPairs(generated.length / 2);
-    setLetters(generated);
   }, []);
 
+  useEffect(() => { newGame(); }, [newGame]);
+
   useEffect(() => {
-    if (!generatedRef.current && dims.w > 0 && dims.h > 0) {
-      generatedRef.current = true;
-      newGame(dims.w, dims.h);
+    if (won) {
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 }, colors: ['#132E4C', '#1E4870', '#16A499', '#FA7C27'] });
     }
-  }, [dims, newGame]);
+  }, [won]);
 
-  const speak = (letter, language) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      const u = new SpeechSynthesisUtterance(letter);
-      u.lang = language === 'hebrew' ? 'he-IL' : 'ar-SA';
-      u.rate = 0.9;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    } catch (e) { /* ignore */ }
-  };
+  const pairById = useMemo(() => {
+    const m = {};
+    pairs.forEach(p => { m[p.id] = p; });
+    return m;
+  }, [pairs]);
 
-  const handleCorrect = (id) => {
-    setLetters(prev => {
-      const next = prev.filter(l => l.id !== id);
-      if (next.length === 0) setTimeout(() => setWon(true), 250);
-      return next;
-    });
-  };
+  const totalPairs = pairs.length;
+  const matchedCount = matched.size;
 
-  const handleMistake = () => {
-    setMistakeTick(t => t + 1);
-    setMistakes(prev => {
-      const next = prev + 1;
-      if (next >= MAX_MISTAKES) setTimeout(() => setLost(true), 250);
-      return next;
-    });
-  };
+  const handleTap = (id, side) => {
+    if (showTutorial || won || lost) return;
+    const pair = pairById[id];
+    if (!pair) return;
+    const letter = side === 'he' ? pair.he : pair.ar;
+    speakLetter(letter, side === 'he' ? 'he' : 'ar');
 
-  const onDragEnd = (key) => {
-    const el = letterEls.current[key];
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const [releasedLang, idStr] = key.split('-');
-    const releasedId = Number(idStr);
-    for (const [otherKey, otherEl] of Object.entries(letterEls.current)) {
-      if (otherKey === key) continue;
-      const [otherLang, otherIdStr] = otherKey.split('-');
-      if (otherLang === releasedLang) continue;
-      const otherRect = otherEl.getBoundingClientRect();
-      if (rectsOverlap(rect, otherRect)) {
-        if (Number(otherIdStr) === releasedId) handleCorrect(releasedId);
-        else handleMistake();
-        return;
-      }
+    if (!selected) {
+      setSelected({ id, side });
+      return;
+    }
+    if (selected.id === id && selected.side === side) {
+      setSelected(null);
+      return;
+    }
+    if (selected.side === side) {
+      setSelected({ id, side });
+      return;
+    }
+    // Opposite side → evaluate
+    if (selected.id === id) {
+      // Correct match
+      const next = new Set(matched);
+      next.add(id);
+      setMatched(next);
+      setSelected(null);
+      confetti({ particleCount: 24, spread: 50, startVelocity: 28, origin: { y: 0.5 }, colors: ['#16A499', '#1E4870'], scalar: 0.7 });
+      if (next.size === totalPairs) setTimeout(() => setWon(true), 350);
+    } else {
+      // Wrong
+      setWrong({ a: `${selected.side}-${selected.id}`, b: `${side}-${id}` });
+      setSelected(null);
+      const next = mistakes + 1;
+      setMistakes(next);
+      setTimeout(() => setWrong(null), 600);
+      if (next >= MAX_MISTAKES) setTimeout(() => setLost(true), 650);
     }
   };
 
-  const lives = Array.from({ length: MAX_MISTAKES });
-  const matchedPairs = totalPairs - letters.length / 2;
+  const renderTile = (id, side) => {
+    const pair = pairById[id];
+    if (!pair || matched.has(id)) return null;
+    const key = `${side}-${id}`;
+    const isSelected = selected && selected.id === id && selected.side === side;
+    const isWrong = wrong && (wrong.a === key || wrong.b === key);
+    const letter = side === 'he' ? pair.he : pair.ar;
+
+    return (
+      <motion.button
+        key={key}
+        layout
+        initial={{ scale: 0, opacity: 0 }}
+        animate={isWrong
+          ? { scale: 1, opacity: 1, x: [0, -6, 6, -4, 4, 0] }
+          : { scale: 1, opacity: 1, x: 0 }}
+        exit={{ scale: 0.4, opacity: 0, rotate: -20, transition: { duration: 0.25 } }}
+        transition={{ type: 'spring', stiffness: 320, damping: 20 }}
+        whileTap={{ scale: 0.92 }}
+        onClick={() => handleTap(id, side)}
+        className="relative flex items-center justify-center rounded-2xl select-none touch-manipulation"
+        style={{
+          width: 60,
+          height: 60,
+          background: isWrong
+            ? 'linear-gradient(145deg, #EF4444, #B91C1C)'
+            : (side === 'he' ? HE_GRADIENT : AR_GRADIENT),
+          boxShadow: isSelected
+            ? '0 0 0 4px #fff, 0 8px 22px rgba(0,0,0,0.28)'
+            : '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.25)',
+        }}
+      >
+        <span className="text-white font-bold leading-none" style={{ fontSize: 30 }}>{letter}</span>
+        {isSelected && (
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-white animate-pulse" />
+        )}
+      </motion.button>
+    );
+  };
+
+  const visibleHe = heOrder.filter(id => !matched.has(id));
+  const visibleAr = arOrder.filter(id => !matched.has(id));
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#F5F0E8' }}>
       {/* Progress + lives bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b" style={{ borderColor: '#E8E0D2' }}>
+      <div className="flex items-center justify-between px-5 py-3 bg-white border-b" style={{ borderColor: '#E8E0D2' }}>
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className="flex-1 max-w-[140px] h-2 rounded-full overflow-hidden" style={{ background: '#EEE7DA' }}>
+          <div className="flex-1 max-w-[160px] h-2.5 rounded-full overflow-hidden" style={{ background: '#EEE7DA' }}>
             <motion.div
               className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-              animate={{ width: `${(matchedPairs / totalPairs) * 100}%` }}
+              style={{ background: 'linear-gradient(90deg, #132E4C, #1E4870)' }}
+              animate={{ width: `${totalPairs ? (matchedCount / totalPairs) * 100 : 0}%` }}
               transition={{ type: 'spring', stiffness: 200, damping: 25 }}
             />
           </div>
-          <span className="text-xs font-bold text-gray-400 flex-shrink-0">{matchedPairs}/{totalPairs}</span>
+          <span className="text-xs font-bold text-gray-400 flex-shrink-0">{matchedCount}/{totalPairs || PAIRS_PER_ROUND}</span>
         </div>
-        <motion.div
-          key={mistakeTick}
-          animate={mistakeTick > 0 ? { x: [0, -6, 6, -4, 4, 0] } : false}
-          transition={{ duration: 0.4 }}
-          className="flex gap-1"
-        >
-          {lives.map((_, i) => (
-            <span key={i} className="text-lg leading-none">{i < MAX_MISTAKES - mistakes ? '❤️' : '🖤'}</span>
-          ))}
-        </motion.div>
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1">
+            {Array.from({ length: MAX_MISTAKES }).map((_, i) => (
+              <span key={i} className="text-base leading-none">{i < MAX_MISTAKES - mistakes ? '❤️' : '🖤'}</span>
+            ))}
+          </div>
+          <button onClick={newGame} className="text-gray-400 hover:text-gray-600 active:scale-90 transition-transform" aria-label="restart">
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Board */}
-      <div ref={boardRef} className="relative flex-1 overflow-hidden touch-none" style={{ background: '#F5F0E8' }}>
-        <AnimatePresence>
-          {letters.map((l, idx) => {
-            const key = `${l.language}-${l.id}`;
-            const isHebrew = l.language === 'hebrew';
-            return (
-              <motion.div
-                key={key}
-                drag
-                dragConstraints={boardRef}
-                dragMomentum={false}
-                dragElastic={0}
-                onDragEnd={() => onDragEnd(key)}
-                onTap={() => speak(l.letter, l.language)}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0, rotate: 90, transition: { duration: 0.3 } }}
-                transition={{ type: 'spring', stiffness: 320, damping: 22, delay: idx * 0.02 }}
-                whileTap={{ scale: 1.08 }}
-                whileDrag={{ zIndex: 50, scale: 1.15, boxShadow: '0 12px 28px rgba(0,0,0,0.25)' }}
-                ref={(el) => { if (el) letterEls.current[key] = el; else delete letterEls.current[key]; }}
-                className="absolute flex items-center justify-center rounded-2xl cursor-grab active:cursor-grabbing select-none"
-                style={{
-                  left: l.x,
-                  top: l.y,
-                  width: LETTER_SIZE,
-                  height: LETTER_SIZE,
-                  background: isHebrew
-                    ? `linear-gradient(145deg, ${theme.colors.teal}, #0D6470)`
-                    : `linear-gradient(145deg, ${theme.colors.orange}, #D95F10)`,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.25)',
-                }}
-              >
-                <span className="text-white font-bold leading-none drop-shadow-sm" style={{ fontSize: 26 }}>{l.letter}</span>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-5 py-4">
+        {/* Hebrew row */}
+        <div className="w-full max-w-sm flex flex-col items-center gap-2.5">
+          <span className="text-xs font-bold text-gray-400 tracking-wide">עברית · Hebrew</span>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            <AnimatePresence>
+              {visibleHe.map(id => renderTile(id, 'he'))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Connector */}
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-px h-5" style={{ background: '#D6CDB8' }} />
+          <span className="text-[10px] font-bold text-gray-400 px-2.5 py-0.5 rounded-full" style={{ background: '#EEE7DA' }}>MATCH</span>
+          <div className="w-px h-5" style={{ background: '#D6CDB8' }} />
+        </div>
+
+        {/* Arabic row */}
+        <div className="w-full max-w-sm flex flex-col items-center gap-2.5">
+          <span className="text-xs font-bold text-gray-400 tracking-wide">العربية · Arabic</span>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            <AnimatePresence>
+              {visibleAr.map(id => renderTile(id, 'ar'))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-1">
+          <Volume2 className="w-3 h-3" />
+          <span>{t.tapToHear || 'Tap a letter to hear it & match its pair'}</span>
+        </div>
       </div>
 
       {/* Modals */}
@@ -228,9 +243,11 @@ export default function LetterMatchGame() {
           <Overlay>
             <ModalCard>
               <div className="text-5xl mb-3">🧩</div>
-              <p className="text-xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.howToPlay}</p>
-              <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">{t.howToPlayDesc}</p>
-              <PrimaryBtn onClick={() => setShowTutorial(false)} color={theme.colors.teal}>{t.gotIt}</PrimaryBtn>
+              <p className="text-xl font-bold mb-2" style={{ color: '#132E4C' }}>{t.howToPlay || 'How to play'}</p>
+              <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">
+                {t.howToPlayDesc || 'Tap a Hebrew letter, then tap its matching Arabic letter to connect them. Clear the board before you run out of hearts ❤️.'}
+              </p>
+              <PrimaryBtn onClick={() => setShowTutorial(false)}>{t.gotIt || 'Got it'}</PrimaryBtn>
             </ModalCard>
           </Overlay>
         )}
@@ -238,9 +255,9 @@ export default function LetterMatchGame() {
           <Overlay>
             <ModalCard>
               <div className="text-5xl mb-3">🎉</div>
-              <p className="text-2xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.youDidIt}</p>
-              <p className="text-sm text-gray-500 text-center mb-6">{t.allMatched}</p>
-              <PrimaryBtn onClick={() => newGame(dims.w, dims.h)} color={theme.colors.teal}>{t.playAgain}</PrimaryBtn>
+              <p className="text-2xl font-bold mb-2" style={{ color: '#132E4C' }}>{t.youDidIt || 'You did it!'}</p>
+              <p className="text-sm text-gray-500 text-center mb-6">{t.allMatched || 'All letters matched!'}</p>
+              <PrimaryBtn onClick={newGame}>{t.playAgain || 'Play again'}</PrimaryBtn>
             </ModalCard>
           </Overlay>
         )}
@@ -248,9 +265,11 @@ export default function LetterMatchGame() {
           <Overlay>
             <ModalCard>
               <div className="text-5xl mb-3">💔</div>
-              <p className="text-2xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.youLost}</p>
-              <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">{t.lostDesc}</p>
-              <PrimaryBtn onClick={() => newGame(dims.w, dims.h)} color={theme.colors.orange}>{t.playAgain}</PrimaryBtn>
+              <p className="text-2xl font-bold mb-2" style={{ color: '#132E4C' }}>{t.youLost || 'Out of hearts'}</p>
+              <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">
+                {t.lostDesc || 'You ran out of hearts. Want to give it another try?'}
+              </p>
+              <PrimaryBtn onClick={newGame}>{t.playAgain || 'Play again'}</PrimaryBtn>
             </ModalCard>
           </Overlay>
         )}
@@ -286,13 +305,13 @@ function ModalCard({ children }) {
   );
 }
 
-function PrimaryBtn({ children, onClick, color }) {
+function PrimaryBtn({ children, onClick }) {
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
       className="px-10 py-3.5 rounded-xl text-white font-semibold text-base shadow-md"
-      style={{ background: color }}
+      style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}
     >
       {children}
     </motion.button>
