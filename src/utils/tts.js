@@ -1,5 +1,3 @@
-const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
-
 const VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
 
 export default async function generateTTS(text, language) {
@@ -8,7 +6,7 @@ export default async function generateTTS(text, language) {
     {
       method: "POST",
       headers: {
-        "xi-api-key": ELEVENLABS_API_KEY,
+        "xi-api-key": import.meta.env.VITE_ELEVENLABS_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -41,5 +39,3 @@ export default async function generateTTS(text, language) {
     audio.play().catch(reject);
   });
 }
-
-export default generateTTS;
