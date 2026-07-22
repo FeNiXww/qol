@@ -9,7 +9,8 @@ import NewMessageNotifier from '@/components/qol/NewMessageNotifier';
 
 export default function Layout() {
   const location = useLocation();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const dir = t.dir || 'ltr';
 
   const navItems = [
     { path: '/', label: t.discover, icon: Compass },
@@ -41,7 +42,7 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
+    <div className="flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       <GameInvitePopup />
       <NewMessageNotifier />
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>

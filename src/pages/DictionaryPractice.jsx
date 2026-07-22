@@ -7,11 +7,14 @@ import DictionaryEditor from '@/components/dictionary/DictionaryEditor';
 import { ArrowLeft, Pencil, X } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useDictT } from '@/lib/dictionaryI18n';
+import { useLang } from '@/contexts/LanguageContext';
 
 export default function DictionaryPractice() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const dt = useDictT();
+  const { t } = useLang();
+  const dir = t.dir || 'ltr';
   const [currentUser, setCurrentUser] = useState(null);
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +47,7 @@ export default function DictionaryPractice() {
   const done = !loading && words.length > 0 && index >= words.length;
 
   return (
-    <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
+    <div className="flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0"
@@ -109,8 +112,8 @@ export default function DictionaryPractice() {
               onSwipe={(dir) => handleSwipe(current, dir)}
             />
             <div className="flex justify-between w-full mt-6 px-2">
-              <span className="text-rose-400 text-xs font-bold">← ✗ {dt.dontKnowIt}</span>
-              <span className="text-emerald-500 text-xs font-bold">{dt.knowIt} ✓ →</span>
+              <span className="text-rose-400 text-xs font-bold">✗ {dt.dontKnowIt}</span>
+              <span className="text-emerald-500 text-xs font-bold">{dt.knowIt} ✓</span>
             </div>
           </div>
         )}
