@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, ChevronRight, Settings } from 'lucide-react';
+import { ChevronRight, Settings, X } from 'lucide-react';
 
 import QolLogo from '@/components/qol/QolLogo';
 import GameInvitations from '@/components/qol/GameInvitations';
@@ -160,18 +160,57 @@ export default function MiniGames() {
           </div>
         </div>
 
-        {/* Match picker — shown after game selected */}
-        {selectedGame && (
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-              {t.pickMatch}
-            </p>
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="w-7 h-7 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
+        {/* Hint when no game selected */}
+        {!selectedGame && (
+          <div className="flex flex-col items-center py-10 text-center text-gray-400">
+            <span className="text-5xl mb-3 opacity-40">🎮</span>
+            <p className="text-sm">{t.selectGameHint}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Match picker popup */}
+      {selectedGame && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40"
+            onClick={() => setSelectedGame(null)}
+          />
+          {/* Bottom sheet */}
+          <div
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
+            style={{ maxHeight: '70vh' }}
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-gray-200" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{selectedGame.emoji}</span>
+                <div>
+                  <p className="font-bold text-gray-900">{selectedGame.name}</p>
+                  <p className="text-xs text-gray-400">{t.pickMatch}</p>
+                </div>
               </div>
-            ) : (
-              (() => {
+              <button
+                onClick={() => setSelectedGame(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Match list */}
+            <div className="overflow-y-auto px-4 py-4 space-y-2" style={{ maxHeight: 'calc(70vh - 100px)' }}>
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-7 h-7 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
+                </div>
+              ) : (() => {
                 const onlineMatches = matches.filter(m => isProfileOnline(m.otherProfile));
                 if (onlineMatches.length === 0) {
                   return (
@@ -180,9 +219,7 @@ export default function MiniGames() {
                     </div>
                   );
                 }
-                return (
-              <div className="space-y-2">
-                {onlineMatches.map(match => {
+                return onlineMatches.map(match => {
                   const other = match.otherProfile;
                   const name = other?.display_name || 'Connection';
                   const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
@@ -191,7 +228,7 @@ export default function MiniGames() {
                       key={match.id}
                       onClick={() => startGame(match, selectedGame.id)}
                       disabled={creating}
-                      className="w-full flex items-center gap-3 p-4 bg-white rounded-2xl shadow-sm border border-gray-50 text-left transition-all hover:shadow-md active:scale-[0.98]"
+                      className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all hover:shadow-md active:scale-[0.98]"
                     >
                       {other?.avatar_url ? (
                         <img src={other.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
@@ -211,22 +248,12 @@ export default function MiniGames() {
                       <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
                     </button>
                   );
-                })}
-              </div>
-                );
-              })()
-            )}
+                });
+              })()}
+            </div>
           </div>
-        )}
-
-        {/* Hint when no game selected */}
-        {!selectedGame && (
-          <div className="flex flex-col items-center py-10 text-center text-gray-400">
-            <span className="text-5xl mb-3 opacity-40">🎮</span>
-            <p className="text-sm">{t.selectGameHint}</p>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
