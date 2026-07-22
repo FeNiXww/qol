@@ -2,7 +2,7 @@ const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
 
 const VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
 
-export async function generateTTS(text, language) {
+export default async function generateTTS(text, language) {
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
     {
