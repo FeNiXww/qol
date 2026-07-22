@@ -23,6 +23,12 @@ export default function Layout() {
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
+    // The unread badge is hidden on chat/game routes, so skip the
+    // poll/subscription there — this also avoids firing extra queries
+    // at the same moment a Chat page mounts its own load (rate-limit fix).
+    const p = location.pathname;
+    if (p.startsWith('/chat/') || p.startsWith('/game/') || p.startsWith('/letter-match')) return;
+
     const checkUnread = async () => {
       try {
         const user = await base44.auth.me();

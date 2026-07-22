@@ -43,20 +43,33 @@ export default function Chat() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
+  const loadInFlight = useRef(false);
   useEffect(() => {
     if (!currentUser) return;
+    // Guard against double-invoke (React strict mode / rapid re-renders)
+    // so we don't fire the load burst twice and trip the rate limit.
+    if (loadInFlight.current) return;
+    loadInFlight.current = true;
     const load = async () => {
-      let m = null;
-      try { m = await base44.entities.Match.get(matchId); } catch { return; }
-      const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
-      const profiles = await base44.entities.Profile.filter({ user_id: otherId });
-      setOtherProfile(profiles[0] || null);
-      const isUserA = m.user_a_id === currentUser.id;
-      const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
-      if (myClearedAt) setClearedAt(myClearedAt);
-      const msgs = await getMessages(matchId);
-      setMessages(msgs);
-      try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
+      try {
+        let m = null;
+        try { m = await base44.entities.Match.get(matchId); } catch { return; }
+        const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
+        const profiles = await base44.entities.Profile.filter({ user_id: otherId });
+        setOtherProfile(profiles[0] || null);
+        const isUserA = m.user_a_id === currentUser.id;
+        const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
+        if (myClearedAt) setClearedAt(myClearedAt);
+        const msgs = await getMessages(matchId);
+        setMessages(msgs);
+        try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
+      } catch (e) {
+        // Transient (e.g. rate limit) — keep cached messages; the realtime
+        // Message subscription will still update the thread live.
+        console.warn('Chat load failed, using cached messages', e);
+      } finally {
+        loadInFlight.current = false;
+      }
     };
     load();
   }, [matchId, currentUser?.id]);
