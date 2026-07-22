@@ -3,7 +3,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import HobbyChip from '@/components/qol/HobbyChip';
-import { Camera, LogOut, Edit2, Check, X, Settings } from 'lucide-react';
+import { Camera, LogOut, Edit2, Check, X, Settings, Crown } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { differenceInYears, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -83,6 +83,14 @@ export default function ProfileTab() {
         <div className="flex items-center justify-between px-5 mb-6">
           <h1 className="text-xl font-black text-white">{t.profileTitle}</h1>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/premium')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #EF4444)', color: 'white', boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }}
+            >
+              <Crown className="w-3.5 h-3.5" />
+              Premium
+            </button>
             <button
               onClick={() => navigate('/settings')}
               className="w-9 h-9 rounded-full flex items-center justify-center"
