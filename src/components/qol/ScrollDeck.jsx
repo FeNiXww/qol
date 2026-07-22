@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Plus } from 'lucide-react';
+import { RefreshCw, Plus, Heart } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useLang } from '@/contexts/LanguageContext';
 import ProfileDetailSheet from './ProfileDetailSheet';
@@ -130,7 +130,10 @@ function ProfileCard({ profile, onConnect, onPass }) {
                 ))}
               </>
             )}
-            <Plus className="w-10 h-10 text-white" strokeWidth={3} />
+            {burst
+              ? <Heart className="w-10 h-10 text-white" fill="white" />
+              : <Plus className="w-10 h-10 text-white" strokeWidth={3} />
+            }
           </motion.button>
 
 
