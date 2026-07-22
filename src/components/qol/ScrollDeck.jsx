@@ -28,9 +28,9 @@ function ProfileCard({ profile, onConnect, onPass }) {
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowDetail(true)}
           className="absolute top-4 left-4 flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-2xl z-10"
-          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}
-        >
-          <span className="text-lg leading-none">👁️</span>
+          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
+          
+          <span className="text-lg leading-none hidden">👁️</span>
           <span className="text-[10px] font-semibold text-white/80 leading-none">view</span>
         </motion.button>
 
