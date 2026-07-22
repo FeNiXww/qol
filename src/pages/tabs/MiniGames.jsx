@@ -3,12 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, ChevronRight, BookOpen, Settings } from 'lucide-react';
+import { Gamepad2, ChevronRight, Settings } from 'lucide-react';
 
 import QolLogo from '@/components/qol/QolLogo';
 import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
-import { useDictT } from '@/lib/dictionaryI18n';
 
 const GAMES_CONFIG = [
   { id: 'word_guess', emoji: '🔤', color: theme.colors.teal, nameKey: 'wordGuessName', descKey: 'wordGuessDesc' },
@@ -23,12 +22,8 @@ const OFFLINE_GAMES = [
 export default function MiniGames() {
   const navigate = useNavigate();
   const { t } = useLang();
-  const dt = useDictT();
   const GAMES = GAMES_CONFIG.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] }));
-  const soloGames = [
-    ...OFFLINE_GAMES.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] })),
-    { id: 'dictionary', emoji: '📖', color: theme.colors.teal, name: dt.dictionaryName, description: dt.dictionaryDesc, path: '/dictionary' },
-  ];
+  const soloGames = OFFLINE_GAMES.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] }));
   const [matches, setMatches] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -227,7 +222,7 @@ export default function MiniGames() {
         {/* Hint when no game selected */}
         {!selectedGame && (
           <div className="flex flex-col items-center py-10 text-center text-gray-400">
-            <BookOpen className="w-12 h-12 mb-3 opacity-30" />
+            <span className="text-5xl mb-3 opacity-40">🎮</span>
             <p className="text-sm">{t.selectGameHint}</p>
           </div>
         )}

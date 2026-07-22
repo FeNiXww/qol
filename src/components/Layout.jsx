@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Compass, MessageCircle, User, Gamepad2 } from 'lucide-react';
+import { Compass, MessageCircle, User, Gamepad2, BookOpen } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
@@ -15,9 +15,10 @@ export default function Layout() {
     { path: '/', label: t.discover, icon: Compass },
     { path: '/matches', label: t.matches, icon: MessageCircle },
     { path: '/games', label: t.games, icon: Gamepad2 },
+    { path: '/dictionary', label: t.dictionary || 'Dictionary', icon: BookOpen },
     { path: '/profile', label: t.profile, icon: User },
   ];
-  const hideTabs = location.pathname.startsWith('/chat/') || location.pathname.startsWith('/game/');
+  const hideTabs = location.pathname.startsWith('/chat/') || location.pathname.startsWith('/game/') || location.pathname.startsWith('/letter-match');
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {

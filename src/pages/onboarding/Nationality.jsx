@@ -46,6 +46,10 @@ export default function Nationality() {
         </div>
         <h1 className="text-3xl font-black mt-6" style={{ color: theme.colors.navy }}>{t.whoAreYou}</h1>
         <p className="text-gray-400 mt-2 text-sm">{t.nationalitySubtitle}</p>
+        <div className="mt-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2">
+          <span className="text-sm">ℹ️</span>
+          <p className="text-xs text-amber-700 leading-relaxed">{t.nationalityNote}</p>
+        </div>
       </div>
 
       <div className="space-y-4 flex-1">

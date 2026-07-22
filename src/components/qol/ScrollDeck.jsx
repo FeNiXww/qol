@@ -248,6 +248,12 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
         </AnimatePresence>
       </div>
 
+      {/* Scroll hint */}
+      <div className="flex items-center justify-center gap-1.5 py-1">
+        <span className="text-xs text-gray-400">Swipe up for next</span>
+        <span className="text-gray-400 animate-bounce text-sm">↑</span>
+      </div>
+
       {/* Dots indicator */}
       {profiles.length > 1 &&
       <div className="flex justify-center gap-1.5 py-3">

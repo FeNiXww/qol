@@ -97,12 +97,12 @@ const AuthenticatedApp = () => {
             <Route path="/" element={<Discover />} />
             <Route path="/matches" element={<Matches />} />
             <Route path="/games" element={<MiniGames />} />
+            <Route path="/dictionary" element={<DictionaryPractice />} />
             <Route path="/profile" element={<ProfileTab />} />
             <Route path="/chat/:matchId" element={<Chat />} />
           </Route>
           <Route path="/game/:sessionId" element={<GameRoom />} />
           <Route path="/letter-match" element={<LetterMatch />} />
-          <Route path="/dictionary" element={<DictionaryPractice />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/premium" element={<Premium />} />
         </Route>

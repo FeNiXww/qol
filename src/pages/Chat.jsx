@@ -197,18 +197,16 @@ export default function Chat() {
         )}
         <div className="flex-1 min-w-0">
           <h2 className="font-bold text-white truncate">{flag} {name}</h2>
-          <div className="flex items-center gap-1">
-            <Globe className="w-3 h-3 text-white/50" />
-            <p className="text-xs text-white/50">{translationOn ? 'Auto-translated' : 'Translation off'}</p>
-          </div>
         </div>
         <button
           onClick={() => setTranslationOn(p => !p)}
-          className="p-1 transition-colors"
-          title={translationOn ? 'Disable translation' : 'Enable translation'}
-          style={{ color: translationOn ? theme.colors.teal : 'rgba(255,255,255,0.35)' }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0"
+          style={translationOn
+            ? { background: 'rgba(22,164,153,0.25)', color: '#5EEAD4', border: '1px solid rgba(22,164,153,0.5)' }
+            : { background: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid rgba(239,68,68,0.4)' }}
         >
-          {translationOn ? <Globe className="w-5 h-5" /> : <GlobeLock className="w-5 h-5" />}
+          {translationOn ? <Globe className="w-3.5 h-3.5" /> : <GlobeLock className="w-3.5 h-3.5" />}
+          {translationOn ? 'Translation ON' : 'Translation OFF'}
         </button>
         <button
           onClick={() => setConfirmClear(true)}
