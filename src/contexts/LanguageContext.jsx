@@ -45,7 +45,7 @@ export const translations = {
     alreadyHaveAccount: 'כבר יש לך חשבון?',
     ageDisclaimer: 'בהרשמה אתה מאשר שאתה בן לפחות 14.',
     passwordMismatch: 'הסיסמאות אינן תואמות',
-    passwordTooShort: 'הסיסמה חייבת להכיל לפחות 6 תווים',
+    passwordTooShort: 'הסיסמה חייבת להכיל לפחות 8 תווים',
 
     // OTP
     checkEmail: 'בדוק את האימייל שלך',
@@ -297,7 +297,7 @@ export const translations = {
     alreadyHaveAccount: 'هل لديك حساب بالفعل؟',
     ageDisclaimer: 'بالتسجيل، تؤكد أن عمرك 14 سنة على الأقل.',
     passwordMismatch: 'كلمتا المرور غير متطابقتين',
-    passwordTooShort: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل',
+    passwordTooShort: 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل',
 
     // OTP
     checkEmail: 'تحقق من بريدك الإلكتروني',
@@ -544,7 +544,7 @@ export const translations = {
     creatingAccount: 'Creating account…',
     ageDisclaimer: 'By registering you confirm you are at least 14 years old.',
     passwordMismatch: 'Passwords do not match',
-    passwordTooShort: 'Password must be at least 6 characters',
+    passwordTooShort: 'Password must be at least 8 characters',
     checkEmail: 'Check your email',
     otpSentTo: 'We sent a verification code to ',
     enterCode: 'Enter 6-digit code',

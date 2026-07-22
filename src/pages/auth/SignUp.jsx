@@ -20,7 +20,7 @@ export default function SignUp() {
     e.preventDefault();
     setError('');
     if (form.password !== form.confirmPassword) { setError(t.passwordMismatch); return; }
-    if (form.password.length < 6) { setError(t.passwordTooShort); return; }
+    if (form.password.length < 8) { setError(t.passwordTooShort); return; }
     setLoading(true);
     try {
       await base44.auth.register({ email: form.email, password: form.password });
