@@ -18,6 +18,7 @@ export default function Matches() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [unreadIds, setUnreadIds] = useState(new Set());
+  const loadInFlight = useRef(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -28,10 +29,18 @@ export default function Matches() {
     const debounceRef = { timer: null };
 
     const load = async () => {
-      const data = await getMatches(currentUser.id);
-      setMatches(data);
-      setLoading(false);
-      setUnreadIds(await getUnreadMatchIds(data, currentUser.id));
+      if (loadInFlight.current) return;
+      loadInFlight.current = true;
+      try {
+        const data = await getMatches(currentUser.id);
+        setMatches(data);
+        setLoading(false);
+        setUnreadIds(data.length ? await getUnreadMatchIds(data, currentUser.id) : new Set());
+      } catch (e) {
+        setLoading(false);
+      } finally {
+        loadInFlight.current = false;
+      }
     };
 
     const debouncedLoad = () => {

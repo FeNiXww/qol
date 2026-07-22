@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Compass, MessageCircle, User, Gamepad2, BookOpen } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
@@ -37,7 +37,13 @@ export default function Layout() {
       } catch {}
     };
     checkUnread();
-    const unsub = base44.entities.Message.subscribe(() => checkUnread());
+    let lastCheck = 0;
+    const unsub = base44.entities.Message.subscribe(() => {
+      const now = Date.now();
+      if (now - lastCheck < 10000) return;
+      lastCheck = now;
+      checkUnread();
+    });
     return unsub;
   }, [location.pathname]);
 
