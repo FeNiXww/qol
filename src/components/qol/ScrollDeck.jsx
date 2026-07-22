@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, UserCheck } from 'lucide-react';
+import { RefreshCw, Plus } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useLang } from '@/contexts/LanguageContext';
 import ProfileDetailSheet from './ProfileDetailSheet';
 
 function ProfileCard({ profile, onConnect, onPass }) {
+  const [burst, setBurst] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const name = profile.display_name || 'Anonymous';
   const flag = profile.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
@@ -107,11 +108,29 @@ function ProfileCard({ profile, onConnect, onPass }) {
 
           <motion.button
             whileTap={{ scale: 0.88 }}
-            onClick={() => onConnect(profile)}
-            className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl"
+            animate={burst ? { scale: [1, 1.35, 0.9, 1.15, 1], rotate: [0, 15, -10, 5, 0] } : {}}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            onClick={() => {
+              setBurst(true);
+              setTimeout(() => { setBurst(false); onConnect(profile); }, 450);
+            }}
+            className="relative w-20 h-20 rounded-full flex items-center justify-center shadow-2xl overflow-visible"
             style={{ background: 'linear-gradient(135deg, #16A499, #FA7C27)' }}>
-            
-            <UserCheck className="w-9 h-9 text-white" />
+            {burst && (
+              <>
+                {[0,60,120,180,240,300].map(deg => (
+                  <motion.div
+                    key={deg}
+                    initial={{ opacity: 1, scale: 0, x: 0, y: 0 }}
+                    animate={{ opacity: 0, scale: 1, x: Math.cos((deg * Math.PI) / 180) * 36, y: Math.sin((deg * Math.PI) / 180) * 36 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute w-3 h-3 rounded-full"
+                    style={{ background: deg % 120 === 0 ? '#16A499' : '#FA7C27' }}
+                  />
+                ))}
+              </>
+            )}
+            <Plus className="w-10 h-10 text-white" strokeWidth={3} />
           </motion.button>
 
 
