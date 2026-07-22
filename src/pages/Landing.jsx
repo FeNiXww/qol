@@ -88,11 +88,11 @@ export default function Landing() {
         <div className="flex gap-2">
           {t.slides.map((_, i) =>
           <button key={i} onClick={() => setCurrent(i)}>
-              <motion.div
-              animate={{ width: i === current ? 24 : 8, opacity: i === current ? 1 : 0.35 }}
-              transition={{ duration: 0.3 }}
-              className="h-2 rounded-full hidden"
-              style={{ backgroundColor: 'white' }} />
+              
+
+
+
+            
             
             </button>
           )}
