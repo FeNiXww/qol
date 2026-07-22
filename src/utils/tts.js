@@ -1,41 +1,32 @@
-const VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
-
+// Browser Web Speech API TTS — free, no API key, works for Hebrew & Arabic
 export default async function generateTTS(text, language) {
-  const response = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
-    {
-      method: "POST",
-      headers: {
-        "xi-api-key": import.meta.env.VITE_ELEVENLABS_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text,
-        model_id: "eleven_multilingual_v2",
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-        },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err?.detail?.message || "ElevenLabs TTS failed");
-  }
-
-  // response is raw audio binary, not JSON
-  const audioBlob = await response.blob();
-  const audioUrl = URL.createObjectURL(audioBlob);
-
   return new Promise((resolve, reject) => {
-    const audio = new Audio(audioUrl);
-    audio.addEventListener("ended", () => {
-      URL.revokeObjectURL(audioUrl);
-      resolve();
-    });
-    audio.addEventListener("error", reject);
-    audio.play().catch(reject);
+    if (!window.speechSynthesis) {
+      reject(new Error("Speech synthesis not supported"));
+      return;
+    }
+
+    // Cancel any currently playing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Map language codes to BCP-47 locales
+    if (language === 'he') {
+      utterance.lang = 'he-IL';
+    } else if (language === 'ar') {
+      utterance.lang = 'ar-SA';
+    } else {
+      utterance.lang = 'en-US';
+    }
+
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onend = () => resolve();
+    utterance.onerror = (e) => reject(new Error(e.error));
+
+    window.speechSynthesis.speak(utterance);
   });
 }
