@@ -24,16 +24,30 @@ function playServerAudio(url) {
   });
 }
 
-function speakHebrewInBrowser(text) {
+async function speakHebrewInBrowser(text) {
   const synth = window.speechSynthesis;
-  synth.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'he-IL';
-  const voices = synth.getVoices() || [];
+  let voices = synth.getVoices() || [];
+  // Voices populate asynchronously; wait once if not ready so a device that
+  // genuinely has a Hebrew voice isn't wrongly skipped on first use.
+  if (voices.length === 0) {
+    await new Promise((res) => {
+      const timer = setTimeout(res, 600);
+      synth.onvoiceschanged = () => { clearTimeout(timer); res(); };
+    });
+    voices = synth.getVoices() || [];
+  }
   const heVoice =
     voices.find((v) => v.lang?.toLowerCase() === 'he-il') ||
     voices.find((v) => v.lang?.toLowerCase().startsWith('he'));
-  if (heVoice) utter.voice = heVoice;
+  // If the device has no Hebrew voice, speaking would use a random voice and
+  // produce gibberish ("random stuff"). Bail out instead of playing garbage.
+  if (!heVoice) {
+    throw new Error('NO_HEBREW_VOICE');
+  }
+  synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'he-IL';
+  utter.voice = heVoice;
   utter.rate = 0.95;
   utter.pitch = 1;
   return new Promise((resolve) => {
