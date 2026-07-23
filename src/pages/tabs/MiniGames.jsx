@@ -108,7 +108,7 @@ export default function MiniGames() {
                 <button
                   key={g.id}
                   onClick={() => navigate(g.path)}
-                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
                   style={{ borderColor: 'rgba(22,164,153,0.12)' }}
                 >
                   <div
@@ -136,7 +136,7 @@ export default function MiniGames() {
               <button
                 key={game.id}
                 onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white text-left transition-all shadow-sm"
+                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm"
                 style={{
                   borderColor: selectedGame?.id === game.id ? game.color : 'rgba(22,164,153,0.12)',
                   boxShadow: selectedGame?.id === game.id ? `0 0 0 2px ${game.color}30` : undefined,
@@ -152,9 +152,10 @@ export default function MiniGames() {
                   <p className="font-bold text-gray-900">{game.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{game.description}</p>
                 </div>
-                {selectedGame?.id === game.id && (
-                  <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: game.color }} />
-                )}
+                <ChevronRight
+                  className="w-5 h-5 flex-shrink-0 transition-transform"
+                  style={{ color: selectedGame?.id === game.id ? game.color : '#CBD5E1', transform: selectedGame?.id === game.id ? 'rotate(90deg)' : 'none' }}
+                />
               </button>
             ))}
           </div>
@@ -228,7 +229,7 @@ export default function MiniGames() {
                       key={match.id}
                       onClick={() => startGame(match, selectedGame.id)}
                       disabled={creating}
-                      className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all hover:shadow-md active:scale-[0.98]"
+                      className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:shadow-md active:scale-[0.98]"
                     >
                       {other?.avatar_url ? (
                         <img src={other.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
