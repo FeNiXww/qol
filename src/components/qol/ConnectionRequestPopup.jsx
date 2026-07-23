@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, X } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { acceptConnectionRequest } from '@/lib/discovery';
 
@@ -103,7 +103,10 @@ export default function ConnectionRequestPopup() {
           className="fixed top-0 left-0 right-0 z-50 flex justify-center"
         >
           <div className="w-full max-w-md px-4" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
-          <div className="bg-white rounded-3xl shadow-2xl p-4 flex items-center gap-3 border border-gray-100">
+          <div className="bg-white rounded-3xl shadow-2xl p-4 flex items-center gap-3 border border-gray-100 relative">
+            <button onClick={handleDecline} disabled={busy} className="absolute top-2 right-2 text-gray-300 hover:text-gray-500">
+              <X className="w-4 h-4" />
+            </button>
             <div className="flex-shrink-0">
               {avatar ? (
                 <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover" />

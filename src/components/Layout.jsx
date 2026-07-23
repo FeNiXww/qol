@@ -7,6 +7,8 @@ import { base44 } from '@/api/base44Client';
 import GameInvitePopup from '@/components/qol/GameInvitePopup';
 import NewMessageNotifier from '@/components/qol/NewMessageNotifier';
 import ConnectionRequestPopup from '@/components/qol/ConnectionRequestPopup';
+import NotificationsButton from '@/components/qol/NotificationsButton';
+import ConnectedNotifier from '@/components/qol/ConnectedNotifier';
 
 export default function Layout() {
   const location = useLocation();
@@ -55,10 +57,12 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
+    <div className="relative flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       <GameInvitePopup />
       <NewMessageNotifier />
       <ConnectionRequestPopup />
+      <NotificationsButton />
+      <ConnectedNotifier />
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>
         <Outlet />
       </div>

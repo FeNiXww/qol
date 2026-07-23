@@ -112,6 +112,9 @@ export const translations = {
     wantsToConnect: 'רוצה להתחבר איתך',
     accept: 'אשר',
     decline: 'דחה',
+    notifications: 'התראות',
+    noNotifications: 'אין התראות',
+    connectedWith: 'התחברת עם',
 
     // Games page
     miniGamesTitle: 'מיני משחקים',
@@ -375,6 +378,9 @@ export const translations = {
     wantsToConnect: 'يريد التواصل معك',
     accept: 'قبول',
     decline: 'رفض',
+    notifications: 'الإشعارات',
+    noNotifications: 'لا إشعارات',
+    connectedWith: 'تواصلت مع',
 
     // Games page
     miniGamesTitle: 'الألعاب المصغرة',
@@ -619,6 +625,9 @@ export const translations = {
     wantsToConnect: 'wants to connect with you',
     accept: 'Accept',
     decline: 'Decline',
+    notifications: 'Notifications',
+    noNotifications: 'No notifications',
+    connectedWith: 'You connected with',
     miniGamesTitle: 'Mini Games',
     learnTogether: 'Learn a language with your match',
     chooseGame: 'Choose a game',
