@@ -18,9 +18,19 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
 
   const getAllProfiles = async () => {
     if (cacheRef.current) return cacheRef.current;
-    const all = await base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200);
-    cacheRef.current = all;
-    return all;
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const all = await base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200);
+        cacheRef.current = all;
+        return all;
+      } catch (e) {
+        lastErr = e;
+        // Rate-limited: wait for the burst to settle, then retry.
+        await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+      }
+    }
+    throw lastErr;
   };
 
   useEffect(() => {
@@ -39,6 +49,8 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
           })
           .slice(0, 20);
         setResults(filtered);
+      } catch {
+        setResults([]);
       } finally {
         setLoading(false);
       }
