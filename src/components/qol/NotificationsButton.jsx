@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, Check, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -18,18 +18,32 @@ export default function NotificationsButton() {
 
   useEffect(() => { base44.auth.me().then(setMe).catch(() => {}); }, []);
 
+  const loadInFlight = useRef(false);
+  const debounceRef = useRef(null);
+
   const load = async () => {
-    if (!me) return;
+    if (!me || loadInFlight.current) return;
+    loadInFlight.current = true;
     setLoading(true);
-    try { setData(await fetchNotifications(me.id)); } finally { setLoading(false); }
+    try { setData(await fetchNotifications(me.id)); } finally { setLoading(false); loadInFlight.current = false; }
+  };
+
+  const scheduleLoad = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(load, 1500);
   };
 
   useEffect(() => {
     if (!me) return;
     load();
-    const unsubS = base44.entities.Swipe.subscribe(() => load());
-    const unsubM = base44.entities.Match.subscribe(() => load());
-    return () => { unsubS(); unsubM(); };
+    const unsubS = base44.entities.Swipe.subscribe((event) => {
+      // Only incoming likes affect my notifications; ignore my own outgoing swipes
+      if (event.type === 'create' && event.data?.target_id === me.id) scheduleLoad();
+    });
+    const unsubM = base44.entities.Match.subscribe((event) => {
+      if (event.type === 'create' && (event.data?.user_a_id === me.id || event.data?.user_b_id === me.id)) scheduleLoad();
+    });
+    return () => { unsubS(); unsubM(); if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [me?.id]);
 
   const pendingCount = data.pending.length;

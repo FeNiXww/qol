@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,8 @@ export default function ConnectionRequestPopup() {
   const [myProfile, setMyProfile] = useState(null);
   const [request, setRequest] = useState(null);
   const [busy, setBusy] = useState(false);
+  const scanInFlight = useRef(false);
+  const scanDebounce = useRef(null);
 
   useEffect(() => { base44.auth.me().then(setMe).catch(() => {}); }, []);
 
@@ -35,7 +37,8 @@ export default function ConnectionRequestPopup() {
   };
 
   const scan = async () => {
-    if (!me) return;
+    if (!me || scanInFlight.current) return;
+    scanInFlight.current = true;
     try {
       const [incoming, outgoing, matchesA, matchesB] = await Promise.all([
         base44.entities.Swipe.filter({ target_id: me.id, direction: 'like' }),
@@ -57,7 +60,12 @@ export default function ConnectionRequestPopup() {
       const likerId = pending[0].swiper_id;
       const profiles = await base44.entities.Profile.filter({ user_id: likerId });
       setRequest({ likerId, likerProfile: profiles[0] || null });
-    } catch {}
+    } catch {} finally { scanInFlight.current = false; }
+  };
+
+  const scheduleScan = () => {
+    if (scanDebounce.current) clearTimeout(scanDebounce.current);
+    scanDebounce.current = setTimeout(scan, 1500);
   };
 
   useEffect(() => {
@@ -65,10 +73,10 @@ export default function ConnectionRequestPopup() {
     scan();
     const unsub = base44.entities.Swipe.subscribe((event) => {
       if (event.type === 'create' && event.data?.target_id === me.id && event.data?.direction === 'like') {
-        scan();
+        scheduleScan();
       }
     });
-    return unsub;
+    return () => { unsub(); if (scanDebounce.current) clearTimeout(scanDebounce.current); };
   }, [me?.id]);
 
   const handleAccept = async () => {
