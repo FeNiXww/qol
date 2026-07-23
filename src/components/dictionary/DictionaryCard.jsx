@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
+import { Loader2, Mic } from 'lucide-react';
 import { useDictT } from '@/lib/dictionaryI18n';
+import generateTTS from '@/utils/tts';
 
-export default function DictionaryCard({ word, front, back, frontTranslit, onSwipe }) {
+export default function DictionaryCard({ word, front, back, frontTranslit, frontLang = 'he', onSwipe }) {
   const dt = useDictT();
   const [flipped, setFlipped] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-15, 0, 15]);
   const knowOpacity = useTransform(x, [0, 80], [0, 1]);
@@ -19,6 +22,21 @@ export default function DictionaryCard({ word, front, back, frontTranslit, onSwi
       onSwipe(dir);
     } else {
       controls.start({ x: 0, rotate: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } });
+    }
+  };
+
+  const handleSpeak = async (e) => {
+    e?.stopPropagation(); // prevents card flip triggering
+    if (speaking) return;
+    setSpeaking(true);
+    try {
+      // speak whichever side is currently showing
+      const textToSpeak = flipped ? back : front;
+      await generateTTS(textToSpeak, frontLang);
+    } catch (err) {
+      console.error("TTS failed:", err);
+    } finally {
+      setSpeaking(false);
     }
   };
 
@@ -49,7 +67,7 @@ export default function DictionaryCard({ word, front, back, frontTranslit, onSwi
       </motion.div>
 
       <div
-        className="w-full flex flex-col items-center justify-center px-6 text-center"
+        className="w-full flex flex-col items-center justify-center px-6 text-center relative"
         style={{
           height: 340,
           borderRadius: 28,
@@ -59,6 +77,19 @@ export default function DictionaryCard({ word, front, back, frontTranslit, onSwi
           boxShadow: '0 20px 48px rgba(0,0,0,0.18)',
         }}
       >
+        {/* listen button — top right corner of card, unobtrusive */}
+        <button
+          onClick={handleSpeak}
+          disabled={speaking}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all disabled:opacity-50 active:scale-90"
+          style={{ backgroundColor: 'rgba(255,255,255,0.18)' }}
+        >
+          {speaking
+            ? <Loader2 className="w-4 h-4 animate-spin text-white" />
+            : <Mic className="w-4 h-4 text-white" />
+          }
+        </button>
+
         <p className="text-white font-black text-4xl leading-tight" dir="auto">
           {flipped ? back : front}
         </p>
