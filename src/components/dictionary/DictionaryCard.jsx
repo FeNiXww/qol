@@ -26,12 +26,13 @@ export default function DictionaryCard({ word, front, back, frontTranslit, front
   };
 
   const handleSpeak = async (e) => {
-    e?.stopPropagation(); // prevents card flip triggering
+    e?.stopPropagation(); 
     if (speaking) return;
     setSpeaking(true);
     try {
-      // speak whichever side is currently showing
-      const textToSpeak = flipped ? back : front;
+  
+      //const textToSpeak = flipped ? back : front;
+      const textToSpeak = front;
       await generateTTS(textToSpeak, frontLang);
     } catch (err) {
       console.error("TTS failed:", err);
@@ -77,7 +78,7 @@ export default function DictionaryCard({ word, front, back, frontTranslit, front
           boxShadow: '0 20px 48px rgba(0,0,0,0.18)',
         }}
       >
-        {/* listen button — top right corner of card, unobtrusive */}
+        {/* listen button */}
         <button
           onClick={handleSpeak}
           disabled={speaking}
