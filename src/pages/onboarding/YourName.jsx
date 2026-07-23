@@ -44,7 +44,7 @@ export default function YourName() {
         <input
           type="text"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={e => setName(e.target.value.replace(/[^A-Za-z\s'-]/g, ''))}
           onKeyDown={e => e.key === 'Enter' && handleContinue()}
           placeholder={t.namePlaceholder}
           maxLength={40}
@@ -52,6 +52,7 @@ export default function YourName() {
           className="w-full px-5 py-4 rounded-2xl border-2 text-lg font-semibold text-gray-900 bg-gray-50 focus:outline-none transition-all"
           style={{ borderColor: name.trim() ? theme.colors.teal : '#E5E7EB' }}
         />
+        <p className="text-xs text-gray-400 mt-2">English letters only — this is how others will find you.</p>
       </div>
 
       <div className="mt-8">

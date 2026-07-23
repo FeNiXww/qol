@@ -80,3 +80,26 @@ export async function createMatchIfMutual({ userAId, userBId, ageBand }) {
     last_message_at: new Date().toISOString(),
   });
 }
+
+// One-sided "follow": send a like to a target. If they already liked us, it's a
+// mutual match right away. Otherwise the target gets a connection-request popup.
+export async function sendConnectionRequest({ myId, targetId, ageBand }) {
+  await base44.entities.Swipe.create({ swiper_id: myId, target_id: targetId, direction: 'like' });
+  const reciprocal = await base44.entities.Swipe.filter({ swiper_id: targetId, target_id: myId, direction: 'like' });
+  if (reciprocal.length > 0) {
+    await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand });
+    const matches = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: targetId });
+    const matchesB = await base44.entities.Match.filter({ user_a_id: targetId, user_b_id: myId });
+    return { matched: true, match: matches[0] || matchesB[0] || null };
+  }
+  return { matched: false };
+}
+
+// Accept someone's connection request: record the reciprocal like + create the match.
+export async function acceptConnectionRequest({ likerId, myId, ageBand }) {
+  await base44.entities.Swipe.create({ swiper_id: myId, target_id: likerId, direction: 'like' });
+  await createMatchIfMutual({ userAId: likerId, userBId: myId, ageBand });
+  const matches = await base44.entities.Match.filter({ user_a_id: likerId, user_b_id: myId });
+  const matchesB = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: likerId });
+  return matches[0] || matchesB[0] || null;
+}

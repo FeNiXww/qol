@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
-import { fetchDiscoverBatch, recordSwipe, createMatchIfMutual } from '@/lib/discovery';
+import { fetchDiscoverBatch, recordSwipe, createMatchIfMutual, sendConnectionRequest } from '@/lib/discovery';
 import ScrollDeck from '@/components/qol/ScrollDeck';
+import SearchUsers from '@/components/qol/SearchUsers';
 import MatchModal from '@/components/qol/MatchModal';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
-import { SlidersHorizontal, Settings } from 'lucide-react';
+import { SlidersHorizontal, Settings, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QolLogo from '@/components/qol/QolLogo';
 import { useLang } from '@/contexts/LanguageContext';
@@ -19,6 +20,8 @@ export default function Discover() {
   const [genderFilter, setGenderFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [matchData, setMatchData] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [toast, setToast] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const fetchingRef = useRef(false);
   const swipedIdsRef = useRef(new Set());
@@ -104,6 +107,26 @@ export default function Discover() {
     }
   };
 
+  const handleSearchConnect = async (targetProfile) => {
+    if (!currentUser || !profile) return;
+    const myId = profile.user_id || currentUser.id;
+    const targetId = targetProfile.user_id || targetProfile.created_by_id;
+    try {
+      const res = await sendConnectionRequest({ myId, targetId, ageBand: profile.age_band });
+      if (res.matched && res.match) {
+        setShowSearch(false);
+        setMatchData({ ...res.match, otherProfile: targetProfile });
+      } else {
+        setShowSearch(false);
+        setToast(t.requestSent);
+        setTimeout(() => setToast(null), 2500);
+      }
+    } catch {
+      setToast(t.requestSent);
+      setTimeout(() => setToast(null), 2500);
+    }
+  };
+
   // Show loading while profile is being fetched
   if (profileLoading) {
     return (
@@ -149,6 +172,13 @@ export default function Discover() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSearch(true)}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <Search className="w-4 h-4 text-white/80" />
+          </button>
           <button
             onClick={() => navigate('/settings')}
             className="w-9 h-9 rounded-full flex items-center justify-center"
@@ -209,6 +239,20 @@ export default function Discover() {
           myProfile={profile}
           onClose={() => setMatchData(null)}
         />
+      )}
+
+      {showSearch && (
+        <SearchUsers
+          myId={profile.user_id || currentUser?.id}
+          onClose={() => setShowSearch(false)}
+          onConnect={handleSearchConnect}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg" style={{ bottom: 100, background: theme.colors.teal }}>
+          {toast}
+        </div>
       )}
     </div>
   );

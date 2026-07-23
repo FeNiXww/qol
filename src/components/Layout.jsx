@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 import GameInvitePopup from '@/components/qol/GameInvitePopup';
 import NewMessageNotifier from '@/components/qol/NewMessageNotifier';
+import ConnectionRequestPopup from '@/components/qol/ConnectionRequestPopup';
 
 export default function Layout() {
   const location = useLocation();
@@ -14,7 +15,7 @@ export default function Layout() {
 
   const navItems = [
     { path: '/', label: t.discover, icon: Compass },
-    { path: '/matches', label: t.matches, icon: MessageCircle },
+    { path: '/matches', label: t.connectionsTitle, icon: MessageCircle },
     { path: '/games', label: t.games, icon: Gamepad2 },
     { path: '/dictionary', label: t.dictionary || 'Dictionary', icon: BookOpen },
     { path: '/profile', label: t.profile, icon: User },
@@ -57,6 +58,7 @@ export default function Layout() {
     <div className="flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       <GameInvitePopup />
       <NewMessageNotifier />
+      <ConnectionRequestPopup />
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>
         <Outlet />
       </div>
