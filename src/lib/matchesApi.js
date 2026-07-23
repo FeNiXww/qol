@@ -1,5 +1,4 @@
 import { base44 } from '@/api/base44Client';
-import { getExistingUserIds } from './userExistence';
 
 export async function getMatches(myUserId) {
   const matchesA = await base44.entities.Match.filter({ user_a_id: myUserId }, '-last_message_at', 50);
@@ -9,22 +8,29 @@ export async function getMatches(myUserId) {
     new Date(b.last_message_at) - new Date(a.last_message_at)
   );
 
-  // For each match, get the other user's profile
-  const enriched = await Promise.all(all.map(async (match) => {
+  // Collect all other user IDs
+  const otherIds = all.map(match => match.user_a_id === myUserId ? match.user_b_id : match.user_a_id);
+  const uniqueOtherIds = [...new Set(otherIds)];
+
+  // Fetch all profiles in two bulk queries (by user_id and by created_by_id)
+  const [byUserId, byCreatorId] = await Promise.all([
+    base44.entities.Profile.filter({ user_id: { $in: uniqueOtherIds } }),
+    base44.entities.Profile.filter({ created_by_id: { $in: uniqueOtherIds } }),
+  ]);
+
+  // Build a lookup map: userId -> profile
+  const profileMap = {};
+  [...byCreatorId, ...byUserId].forEach(p => {
+    const key = p.user_id || p.created_by_id;
+    if (key) profileMap[key] = p;
+  });
+
+  const enriched = all.map(match => {
     const otherId = match.user_a_id === myUserId ? match.user_b_id : match.user_a_id;
-    const profiles = await base44.entities.Profile.filter({ created_by_id: otherId });
-    return { ...match, otherId, otherProfile: profiles[0] || null };
-  }));
+    return { ...match, otherId, otherProfile: profileMap[otherId] || null };
+  });
 
-  const withProfiles = enriched.filter(m => m.otherProfile);
-
-  // Hide matches whose other user was deleted from the database
-  const existingIds = await getExistingUserIds(
-    withProfiles.flatMap(m => [m.otherId, m.otherProfile.created_by_id])
-  );
-  return withProfiles.filter(m =>
-    existingIds.has(m.otherId) || existingIds.has(m.otherProfile.created_by_id)
-  );
+  return enriched;
 }
 
 // A profile is considered online if its heartbeat is within the last 2 minutes

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
 import { fetchDiscoverBatch, recordSwipe, createMatchIfMutual } from '@/lib/discovery';
-import SwipeDeck from '@/components/qol/SwipeDeck';
+import ScrollDeck from '@/components/qol/ScrollDeck';
 import MatchModal from '@/components/qol/MatchModal';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
-import { SlidersHorizontal, X, Settings } from 'lucide-react';
+import { SlidersHorizontal, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QolLogo from '@/components/qol/QolLogo';
 import { useLang } from '@/contexts/LanguageContext';
@@ -66,12 +66,25 @@ export default function Discover() {
     }
   }, [profile, genderFilter]);
 
-  useEffect(() => {
-    if (!profile) return;
+  const resetAndLoad = useCallback(async () => {
     setProfiles([]);
     swipedIdsRef.current = new Set();
+    fetchingRef.current = false;
     setLoading(true);
-    loadMore();
+    if (!profile) return;
+    fetchingRef.current = true;
+    try {
+      const batch = await fetchDiscoverBatch({ myProfile: profile, genderFilter, limit: 10 });
+      setProfiles(batch);
+    } finally {
+      fetchingRef.current = false;
+      setLoading(false);
+    }
+  }, [profile, genderFilter]);
+
+  useEffect(() => {
+    if (!profile) return;
+    resetAndLoad();
   }, [profile?.id, genderFilter]);
 
   const handleSwipe = async (targetProfile, direction) => {
@@ -178,12 +191,13 @@ export default function Discover() {
         </div>
       )}
 
-      {/* Swipe deck */}
-      <div className="flex-1 flex flex-col pt-4 overflow-hidden" style={{ background: '#E6E2D8' }}>
-        <SwipeDeck
+      {/* Scroll deck */}
+      <div style={{ background: '#E6E2D8' }}>
+        <ScrollDeck
           profiles={profiles}
           onSwipe={handleSwipe}
           onLoadMore={loadMore}
+          onRefresh={resetAndLoad}
           loading={loading}
           empty={!loading && profiles.length === 0}
         />

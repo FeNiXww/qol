@@ -36,7 +36,7 @@ export default function Landing() {
       <div className="flex justify-end px-6 pt-12 flex-shrink-0">
         <button
           onClick={() => navigate('/sign-up')}
-          className="text-white/40 text-sm font-medium hover:text-white/70 transition-colors">
+          className="text-white/40 font-medium hover:text-white/70 transition-colors text-2xl">
           
           {t.skip}
         </button>
@@ -88,11 +88,11 @@ export default function Landing() {
         <div className="flex gap-2">
           {t.slides.map((_, i) =>
           <button key={i} onClick={() => setCurrent(i)}>
-              <motion.div
-              animate={{ width: i === current ? 24 : 8, opacity: i === current ? 1 : 0.35 }}
-              transition={{ duration: 0.3 }}
-              className="h-2 rounded-full"
-              style={{ backgroundColor: 'white' }} />
+              
+
+
+
+            
             
             </button>
           )}
@@ -101,7 +101,7 @@ export default function Landing() {
         <button
           onClick={next}
           className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl transition-all active:scale-95"
-          style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}>
+          style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}>
           
           {isLast ? t.joinMovement : t.next}
         </button>

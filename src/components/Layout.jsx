@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Compass, MessageCircle, User, Gamepad2 } from 'lucide-react';
+import { Compass, MessageCircle, User, Gamepad2, BookOpen } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
@@ -9,18 +9,26 @@ import NewMessageNotifier from '@/components/qol/NewMessageNotifier';
 
 export default function Layout() {
   const location = useLocation();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const dir = t.dir || 'ltr';
 
   const navItems = [
     { path: '/', label: t.discover, icon: Compass },
     { path: '/matches', label: t.matches, icon: MessageCircle },
     { path: '/games', label: t.games, icon: Gamepad2 },
+    { path: '/dictionary', label: t.dictionary || 'Dictionary', icon: BookOpen },
     { path: '/profile', label: t.profile, icon: User },
   ];
-  const hideTabs = location.pathname.startsWith('/chat/') || location.pathname.startsWith('/game/');
+  const hideTabs = location.pathname.startsWith('/chat/') || location.pathname.startsWith('/game/') || location.pathname.startsWith('/letter-match');
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
+    // The unread badge is hidden on chat/game routes, so skip the
+    // poll/subscription there — this also avoids firing extra queries
+    // at the same moment a Chat page mounts its own load (rate-limit fix).
+    const p = location.pathname;
+    if (p.startsWith('/chat/') || p.startsWith('/game/') || p.startsWith('/letter-match')) return;
+
     const checkUnread = async () => {
       try {
         const user = await base44.auth.me();
@@ -35,12 +43,18 @@ export default function Layout() {
       } catch {}
     };
     checkUnread();
-    const unsub = base44.entities.Message.subscribe(() => checkUnread());
+    let lastCheck = 0;
+    const unsub = base44.entities.Message.subscribe(() => {
+      const now = Date.now();
+      if (now - lastCheck < 10000) return;
+      lastCheck = now;
+      checkUnread();
+    });
     return unsub;
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col max-w-md mx-auto" style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
+    <div className="flex flex-col max-w-md mx-auto" dir={dir} style={{ minHeight: '100dvh', background: '#E6E2D8' }}>
       <GameInvitePopup />
       <NewMessageNotifier />
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>
@@ -71,7 +85,7 @@ export default function Layout() {
                       className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200"
                       style={
                         isActive
-                          ? { background: `linear-gradient(135deg, #16A499, #FA7C27)`, boxShadow: `0 4px 16px rgba(22,164,153,0.35)` }
+                          ? { background: `linear-gradient(135deg, #132E4C, #1E4870)`, boxShadow: `0 4px 16px rgba(22,164,153,0.35)` }
                           : { background: 'transparent' }
                       }
                     >

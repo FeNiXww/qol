@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, X } from 'lucide-react';
+import { UserCheck, MessageCircle, X } from 'lucide-react';
 
 export default function MatchModal({ match, myProfile, onClose }) {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function MatchModal({ match, myProfile, onClose }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-6"
-        style={{ background: `linear-gradient(135deg, ${theme.colors.teal}F0, ${theme.colors.orange}F0)` }}
+        style={{ background: `linear-gradient(135deg, #132E4CF0, #1E4870F0)` }}
         onClick={onClose}
       >
         <motion.div
@@ -40,14 +40,14 @@ export default function MatchModal({ match, myProfile, onClose }) {
             transition={{ repeat: Infinity, duration: 2 }}
             className="text-5xl mb-4"
           >
-            💞
+            🤝
           </motion.div>
 
           <h2 className="text-3xl font-black mb-2" style={{ color: theme.colors.navy }}>
-            It's a Match!
+            You're Connected!
           </h2>
           <p className="text-gray-500 text-sm mb-6">
-            You and {otherName} both liked each other
+            You and {otherName} are now connected
           </p>
 
           {/* Avatars */}
@@ -60,7 +60,7 @@ export default function MatchModal({ match, myProfile, onClose }) {
                 {myName[0]}
               </div>
             )}
-            <Heart className="w-8 h-8 fill-current" style={{ color: theme.colors.orange }} />
+            <UserCheck className="w-8 h-8" style={{ color: theme.colors.orange }} />
             {otherAvatar ? (
               <img src={otherAvatar} alt={otherName} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
             ) : (
@@ -75,7 +75,7 @@ export default function MatchModal({ match, myProfile, onClose }) {
           <button
             onClick={() => { onClose(); navigate(`/chat/${match.id}`); }}
             className="w-full py-4 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 mb-3"
-            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+            style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
           >
             <MessageCircle className="w-5 h-5" />
             Send a message
@@ -84,7 +84,7 @@ export default function MatchModal({ match, myProfile, onClose }) {
             onClick={onClose}
             className="w-full py-3 rounded-2xl text-gray-500 font-medium text-sm border border-gray-200"
           >
-            Keep swiping
+            Keep exploring
           </button>
         </motion.div>
       </motion.div>

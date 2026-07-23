@@ -1,34 +1,82 @@
-export async function generateTTS(text, language) {
-  const API_KEY = Deno.env.get("INWORLD_API_KEY");
+// Text-to-speech with a language split:
+//  - Arabic / English: Base44 Core.GenerateSpeech integration -> returns an
+//    MP3 played via <audio>. Reliable audio on every device.
+//  - Hebrew: the server integration rejects every Hebrew language code and its
+//    auto-detect misreads Hebrew, so there is no server path for Hebrew. We
+//    use the browser SpeechSynthesis API instead, which pronounces Hebrew
+//    natively when the device has a Hebrew voice installed (most phones do;
+//    a desktop without a Hebrew voice will be silent).
 
-  const VOICE_BY_LANGUAGE = {
-    "en": "Dennis", "fr": "Alain", "de": "Johanna", "es": "Miguel",
-    "ja": "Ryo", "zh": "Yifan", "ko": "Jimin", "he": "Etan", "ar": "Omar",
-  };
-  const voiceId = VOICE_BY_LANGUAGE[language] || "Dennis";
+import { base44 } from '@/api/base44Client';
 
-  const response = await fetch("https://api.inworld.ai/tts/v1/voice", {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      text,
-      voiceId,
-      modelId: "inworld-tts-2",
-      language,
-      audioConfig: { audioEncoding: "MP3", sampleRateHertz: 24000 },
-      applyTextNormalization: "ON",
-    }),
+const VOICE = 'river';
+const SERVER_LANG = { ar: 'ar', en: 'en' };
+
+let currentAudio = null;
+
+function playServerAudio(url) {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.onended = () => { if (currentAudio === audio) currentAudio = null; resolve(); };
+    audio.onerror = () => { if (currentAudio === audio) currentAudio = null; reject(new Error('Audio playback failed')); };
+    audio.play().catch((e) => { if (currentAudio === audio) currentAudio = null; reject(e); });
   });
-
-  if (!response.ok) {
-    throw new Error(`Inworld TTS request failed: ${response.status} ${await response.text()}`);
-  }
-
-  const { audioContent } = await response.json();
-  return { audioContent }; 
 }
 
-export default generateTTS;
+async function speakHebrewInBrowser(text) {
+  const synth = window.speechSynthesis;
+  let voices = synth.getVoices() || [];
+  // Voices populate asynchronously; wait once if not ready so a device that
+  // genuinely has a Hebrew voice isn't wrongly skipped on first use.
+  if (voices.length === 0) {
+    await new Promise((res) => {
+      const timer = setTimeout(res, 600);
+      synth.onvoiceschanged = () => { clearTimeout(timer); res(); };
+    });
+    voices = synth.getVoices() || [];
+  }
+  const heVoice =
+    voices.find((v) => v.lang?.toLowerCase() === 'he-il') ||
+    voices.find((v) => v.lang?.toLowerCase().startsWith('he'));
+  // If the device has no Hebrew voice, speaking would use a random voice and
+  // produce gibberish ("random stuff"). Bail out instead of playing garbage.
+  if (!heVoice) {
+    throw new Error('NO_HEBREW_VOICE');
+  }
+  synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'he-IL';
+  utter.voice = heVoice;
+  utter.rate = 0.95;
+  utter.pitch = 1;
+  return new Promise((resolve) => {
+    utter.onend = () => resolve();
+    utter.onerror = () => resolve();
+    synth.speak(utter);
+  });
+}
+
+export default async function generateTTS(text, language) {
+  if (!text) return;
+
+  // Stop any currently playing audio/speech so repeated taps replay cleanly.
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+  if (language === 'he') {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      throw new Error('Hebrew TTS requires browser speech support');
+    }
+    return speakHebrewInBrowser(text);
+  }
+
+  const res = await base44.integrations.Core.GenerateSpeech({
+    text,
+    voice: VOICE,
+    language_code: SERVER_LANG[language] || 'en',
+  });
+  const url = res?.url;
+  if (!url) throw new Error('No audio URL returned');
+  return playServerAudio(url);
+}

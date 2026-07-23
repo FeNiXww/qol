@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { getUnreadMatchIds } from '@/lib/unread';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ChevronRight, Heart, Moon, Settings } from 'lucide-react';
+import { MessageCircle, ChevronRight, UserCheck, Moon, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
@@ -18,6 +18,7 @@ export default function Matches() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [unreadIds, setUnreadIds] = useState(new Set());
+  const loadInFlight = useRef(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -25,17 +26,38 @@ export default function Matches() {
 
   useEffect(() => {
     if (!currentUser) return;
+    const debounceRef = { timer: null };
+
     const load = async () => {
-      setLoading(true);
-      const data = await getMatches(currentUser.id);
-      setMatches(data);
-      setLoading(false);
-      setUnreadIds(await getUnreadMatchIds(data, currentUser.id));
+      if (loadInFlight.current) return;
+      loadInFlight.current = true;
+      try {
+        const data = await getMatches(currentUser.id);
+        setMatches(data);
+        setLoading(false);
+        setUnreadIds(data.length ? await getUnreadMatchIds(data, currentUser.id) : new Set());
+      } catch (e) {
+        setLoading(false);
+      } finally {
+        loadInFlight.current = false;
+      }
     };
+
+    const debouncedLoad = () => {
+      clearTimeout(debounceRef.timer);
+      debounceRef.timer = setTimeout(load, 2000);
+    };
+
+    setLoading(true);
     load();
-    const unsub = base44.entities.Match.subscribe(() => load());
-    const unsubMsg = base44.entities.Message.subscribe(() => load());
-    return () => { unsub(); unsubMsg(); };
+
+    const unsub = base44.entities.Match.subscribe(debouncedLoad);
+    const unsubMsg = base44.entities.Message.subscribe(debouncedLoad);
+    return () => {
+      clearTimeout(debounceRef.timer);
+      unsub();
+      unsubMsg();
+    };
   }, [currentUser?.id]);
 
   return (
@@ -51,7 +73,7 @@ export default function Matches() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-white">{t.matchesTitle}</h1>
+            <h1 className="text-2xl font-black text-white">{t.connectionsTitle || t.matchesTitle || 'Connections'}</h1>
             <p className="text-xs font-medium mt-0.5" style={{ color: '#268ECE' }}>
               {matches.length} {matches.length !== 1 ? t.connections : t.connection}
             </p>
@@ -78,14 +100,14 @@ export default function Matches() {
               className="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${theme.colors.teal}20, ${theme.colors.orange}20)` }}
             >
-              <Heart className="w-10 h-10" style={{ color: theme.colors.teal }} />
+              <UserCheck className="w-10 h-10" style={{ color: theme.colors.teal }} />
             </div>
             <h3 className="text-xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.noMatchesYet}</h3>
             <p className="text-gray-400 text-sm leading-relaxed">{t.noMatchesMsg}</p>
             <Link
               to="/"
               className="mt-6 px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-md"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+              style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
             >
               {t.goToDiscover}
             </Link>
@@ -94,7 +116,7 @@ export default function Matches() {
           matches.map(match => {
             const other = match.otherProfile;
             const name = other?.display_name || 'Connection';
-            const flag = other?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+            const flag = other ? (other.nationality === 'israeli' ? '🇮🇱' : '🇵🇸') : '🌍';
             const timeAgo = match.last_message_at
               ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true, locale: dateFnsLocale })
               : t.newMatch;
@@ -113,7 +135,7 @@ export default function Matches() {
                   ) : (
                     <div
                       className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                      style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+                      style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
                     >
                       {name[0]?.toUpperCase()}
                     </div>

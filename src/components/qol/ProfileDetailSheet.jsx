@@ -62,7 +62,7 @@ export default function ProfileDetailSheet({ profile, onClose, onLike, onPass })
             ) : (
               <div
                 className="w-full h-full flex items-center justify-center rounded-t-3xl"
-                style={{ background: 'linear-gradient(160deg, #16A499 0%, #0D6470 60%, #132E4C 100%)' }}
+                style={{ background: 'linear-gradient(160deg, #1E4870 0%, #132E4C 100%)' }}
               >
                 <span className="text-white font-black" style={{ fontSize: 96, opacity: 0.25 }}>{name[0]?.toUpperCase()}</span>
               </div>
@@ -124,23 +124,7 @@ export default function ProfileDetailSheet({ profile, onClose, onLike, onPass })
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-4 px-5 pt-6 pb-10">
-            <button
-              onClick={() => { onPass?.(); onClose(); }}
-              className="flex-1 py-4 rounded-2xl font-bold text-sm border-2 border-red-200 text-red-400 bg-white"
-            >
-              {t.pass}
-            </button>
-            <button
-              onClick={() => { onLike?.(); onClose(); }}
-              className="flex-1 py-4 rounded-2xl font-bold text-sm text-white shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
-            >
-              <Heart className="w-4 h-4 inline mr-1.5 fill-white" />
-              {t.like}
-            </button>
-          </div>
+          <div className="pb-10" />
         </motion.div>
       </motion.div>
     </AnimatePresence>

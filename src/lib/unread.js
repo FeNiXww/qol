@@ -13,13 +13,37 @@ export function getMatchLastRead(matchId) {
 
 // Returns a Set of match ids that have a message from the other user
 // newer than the last time this user opened that chat.
+//
+// IMPORTANT: We fetch recent messages for ALL matches in a single query
+// (sorted newest-first) rather than firing one query per match — the
+// per-match approach bursts many simultaneous requests and trips the
+// platform's rate limit.
 export async function getUnreadMatchIds(matches, myUserId) {
-  const results = await Promise.all(matches.map(async (match) => {
-    const [lastMsg] = await base44.entities.Message.filter({ match_id: match.id }, '-created_date', 1);
-    if (!lastMsg || lastMsg.sender_id === myUserId) return null;
+  if (!matches.length) return new Set();
+  const ids = matches.map((m) => m.id);
+
+  const recent = await base44.entities.Message.filter(
+    { match_id: { $in: ids } },
+    '-created_date',
+    500
+  );
+
+  // Keep the newest message per match (first occurrence since sorted desc).
+  const latestByMatch = {};
+  for (const msg of recent) {
+    if (latestByMatch[msg.match_id]) continue;
+    latestByMatch[msg.match_id] = msg;
+  }
+
+  const result = new Set();
+  for (const match of matches) {
+    const last = latestByMatch[match.id];
+    if (!last) continue;
+    if (last.sender_id === myUserId) continue; // I sent the last message
     const lastRead = getMatchLastRead(match.id);
-    if (!lastRead || new Date(lastMsg.created_date) > new Date(lastRead)) return match.id;
-    return null;
-  }));
-  return new Set(results.filter(Boolean));
+    if (!lastRead || new Date(last.created_date) > new Date(lastRead)) {
+      result.add(match.id);
+    }
+  }
+  return result;
 }

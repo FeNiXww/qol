@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Globe, Check } from 'lucide-react';
+import { ArrowLeft, Globe, Check, LogOut } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
 const LANGS = [
   { code: 'he', label: 'עברית', sublabel: 'Hebrew', flag: '🇮🇱' },
@@ -24,10 +25,20 @@ export default function Settings() {
         <button onClick={() => navigate(-1)} className="text-white/70 p-1 -ml-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-black text-white">{t.appLanguage}</h1>
+        <h1 className="text-2xl font-black text-white">Settings</h1>
       </div>
 
       <div className="flex-1 px-5 py-6 space-y-5" style={{ background: '#E6E2D8' }}>
+        {/* Logout */}
+        <button
+          onClick={() => base44.auth.logout('/language')}
+          className="w-full flex items-center gap-3 px-5 py-4 bg-white rounded-2xl text-left transition-all active:scale-[0.98]"
+          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}
+        >
+          <LogOut className="w-5 h-5 text-red-400" />
+          <span className="font-semibold text-red-400">{t.logout || 'Log Out'}</span>
+        </button>
+
         {/* Language section */}
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
           <div className="flex items-center gap-2 px-5 pt-5 pb-3">

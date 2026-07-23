@@ -43,20 +43,33 @@ export default function Chat() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
+  const loadInFlight = useRef(false);
   useEffect(() => {
     if (!currentUser) return;
+    // Guard against double-invoke (React strict mode / rapid re-renders)
+    // so we don't fire the load burst twice and trip the rate limit.
+    if (loadInFlight.current) return;
+    loadInFlight.current = true;
     const load = async () => {
-      let m = null;
-      try { m = await base44.entities.Match.get(matchId); } catch { return; }
-      const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
-      const profiles = await base44.entities.Profile.filter({ user_id: otherId });
-      setOtherProfile(profiles[0] || null);
-      const isUserA = m.user_a_id === currentUser.id;
-      const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
-      if (myClearedAt) setClearedAt(myClearedAt);
-      const msgs = await getMessages(matchId);
-      setMessages(msgs);
-      try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
+      try {
+        let m = null;
+        try { m = await base44.entities.Match.get(matchId); } catch { return; }
+        const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
+        const profiles = await base44.entities.Profile.filter({ user_id: otherId });
+        setOtherProfile(profiles[0] || null);
+        const isUserA = m.user_a_id === currentUser.id;
+        const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
+        if (myClearedAt) setClearedAt(myClearedAt);
+        const msgs = await getMessages(matchId);
+        setMessages(msgs);
+        try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
+      } catch (e) {
+        // Transient (e.g. rate limit) — keep cached messages; the realtime
+        // Message subscription will still update the thread live.
+        console.warn('Chat load failed, using cached messages', e);
+      } finally {
+        loadInFlight.current = false;
+      }
     };
     load();
   }, [matchId, currentUser?.id]);
@@ -190,25 +203,23 @@ export default function Chat() {
         ) : (
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-white/30"
-            style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
+            style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
           >
             {name[0]?.toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <h2 className="font-bold text-white truncate">{flag} {name}</h2>
-          <div className="flex items-center gap-1">
-            <Globe className="w-3 h-3 text-white/50" />
-            <p className="text-xs text-white/50">{translationOn ? 'Auto-translated' : 'Translation off'}</p>
-          </div>
         </div>
         <button
           onClick={() => setTranslationOn(p => !p)}
-          className="p-1 transition-colors"
-          title={translationOn ? 'Disable translation' : 'Enable translation'}
-          style={{ color: translationOn ? theme.colors.teal : 'rgba(255,255,255,0.35)' }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0"
+          style={translationOn
+            ? { background: 'rgba(22,164,153,0.25)', color: '#5EEAD4', border: '1px solid rgba(22,164,153,0.5)' }
+            : { background: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid rgba(239,68,68,0.4)' }}
         >
-          {translationOn ? <Globe className="w-5 h-5" /> : <GlobeLock className="w-5 h-5" />}
+          {translationOn ? <Globe className="w-3.5 h-3.5" /> : <GlobeLock className="w-3.5 h-3.5" />}
+          {translationOn ? 'Translation ON' : 'Translation OFF'}
         </button>
         <button
           onClick={() => setConfirmClear(true)}

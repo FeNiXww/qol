@@ -79,6 +79,7 @@ export default function ProfileSetup() {
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
           <p className="text-sm text-gray-400">{t.tapToAddPhoto}</p>
+          <p className="text-xs text-gray-300 mt-0.5">{t.photoOptional || '(optional)'}</p>
         </div>
 
         <div>
