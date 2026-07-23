@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, Check, X } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { acceptConnectionRequest } from '@/lib/discovery';
+import MatchModal from '@/components/qol/MatchModal';
 
 const DISMISS_KEY = 'qol_conn_dismissed';
 
@@ -17,6 +18,7 @@ export default function ConnectionRequestPopup() {
   const [myProfile, setMyProfile] = useState(null);
   const [request, setRequest] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [celebration, setCelebration] = useState(null);
   const scanInFlight = useRef(false);
   const scanDebounce = useRef(null);
 
@@ -83,10 +85,11 @@ export default function ConnectionRequestPopup() {
     if (!request || !myProfile || !me) return;
     setBusy(true);
     try {
+      const likerProfile = request.likerProfile;
       const match = await acceptConnectionRequest({ likerId: request.likerId, myId: me.id, ageBand: myProfile.age_band });
       dismiss(request.likerId);
       setRequest(null);
-      if (match) navigate(`/chat/${match.id}`);
+      if (match) setCelebration({ match, otherProfile: likerProfile, myProfile });
     } catch {} finally { setBusy(false); }
   };
 
@@ -101,6 +104,7 @@ export default function ConnectionRequestPopup() {
   const avatar = request?.likerProfile?.avatar_url;
 
   return (
+    <>
     <AnimatePresence>
       {request && (
         <motion.div
@@ -149,5 +153,13 @@ export default function ConnectionRequestPopup() {
         </motion.div>
       )}
     </AnimatePresence>
+    {celebration && (
+      <MatchModal
+        match={{ ...celebration.match, otherProfile: celebration.otherProfile }}
+        myProfile={celebration.myProfile}
+        onClose={() => setCelebration(null)}
+      />
+    )}
+    </>
   );
 }

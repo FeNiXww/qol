@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { SlidersHorizontal, Settings, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QolLogo from '@/components/qol/QolLogo';
+import NotificationsBell from '@/components/qol/NotificationsBell';
 import { useLang } from '@/contexts/LanguageContext';
 
 export default function Discover() {
@@ -163,6 +164,7 @@ export default function Discover() {
           >
             <Search className="w-4 h-4 text-white/80" />
           </button>
+          <NotificationsBell />
           <button
             onClick={() => navigate('/settings')}
             className="w-9 h-9 rounded-full flex items-center justify-center"

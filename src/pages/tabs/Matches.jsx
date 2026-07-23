@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
 import { useLang } from '@/contexts/LanguageContext';
+import NotificationsBell from '@/components/qol/NotificationsBell';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -78,6 +79,7 @@ export default function Matches() {
               {matches.length} {matches.length !== 1 ? t.connections : t.connection}
             </p>
           </div>
+          <NotificationsBell />
           <button
             onClick={() => navigate('/settings')}
             className="w-9 h-9 rounded-full flex items-center justify-center"
