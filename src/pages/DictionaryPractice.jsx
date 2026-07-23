@@ -109,6 +109,8 @@ export default function DictionaryPractice() {
               front={foreignLang === 'he' ? current.text_he : current.text_ar}
               back={myLang === 'he' ? current.text_he : current.text_ar}
               frontTranslit={foreignLang === 'he' ? current.translit_he : current.translit_ar}
+              frontLang={foreignLang}
+              backLang={myLang}
               onSwipe={(dir) => handleSwipe(current, dir)}
             />
             <div className="flex justify-between w-full mt-6 px-2">
