@@ -108,6 +108,7 @@ export default function MiniGames() {
                 <button
                   key={g.id}
                   onClick={() => navigate(g.path)}
+                  dir="ltr"
                   className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
                   style={{ borderColor: 'rgba(22,164,153,0.12)' }}
                 >
@@ -136,6 +137,7 @@ export default function MiniGames() {
               <button
                 key={game.id}
                 onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
+                dir="ltr"
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm"
                 style={{
                   borderColor: selectedGame?.id === game.id ? game.color : 'rgba(22,164,153,0.12)',
@@ -229,6 +231,7 @@ export default function MiniGames() {
                       key={match.id}
                       onClick={() => startGame(match, selectedGame.id)}
                       disabled={creating}
+                      dir="ltr"
                       className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:shadow-md active:scale-[0.98]"
                     >
                       {other?.avatar_url ? (
