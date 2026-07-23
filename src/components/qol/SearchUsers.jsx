@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Search, X, Loader2, UserPlus } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
+import { ProfileCard } from '@/components/qol/ScrollDeck';
 
 // Search a specific user by name and send them a connection request,
-// the same way a "like" from the discovery deck does.
+// the same way a "like" from the discovery deck does. Results render as the
+// same profile cards used on the Discover page.
 export default function SearchUsers({ myId, onClose, onConnect }) {
   const { t } = useLang();
   const [q, setQ] = useState('');
@@ -49,6 +51,9 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
     try { await onConnect(profile); } finally { setSendingId(null); }
   };
 
+  // While a request is mid-flight, disable that card's connect button
+  const isSending = (p) => sendingId === p.id;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col" style={{ background: '#E6E2D8' }}>
       {/* Header */}
@@ -71,7 +76,7 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-2 py-4">
         {loading && (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -83,34 +88,16 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
         {!loading && !q.trim() && (
           <div className="text-center py-12 text-gray-400 text-sm">{t.searchPlaceholder}</div>
         )}
-        {results.map((p) => {
-          const name = p.display_name || 'User';
-          const flag = p.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
-          return (
-            <div key={p.id} className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-100">
-              {p.avatar_url ? (
-                <img src={p.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover" />
-              ) : (
-                <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
-                  {name[0]?.toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-900 truncate">{flag} {name}</p>
-                {p.bio && <p className="text-xs text-gray-400 truncate">{p.bio}</p>}
-              </div>
-              <button
-                onClick={() => handleConnect(p)}
-                disabled={sendingId === p.id}
-                className="px-3 py-2 rounded-xl text-sm font-bold text-white flex items-center gap-1 disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}
-              >
-                {sendingId === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                {t.connect}
-              </button>
-            </div>
-          );
-        })}
+        <div className="space-y-4">
+          {results.map((p) => (
+            <ProfileCard
+              key={p.id}
+              profile={p}
+              onConnect={isSending(p) ? () => {} : handleConnect}
+              onPass={() => {}}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

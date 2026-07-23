@@ -5,7 +5,7 @@ import { theme } from '@/lib/theme';
 import { useLang } from '@/contexts/LanguageContext';
 import ProfileDetailSheet from './ProfileDetailSheet';
 
-function ProfileCard({ profile, onConnect, onPass }) {
+export function ProfileCard({ profile, onConnect, onPass }) {
   const [burst, setBurst] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const name = profile.display_name || 'Anonymous';

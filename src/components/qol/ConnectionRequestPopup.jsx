@@ -100,9 +100,9 @@ export default function ConnectionRequestPopup() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -120, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-          className="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
-          style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
+          className="fixed top-0 left-0 right-0 z-50 flex justify-center"
         >
+          <div className="w-full max-w-md px-4" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
           <div className="bg-white rounded-3xl shadow-2xl p-4 flex items-center gap-3 border border-gray-100">
             <div className="flex-shrink-0">
               {avatar ? (
@@ -133,6 +133,7 @@ export default function ConnectionRequestPopup() {
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               {t.accept}
             </button>
+          </div>
           </div>
         </motion.div>
       )}
