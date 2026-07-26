@@ -4,6 +4,7 @@ import { Zap, Clock } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { DAILY_SWIPE_LIMIT } from '@/lib/subscription';
 import SwipeLimitModal from './SwipeLimitModal';
+import SwipeStatusModal from './SwipeStatusModal';
 
 export default function SwipeCounterBadge({ remaining, premium }) {
   const { lang } = useLang();
@@ -91,7 +92,11 @@ export default function SwipeCounterBadge({ remaining, premium }) {
         )}
       </motion.button>
 
-      <SwipeLimitModal open={showModal} onClose={() => setShowModal(false)} remaining={remaining} />
+      {out ? (
+        <SwipeLimitModal open={showModal} onClose={() => setShowModal(false)} remaining={remaining} />
+      ) : (
+        <SwipeStatusModal open={showModal} onClose={() => setShowModal(false)} remaining={remaining} />
+      )}
     </>
   );
 }
