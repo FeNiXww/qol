@@ -6,6 +6,7 @@ import { useDictT } from '@/lib/dictionaryI18n';
 import { translateText, getTransliterations } from '@/lib/translate';
 import { useLang } from '@/contexts/LanguageContext';
 import { getSubscription, isPremiumActive, DICT_WORD_LIMIT } from '@/lib/subscription';
+import DictionaryLimitModal from './DictionaryLimitModal';
 
 export default function DictionaryEditor({ words, userId, myLang = 'he', onChanged }) {
   const dt = useDictT();
@@ -14,6 +15,7 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
   const [word, setWord] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [showLimit, setShowLimit] = useState(false);
 
   const addWord = async () => {
     if (!word.trim() || saving) return;
@@ -21,11 +23,7 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
     // Free users are capped at DICT_WORD_LIMIT saved words.
     const sub = await getSubscription(userId);
     if (!isPremiumActive(sub) && words.length >= DICT_WORD_LIMIT) {
-      setError(
-        lang === 'he' ? 'הגעת למכסת המילים. שדרג לפרימיום.' :
-        lang === 'ar' ? 'وصلت إلى حد الكلمات. ترقية إلى البريميوم.' :
-        'Word limit reached. Upgrade to Premium.'
-      );
+      setShowLimit(true);
       return;
     }
     setSaving(true);
@@ -62,6 +60,8 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
 
   return (
     <div className="space-y-5">
+      <DictionaryLimitModal open={showLimit} onClose={() => setShowLimit(false)} />
+
       {/* Add word form */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{dt.addWord}</p>
