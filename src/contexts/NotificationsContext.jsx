@@ -23,11 +23,23 @@ export function NotificationsProvider({ children }) {
 
   useEffect(() => { base44.auth.me().then(setMe).catch(() => {}); }, []);
 
-  const load = async () => {
+  const lastLoadAt = useRef(0);
+  const load = async (force = false) => {
     if (!me || loadInFlight.current) return;
+    // Throttle: don't refetch more than once every 3s unless forced.
+    if (!force && Date.now() - lastLoadAt.current < 3000) return;
     loadInFlight.current = true;
     setLoading(true);
-    try { setData(await fetchNotifications(me.id)); } finally { setLoading(false); loadInFlight.current = false; }
+    try {
+      setData(await fetchNotifications(me.id));
+      lastLoadAt.current = Date.now();
+    } catch (e) {
+      // Swallow rate-limit / transient errors so the UI never crashes.
+      console.warn('notifications load failed', e);
+    } finally {
+      setLoading(false);
+      loadInFlight.current = false;
+    }
   };
 
   const scheduleLoad = () => {

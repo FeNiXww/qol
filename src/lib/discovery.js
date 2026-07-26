@@ -112,13 +112,13 @@ export async function acceptConnectionRequest({ likerId, myId, ageBand }) {
 
 // Run a query with retry-on-rate-limit. Requests are issued sequentially (not
 // in Promise.all) so concurrent bursts don't trip the API rate limit.
-async function safeQuery(fn, attempts = 3) {
+async function safeQuery(fn, attempts = 5) {
   let lastErr;
   for (let i = 0; i < attempts; i++) {
     try { return await fn(); }
     catch (e) {
       lastErr = e;
-      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1200 * (i + 1)));
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
     }
   }
   throw lastErr;
