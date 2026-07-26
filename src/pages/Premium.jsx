@@ -17,17 +17,7 @@ const PERKS = [
   descHe: 'משתמשי חינם מקבלים 20 החלקות ביום. עברו לפרימיום לגילויים יומיים ללא הגבלה.',
   descAr: 'يحصل المستخدمون المجانيون على 20 تمريرة يومياً. اشترك بالبريميوم للاكتشافات اليومية غير المحدودة.'
 },
-{
-  icon: <Filter className="w-6 h-6" />,
-  color: '#8B5CF6',
-  bg: 'rgba(139,92,246,0.15)',
-  title: 'Advanced Filters',
-  titleHe: 'מסננים מתקדמים',
-  titleAr: 'فلاتر متقدمة',
-  desc: 'Filter by hobbies, age range, and more to find your ideal connection.',
-  descHe: 'סנן לפי תחביבים, טווח גילאים ועוד כדי למצוא את החיבור האידיאלי שלך.',
-  descAr: 'تصفية حسب الهوايات والفئة العمرية والمزيد للعثور على اتصالك المثالي.'
-},
+
 {
   icon: <Star className="w-6 h-6" />,
   color: '#EC4899',
@@ -201,7 +191,7 @@ export default function Premium() {
 
           {[
           { feature: lang === 'he' ? 'החלקות יומיות' : lang === 'ar' ? 'تمريرات يومية' : 'Daily Swipes', free: '20', premium: '∞' },
-          { feature: lang === 'he' ? 'מסננים' : lang === 'ar' ? 'فلاتر' : 'Filters', free: '⚧', premium: '+ גיל / سن / Age' },
+          { feature: lang === 'he' ? 'מסננים (גיל/מגדר)' : lang === 'ar' ? 'فلاتر (عمر/جنس)' : 'Filters (age/gender)', free: '✓', premium: '✓' },
           { feature: lang === 'he' ? 'מילון' : lang === 'ar' ? 'القاموس' : 'Dictionary', free: '30', premium: '∞' },
           { feature: lang === 'he' ? 'חיבור-על' : lang === 'ar' ? 'اتصال فائق' : 'Super Connect', free: '✗', premium: '✓' },
           { feature: lang === 'he' ? 'בוסט פרופיל' : lang === 'ar' ? 'تعزيز الملف' : 'Profile Boost', free: '✗', premium: '✓' }].
