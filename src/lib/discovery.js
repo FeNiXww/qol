@@ -22,7 +22,7 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
   const myUserId = myProfile.user_id || myProfile.created_by_id;
 
   // Get all swiped IDs first
-  const swipes = await base44.entities.Swipe.filter({ swiper_id: myUserId });
+  const swipes = await safeQuery(() => base44.entities.Swipe.filter({ swiper_id: myUserId }));
   const swipedIds = new Set(swipes.map(s => s.target_id));
 
   // Query candidates: opposite nationality, complete profile
@@ -35,7 +35,7 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
     query.gender = genderFilter;
   }
 
-  const candidates = await base44.entities.Profile.filter(query, '-created_date', limit * 3);
+  const candidates = await safeQuery(() => base44.entities.Profile.filter(query, '-created_date', limit * 3));
 
   // Filter out already-swiped; use user_id if available for identity check
   const filtered = candidates.filter(p => {
