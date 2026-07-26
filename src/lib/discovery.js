@@ -111,13 +111,23 @@ export async function acceptConnectionRequest({ likerId, myId, ageBand }) {
 }
 
 // Fetch all notifications for a user: pending connection requests + connections made.
+// Profiles are fetched in a single query and mapped locally — doing one
+// Profile.filter per swipe/match triggered an API burst that hit rate limits.
 export async function fetchNotifications(myId) {
-  const [incoming, outgoing, matchesA, matchesB] = await Promise.all([
+  const [incoming, outgoing, matchesA, matchesB, allProfiles] = await Promise.all([
     base44.entities.Swipe.filter({ target_id: myId, direction: 'like' }),
     base44.entities.Swipe.filter({ swiper_id: myId }),
     base44.entities.Match.filter({ user_a_id: myId }),
     base44.entities.Match.filter({ user_b_id: myId }),
+    base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200),
   ]);
+
+  const profileByUserId = new Map();
+  for (const p of allProfiles) {
+    const key = p.user_id || p.created_by_id;
+    if (key && !profileByUserId.has(key)) profileByUserId.set(key, p);
+  }
+
   const outgoingIds = new Set(outgoing.map((s) => s.target_id));
   const matchedIds = new Set([...matchesA.map((m) => m.user_b_id), ...matchesB.map((m) => m.user_a_id)]);
   let dismissed = [];
@@ -125,14 +135,10 @@ export async function fetchNotifications(myId) {
   const pendingSwipes = incoming.filter(
     (s) => !outgoingIds.has(s.swiper_id) && !matchedIds.has(s.swiper_id) && !dismissed.includes(s.swiper_id)
   );
-  const pending = await Promise.all(pendingSwipes.map(async (s) => {
-    const profiles = await base44.entities.Profile.filter({ user_id: s.swiper_id });
-    return { swipe: s, profile: profiles[0] || null };
-  }));
-  const connections = await Promise.all([...matchesA, ...matchesB].map(async (m) => {
+  const pending = pendingSwipes.map((s) => ({ swipe: s, profile: profileByUserId.get(s.swiper_id) || null }));
+  const connections = [...matchesA, ...matchesB].map((m) => {
     const otherId = m.user_a_id === myId ? m.user_b_id : m.user_a_id;
-    const profiles = await base44.entities.Profile.filter({ user_id: otherId });
-    return { match: m, profile: profiles[0] || null };
-  }));
+    return { match: m, profile: profileByUserId.get(otherId) || null };
+  });
   return { pending, connections };
 }
