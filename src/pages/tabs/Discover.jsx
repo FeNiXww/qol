@@ -4,6 +4,7 @@ import { fetchDiscoverBatch, recordSwipe, createMatchIfMutual, sendConnectionReq
 import ScrollDeck from '@/components/qol/ScrollDeck';
 import SearchUsers from '@/components/qol/SearchUsers';
 import MatchModal from '@/components/qol/MatchModal';
+import SwipeCounterBadge from '@/components/qol/SwipeCounterBadge';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 import { SlidersHorizontal, Settings, Search } from 'lucide-react';
@@ -33,7 +34,6 @@ export default function Discover() {
   const [currentUser, setCurrentUser] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [swipesRemaining, setSwipesRemaining] = useState(DAILY_SWIPE_LIMIT);
-  const [limitToast, setLimitToast] = useState(false);
   const fetchingRef = useRef(false);
   const swipedIdsRef = useRef(new Set());
 
@@ -101,8 +101,6 @@ export default function Discover() {
     // Free users are capped at DAILY_SWIPE_LIMIT swipes per day.
     if (!isPremiumActive(subscription)) {
       if (swipesRemaining <= 0) {
-        setLimitToast(true);
-        setTimeout(() => setLimitToast(false), 3500);
         return false;
       }
       setSwipesRemaining(r => r - 1);
@@ -240,6 +238,11 @@ export default function Discover() {
         </div>
       )}
 
+      {/* Swipe counter */}
+      <div className="flex justify-center pt-3 pb-1 px-5" style={{ background: '#E6E2D8' }}>
+        <SwipeCounterBadge remaining={swipesRemaining} premium={isPremiumActive(subscription)} />
+      </div>
+
       {/* Scroll deck */}
       <div style={{ background: '#E6E2D8' }}>
         <ScrollDeck
@@ -274,19 +277,6 @@ export default function Discover() {
         </div>
       )}
 
-      {limitToast && (
-        <button
-          onClick={() => { setLimitToast(false); navigate('/premium'); }}
-          className="fixed left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-white text-sm font-bold shadow-lg text-center max-w-[90%]"
-          style={{ bottom: 100, background: 'linear-gradient(135deg, #F59E0B, #EF4444)' }}
-        >
-          {lang === 'he'
-            ? 'הגעת למכסת ההחלקות היומית. שדרג לפרימיום ←'
-            : lang === 'ar'
-              ? 'وصلت إلى الحد اليومي للتمرير. ترقية إلى البريميوم ←'
-              : 'Daily swipe limit reached. Upgrade to Premium ←'}
-        </button>
-      )}
     </div>
   );
 }
