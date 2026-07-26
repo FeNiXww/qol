@@ -110,17 +110,29 @@ export async function acceptConnectionRequest({ likerId, myId, ageBand }) {
   return matches[0] || matchesB[0] || null;
 }
 
+// Run a query with retry-on-rate-limit. Requests are issued sequentially (not
+// in Promise.all) so concurrent bursts don't trip the API rate limit.
+async function safeQuery(fn, attempts = 3) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); }
+    catch (e) {
+      lastErr = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1200 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 // Fetch all notifications for a user: pending connection requests + connections made.
 // Profiles are fetched in a single query and mapped locally — doing one
 // Profile.filter per swipe/match triggered an API burst that hit rate limits.
 export async function fetchNotifications(myId) {
-  const [incoming, outgoing, matchesA, matchesB, allProfiles] = await Promise.all([
-    base44.entities.Swipe.filter({ target_id: myId, direction: 'like' }),
-    base44.entities.Swipe.filter({ swiper_id: myId }),
-    base44.entities.Match.filter({ user_a_id: myId }),
-    base44.entities.Match.filter({ user_b_id: myId }),
-    base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200),
-  ]);
+  const incoming = await safeQuery(() => base44.entities.Swipe.filter({ target_id: myId, direction: 'like' }));
+  const outgoing = await safeQuery(() => base44.entities.Swipe.filter({ swiper_id: myId }));
+  const matchesA = await safeQuery(() => base44.entities.Match.filter({ user_a_id: myId }));
+  const matchesB = await safeQuery(() => base44.entities.Match.filter({ user_b_id: myId }));
+  const allProfiles = await safeQuery(() => base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200));
 
   const profileByUserId = new Map();
   for (const p of allProfiles) {
