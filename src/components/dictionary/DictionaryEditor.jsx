@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Trash2, Plus, Loader2, Info, X } from 'lucide-react';
+import { Trash2, Plus, Loader2, Info, X, HelpCircle, BookOpen, Layers, Sparkles, CheckCircle2 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useDictT } from '@/lib/dictionaryI18n';
 import { translateText, getTransliterations, explainWord } from '@/lib/translate';
 import { useLang } from '@/contexts/LanguageContext';
 import { getSubscription, isPremiumActive, DICT_WORD_LIMIT } from '@/lib/subscription';
 import DictionaryLimitModal from './DictionaryLimitModal';
+
+const TUTORIAL_STEPS = [
+  { icon: BookOpen, titleKey: 'dictionaryTutorialStep1Title', descKey: 'dictionaryTutorialStep1Desc' },
+  { icon: Layers, titleKey: 'dictionaryTutorialStep2Title', descKey: 'dictionaryTutorialStep2Desc' },
+  { icon: Sparkles, titleKey: 'dictionaryTutorialStep3Title', descKey: 'dictionaryTutorialStep3Desc' },
+  { icon: CheckCircle2, titleKey: 'dictionaryTutorialStep4Title', descKey: 'dictionaryTutorialStep4Desc' },
+];
 
 export default function DictionaryEditor({ words, userId, myLang = 'he', onChanged }) {
   const dt = useDictT();
@@ -16,6 +23,7 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showLimit, setShowLimit] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Explanation modal state
   const [explainTarget, setExplainTarget] = useState(null); // the word object
@@ -73,7 +81,7 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
       const explanation = await explainWord(w.text_he, w.text_ar, myLang);
       setExplainText(explanation);
     } catch (e) {
-      setExplainError(dt.wordExplainFailed || 'Failed to load explanation');
+      setExplainError(dt.wordExplainFailed);
     } finally {
       setExplainLoading(false);
     }
@@ -88,6 +96,23 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
   return (
     <div className="space-y-5">
       <DictionaryLimitModal open={showLimit} onClose={() => setShowLimit(false)} />
+
+      {/* Header with tutorial trigger */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="font-bold text-gray-900 text-base">{dt.dictionaryName}</p>
+          <p className="text-gray-400 text-xs">{dt.dictionaryDesc}</p>
+        </div>
+        <button
+          onClick={() => setShowTutorial(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-colors"
+          style={{ color: theme.colors.teal, background: `${theme.colors.teal}14` }}
+          aria-label={dt.dictionaryHowItWorks}
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+          {dt.dictionaryHowItWorks}
+        </button>
+      </div>
 
       {/* Add word form */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
@@ -125,7 +150,7 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
             <button
               onClick={() => openExplanation(w)}
               className="p-2 text-gray-300 hover:text-blue-400 transition-colors flex-shrink-0"
-              aria-label={dt.explain || 'Explain'}
+              aria-label={dt.explain}
             >
               <Info className="w-4 h-4" />
             </button>
@@ -139,7 +164,7 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
         )}
       </div>
 
-      {/* Explanation modal */}
+      {/* Per-word explanation modal */}
       {explainTarget && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
@@ -177,6 +202,60 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
                   {explainText}
                 </p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Whole-feature tutorial modal */}
+      {showTutorial && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowTutorial(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-lg w-full max-w-sm max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
+              <p className="font-bold text-gray-900 text-base" dir={dir}>{dt.dictionaryTutorialTitle}</p>
+              <button
+                onClick={() => setShowTutorial(false)}
+                className="p-1.5 text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4" dir={dir}>
+              {TUTORIAL_STEPS.map((step, i) => {
+                const StepIcon = step.icon;
+                return (
+                  <div key={i} className="flex items-start gap-3">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${theme.colors.teal}14`, color: theme.colors.teal }}
+                    >
+                      <StepIcon className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-900 text-sm">{dt[step.titleKey]}</p>
+                      <p className="text-gray-500 text-xs leading-relaxed mt-0.5">{dt[step.descKey]}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="px-5 pb-5 pt-1">
+              <button
+                onClick={() => setShowTutorial(false)}
+                className="w-full py-2.5 rounded-xl text-white text-sm font-bold active:scale-[0.98] transition-all"
+                style={{ background: theme.colors.teal }}
+              >
+                {dt.gotIt}
+              </button>
             </div>
           </div>
         </div>
