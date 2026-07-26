@@ -218,8 +218,13 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
     const deltaY = touchStartY.current - e.changedTouches[0].clientY;
     const deltaX = Math.abs(touchStartX.current - e.changedTouches[0].clientX);
     if (Math.abs(deltaY) > 50 && Math.abs(deltaY) > deltaX * 1.5) {
-      if (deltaY > 0) goNext();else
-      goPrev();
+      if (deltaY > 0) {
+        // Swiping up = "pass" on the current card → counts as a daily swipe.
+        const current = profiles[currentIndex];
+        if (current) handlePass(current);
+      } else {
+        goPrev();
+      }
     }
     touchStartY.current = null;
     touchStartX.current = null;
@@ -284,7 +289,7 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
 
       {/* Scroll hint */}
       <div className="flex items-center justify-center gap-1.5 py-1">
-        <span className="text-xs text-gray-400">Swipe up for next</span>
+        <span className="text-xs text-gray-400">Swipe up to pass</span>
         <span className="text-gray-400 animate-bounce text-sm">↑</span>
       </div>
 
