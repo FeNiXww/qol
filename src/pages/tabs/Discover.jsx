@@ -154,12 +154,26 @@ export default function Discover() {
 
   // Profile not complete — shouldn't reach here normally but safeguard
   if (!profile || profile.onboarding_step !== 'complete') {
+    const resumeStep = profile?.onboarding_step;
+    const resumeRoute =
+      resumeStep === 'nationality' ? '/onboarding/nationality' :
+      resumeStep === 'about' ? '/onboarding/about' :
+      resumeStep === 'hobbies' ? '/onboarding/hobbies' :
+      resumeStep === 'profile' ? '/onboarding/profile-setup' :
+      '/onboarding/name';
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-8">
         <div className="text-center">
           <div className="text-5xl mb-4">👋</div>
           <h3 className="text-xl font-bold text-gray-700 mb-2">Complete your profile first</h3>
-          <p className="text-gray-400 text-sm">Finish onboarding to start discovering connections.</p>
+          <p className="text-gray-400 text-sm mb-6">Finish onboarding to start discovering connections.</p>
+          <button
+            onClick={() => navigate(resumeRoute)}
+            className="px-6 py-3 rounded-2xl text-white font-bold text-sm shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #132E4C, #0D6470)', boxShadow: '0 8px 24px rgba(13,100,112,0.35)' }}
+          >
+            {lang === 'he' ? 'השלם את הפרופיל' : lang === 'ar' ? 'أكمل ملفك الشخصي' : 'Complete Profile'}
+          </button>
         </div>
       </div>
     );
