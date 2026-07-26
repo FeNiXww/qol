@@ -2,7 +2,7 @@ import { base44 } from '@/api/base44Client';
 
 // Free-tier limits (match the Premium page marketing copy).
 export const DAILY_SWIPE_LIMIT = 20;
-export const DICT_WORD_LIMIT = 50;
+export const DICT_WORD_LIMIT = 30;
 
 export async function getSubscription(userId) {
   if (!userId) return null;

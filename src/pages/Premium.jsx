@@ -46,9 +46,9 @@ const PERKS = [
   title: 'Vocabulary Boost',
   titleHe: 'האצת אוצר מילים',
   titleAr: 'تعزيز المفردات',
-  desc: 'Save unlimited words to your personal dictionary (free = 50 words).',
-  descHe: 'שמור מילים ללא הגבלה במילון האישי שלך (חינם = 50 מילים).',
-  descAr: 'احفظ كلمات غير محدودة في قاموسك الشخصي (مجاني = 50 كلمة).'
+  desc: 'Save unlimited words to your personal dictionary (free = 30 words).',
+  descHe: 'שמור מילים ללא הגבלה במילון האישי שלך (חינם = 30 מילים).',
+  descAr: 'احفظ كلمات غير محدودة في قاموسك الشخصي (مجاني = 30 كلمة).'
 },
 {
   icon: <TrendingUp className="w-6 h-6" />,
@@ -202,7 +202,7 @@ export default function Premium() {
           {[
           { feature: lang === 'he' ? 'החלקות יומיות' : lang === 'ar' ? 'تمريرات يومية' : 'Daily Swipes', free: '20', premium: '∞' },
           { feature: lang === 'he' ? 'מסננים' : lang === 'ar' ? 'فلاتر' : 'Filters', free: '⚧', premium: '+ גיל / سن / Age' },
-          { feature: lang === 'he' ? 'מילון' : lang === 'ar' ? 'القاموس' : 'Dictionary', free: '50', premium: '∞' },
+          { feature: lang === 'he' ? 'מילון' : lang === 'ar' ? 'القاموس' : 'Dictionary', free: '30', premium: '∞' },
           { feature: lang === 'he' ? 'חיבור-על' : lang === 'ar' ? 'اتصال فائق' : 'Super Connect', free: '✗', premium: '✓' },
           { feature: lang === 'he' ? 'בוסט פרופיל' : lang === 'ar' ? 'تعزيز الملف' : 'Profile Boost', free: '✗', premium: '✓' }].
           map((row, i) =>
