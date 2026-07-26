@@ -13,17 +13,40 @@ function scoreProfile(profile, myHobbies) {
   return overlap * 2 + randomFactor;
 }
 
+// Short-lived cache of swiped-ids per user so each batch doesn't re-query swipes.
+const SWIPES_CACHE_TTL = 20000;
+const _swipesCache = { key: null, at: 0, ids: null };
+async function getSwipedIds(myUserId) {
+  const now = Date.now();
+  if (_swipesCache.key === myUserId && now - _swipesCache.at < SWIPES_CACHE_TTL) {
+    return _swipesCache.ids;
+  }
+  const swipes = await safeQuery(() => base44.entities.Swipe.filter({ swiper_id: myUserId }));
+  const ids = new Set(swipes.map(s => s.target_id));
+  _swipesCache.key = myUserId;
+  _swipesCache.at = Date.now();
+  _swipesCache.ids = ids;
+  return ids;
+}
+
+// Dedupe concurrent identical batch fetches (e.g., mount + loadMore racing).
+const _inflightBatches = new Map();
+
 export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }) {
-  const myNationality = myProfile.nationality;
-  const myAgeBand = myProfile.age_band;
-  const oppositeNationality = getOppositeNationality(myNationality);
+  const cacheKey = `${myProfile.user_id || myProfile.created_by_id}:${genderFilter || 'all'}:${limit}`;
+  if (_inflightBatches.has(cacheKey)) return _inflightBatches.get(cacheKey);
+  const p = _fetchDiscoverBatchImpl({ myProfile, genderFilter, limit });
+  _inflightBatches.set(cacheKey, p);
+  try { return await p; } finally { _inflightBatches.delete(cacheKey); }
+}
+
+async function _fetchDiscoverBatchImpl({ myProfile, genderFilter, limit = 20 }) {
+  const oppositeNationality = getOppositeNationality(myProfile.nationality);
 
   // Use user_id if set (demo profiles), otherwise fall back to created_by_id
   const myUserId = myProfile.user_id || myProfile.created_by_id;
 
-  // Get all swiped IDs first
-  const swipes = await safeQuery(() => base44.entities.Swipe.filter({ swiper_id: myUserId }));
-  const swipedIds = new Set(swipes.map(s => s.target_id));
+  const swipedIds = await getSwipedIds(myUserId);
 
   // Query candidates: opposite nationality, complete profile
   // Note: don't filter by age_band here — it may not be set on all profiles
