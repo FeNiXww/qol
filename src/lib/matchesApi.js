@@ -1,8 +1,28 @@
 import { base44 } from '@/api/base44Client';
 
+async function safeQuery(fn, attempts = 5) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); }
+    catch (e) {
+      lastErr = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
+const MATCHES_CACHE_TTL = 12000;
+const _matchesCache = { key: null, at: 0, data: null };
+
 export async function getMatches(myUserId) {
-  const matchesA = await base44.entities.Match.filter({ user_a_id: myUserId }, '-last_message_at', 50);
-  const matchesB = await base44.entities.Match.filter({ user_b_id: myUserId }, '-last_message_at', 50);
+  const now = Date.now();
+  if (_matchesCache.key === myUserId && now - _matchesCache.at < MATCHES_CACHE_TTL) {
+    return _matchesCache.data;
+  }
+
+  const matchesA = await safeQuery(() => base44.entities.Match.filter({ user_a_id: myUserId }, '-last_message_at', 50));
+  const matchesB = await safeQuery(() => base44.entities.Match.filter({ user_b_id: myUserId }, '-last_message_at', 50));
 
   const all = [...matchesA, ...matchesB].sort((a, b) =>
     new Date(b.last_message_at) - new Date(a.last_message_at)
@@ -12,11 +32,14 @@ export async function getMatches(myUserId) {
   const otherIds = all.map(match => match.user_a_id === myUserId ? match.user_b_id : match.user_a_id);
   const uniqueOtherIds = [...new Set(otherIds)];
 
-  // Fetch all profiles in two bulk queries (by user_id and by created_by_id)
-  const [byUserId, byCreatorId] = await Promise.all([
-    base44.entities.Profile.filter({ user_id: { $in: uniqueOtherIds } }),
-    base44.entities.Profile.filter({ created_by_id: { $in: uniqueOtherIds } }),
-  ]);
+  let byUserId = [], byCreatorId = [];
+  if (uniqueOtherIds.length > 0) {
+    // Fetch all profiles in two bulk queries (by user_id and by created_by_id)
+    [byUserId, byCreatorId] = await Promise.all([
+      safeQuery(() => base44.entities.Profile.filter({ user_id: { $in: uniqueOtherIds } })),
+      safeQuery(() => base44.entities.Profile.filter({ created_by_id: { $in: uniqueOtherIds } })),
+    ]);
+  }
 
   // Build a lookup map: userId -> profile
   const profileMap = {};
@@ -30,6 +53,9 @@ export async function getMatches(myUserId) {
     return { ...match, otherId, otherProfile: profileMap[otherId] || null };
   });
 
+  _matchesCache.key = myUserId;
+  _matchesCache.at = Date.now();
+  _matchesCache.data = enriched;
   return enriched;
 }
 
