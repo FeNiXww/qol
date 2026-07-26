@@ -54,7 +54,7 @@ export default function DictionaryPractice() {
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0"
         style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)' }}
       >
-        <button onClick={() => navigate('/dictionary')} className="text-white/70 hover:text-white p-1">
+        <button onClick={() => navigate('/discovery')} className="text-white/70 hover:text-white p-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0">
