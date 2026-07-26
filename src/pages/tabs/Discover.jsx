@@ -11,11 +11,18 @@ import { useNavigate } from 'react-router-dom';
 import QolLogo from '@/components/qol/QolLogo';
 import NotificationsBell from '@/components/qol/NotificationsBell';
 import { useLang } from '@/contexts/LanguageContext';
+import {
+  getSubscription,
+  isPremiumActive,
+  dailySwipesRemaining,
+  bumpSwipeCount,
+  DAILY_SWIPE_LIMIT,
+} from '@/lib/subscription';
 
 export default function Discover() {
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [genderFilter, setGenderFilter] = useState(null);
@@ -24,12 +31,23 @@ export default function Discover() {
   const [showSearch, setShowSearch] = useState(false);
   const [toast, setToast] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [swipesRemaining, setSwipesRemaining] = useState(DAILY_SWIPE_LIMIT);
+  const [limitToast, setLimitToast] = useState(false);
   const fetchingRef = useRef(false);
   const swipedIdsRef = useRef(new Set());
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    getSubscription(currentUser.id).then(sub => {
+      setSubscription(sub);
+      setSwipesRemaining(dailySwipesRemaining(sub));
+    });
+  }, [currentUser?.id]);
 
   // Match celebrations are handled globally by ConnectedNotifier (in Layout).
 
@@ -75,21 +93,36 @@ export default function Discover() {
     resetAndLoad();
   }, [profile?.id, genderFilter]);
 
-  const handleSwipe = async (targetProfile, direction) => {
-    if (!currentUser || !profile) return;
+  const handleSwipe = (targetProfile, direction) => {
+    if (!currentUser || !profile) return false;
     const myId = profile.user_id || currentUser.id;
     const targetId = targetProfile.user_id || targetProfile.created_by_id;
+
+    // Free users are capped at DAILY_SWIPE_LIMIT swipes per day.
+    if (!isPremiumActive(subscription)) {
+      if (swipesRemaining <= 0) {
+        setLimitToast(true);
+        setTimeout(() => setLimitToast(false), 3500);
+        return false;
+      }
+      setSwipesRemaining(r => r - 1);
+    }
+
     // Track locally (both user ID and profile ID) so refetched batches never re-include this profile
     swipedIdsRef.current.add(targetId);
     swipedIdsRef.current.add(targetProfile.id);
-    const result = await recordSwipe({ swiperId: myId, targetId, direction });
-    if (result.matched) {
-      await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
-      const matches = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: targetId });
-      const matchesB = await base44.entities.Match.filter({ user_a_id: targetId, user_b_id: myId });
-      const match = matches[0] || matchesB[0];
-      if (match) setMatchData({ ...match, otherProfile: targetProfile });
-    }
+    bumpSwipeCount(myId, subscription);
+    (async () => {
+      const result = await recordSwipe({ swiperId: myId, targetId, direction });
+      if (result.matched) {
+        await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
+        const matches = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: targetId });
+        const matchesB = await base44.entities.Match.filter({ user_a_id: targetId, user_b_id: myId });
+        const match = matches[0] || matchesB[0];
+        if (match) setMatchData({ ...match, otherProfile: targetProfile });
+      }
+    })();
+    return true;
   };
 
   const handleSearchConnect = async (targetProfile) => {
@@ -239,6 +272,20 @@ export default function Discover() {
         <div className="fixed left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg" style={{ bottom: 100, background: theme.colors.teal }}>
           {toast}
         </div>
+      )}
+
+      {limitToast && (
+        <button
+          onClick={() => { setLimitToast(false); navigate('/premium'); }}
+          className="fixed left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-white text-sm font-bold shadow-lg text-center max-w-[90%]"
+          style={{ bottom: 100, background: 'linear-gradient(135deg, #F59E0B, #EF4444)' }}
+        >
+          {lang === 'he'
+            ? 'הגעת למכסת ההחלקות היומית. שדרג לפרימיום ←'
+            : lang === 'ar'
+              ? 'وصلت إلى الحد اليومي للتمرير. ترقية إلى البريميوم ←'
+              : 'Daily swipe limit reached. Upgrade to Premium ←'}
+        </button>
       )}
     </div>
   );

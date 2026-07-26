@@ -5,10 +5,11 @@ import { theme } from '@/lib/theme';
 import { useDictT } from '@/lib/dictionaryI18n';
 import { translateText, getTransliterations } from '@/lib/translate';
 import { useLang } from '@/contexts/LanguageContext';
+import { getSubscription, isPremiumActive, DICT_WORD_LIMIT } from '@/lib/subscription';
 
 export default function DictionaryEditor({ words, userId, myLang = 'he', onChanged }) {
   const dt = useDictT();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const dir = t.dir || 'ltr';
   const [word, setWord] = useState('');
   const [saving, setSaving] = useState(false);
@@ -16,8 +17,18 @@ export default function DictionaryEditor({ words, userId, myLang = 'he', onChang
 
   const addWord = async () => {
     if (!word.trim() || saving) return;
-    setSaving(true);
     setError(null);
+    // Free users are capped at DICT_WORD_LIMIT saved words.
+    const sub = await getSubscription(userId);
+    if (!isPremiumActive(sub) && words.length >= DICT_WORD_LIMIT) {
+      setError(
+        lang === 'he' ? 'הגעת למכסת המילים. שדרג לפרימיום.' :
+        lang === 'ar' ? 'وصلت إلى حد الكلمات. ترقية إلى البريميوم.' :
+        'Word limit reached. Upgrade to Premium.'
+      );
+      return;
+    }
+    setSaving(true);
     const foreignLang = myLang === 'he' ? 'ar' : 'he';
     try {
       const translated = await translateText(word.trim(), myLang, foreignLang);

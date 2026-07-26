@@ -179,8 +179,8 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
     setCurrentIndex((i) => Math.max(0, i - 1));
   }, []);
 
-  const handleConnect = (p) => {onSwipe(p, 'like');goNext();};
-  const handlePass = (p) => {onSwipe(p, 'pass');goNext();};
+  const handleConnect = async (p) => { const r = await onSwipe(p, 'like'); if (r !== false) goNext(); };
+  const handlePass = async (p) => { const r = await onSwipe(p, 'pass'); if (r !== false) goNext(); };
 
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
