@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useProfile } from '@/contexts/ProfileContext';
 import DictionaryCard from '@/components/dictionary/DictionaryCard';
 import DictionaryEditor from '@/components/dictionary/DictionaryEditor';
+import DictionaryTutorialButton from '@/components/dictionary/DictionaryTutorialButton';
 import { ArrowLeft, Pencil, X } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useDictT } from '@/lib/dictionaryI18n';
@@ -60,6 +61,7 @@ export default function DictionaryPractice() {
           <h1 className="font-black text-white text-lg truncate">📖 {dt.dictionaryName}</h1>
           <p className="text-xs" style={{ color: '#268ECE' }}>{words.length} {dt.wordsCount}</p>
         </div>
+        <DictionaryTutorialButton variant="dark" />
         <button
           onClick={() => setEditing(e => !e)}
           className="w-9 h-9 rounded-full flex items-center justify-center"
