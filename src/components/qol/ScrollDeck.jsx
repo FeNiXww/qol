@@ -5,6 +5,32 @@ import { theme } from '@/lib/theme';
 import { useLang } from '@/contexts/LanguageContext';
 import ProfileDetailSheet from './ProfileDetailSheet';
 
+function ExhaustedDeck({ onRefresh }) {
+  const { t } = useLang();
+  return (
+    <div className="w-full flex items-center justify-center px-8" style={{ height: 560 }}>
+      <div className="text-center max-w-xs mx-auto">
+        <div className="relative w-32 h-32 mx-auto mb-8">
+          <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(22,164,153,0.12), rgba(250,124,39,0.12))' }}>
+            <span className="text-6xl">🌍</span>
+          </div>
+          <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇮🇱</div>
+          <div className="absolute -bottom-1 -left-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇵🇸</div>
+        </div>
+        <h3 className="text-2xl font-black text-gray-800 mb-3">{t.youMetEveryone}</h3>
+        <p className="text-gray-400 text-sm leading-relaxed mb-8">{t.comeBackSoon}</p>
+        <button
+          onClick={() => onRefresh?.()}
+          className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
+          <RefreshCw className="w-4 h-4" />
+          {t.refresh}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ProfileCard({ profile, onConnect, onPass }) {
   const [burst, setBurst] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -210,35 +236,21 @@ export default function ScrollDeck({ profiles, onSwipe, onLoadMore, onRefresh, l
 
   }
 
-  if (empty || profiles.length === 0 && !loading) {
-    return (
-      <div className="w-full flex items-center justify-center px-8" style={{ height: 560 }}>
-        <div className="text-center max-w-xs mx-auto">
-          <div className="relative w-32 h-32 mx-auto mb-8">
-            <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(22,164,153,0.12), rgba(250,124,39,0.12))' }}>
-              <span className="text-6xl">🌍</span>
-            </div>
-            <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇮🇱</div>
-            <div className="absolute -bottom-1 -left-1 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-xl">🇵🇸</div>
-          </div>
-          <h3 className="text-2xl font-black text-gray-800 mb-3">{t.youMetEveryone}</h3>
-          <p className="text-gray-400 text-sm leading-relaxed mb-8">{t.comeBackSoon}</p>
-          <button
-            onClick={() => onRefresh?.()}
-            className="flex items-center gap-2 mx-auto px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
-            
-            <RefreshCw className="w-4 h-4" />
-            {t.refresh}
-          </button>
-        </div>
-      </div>);
-
+  if (empty || (profiles.length === 0 && !loading)) {
+    return <ExhaustedDeck onRefresh={onRefresh} />;
   }
 
   const currentProfile = profiles[currentIndex];
-  if (!currentProfile && !loading) return null;
-  if (!currentProfile) return null;
+  if (!currentProfile) {
+    if (loading) {
+      return (
+        <div className="w-full flex items-center justify-center" style={{ height: 560 }}>
+          <div className="w-10 h-10 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin" />
+        </div>
+      );
+    }
+    return <ExhaustedDeck onRefresh={onRefresh} />;
+  }
 
   const startDot = Math.max(0, currentIndex - 2);
   const totalVisible = Math.min(profiles.length, 5);
