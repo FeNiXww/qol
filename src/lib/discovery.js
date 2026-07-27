@@ -54,6 +54,10 @@ async function _fetchDiscoverBatchImpl({ myProfile, genderFilter, limit = 20 }) 
     nationality: oppositeNationality,
     onboarding_step: 'complete',
   };
+  // Age-band isolation: adults only see adults, minors only see minors.
+  if (myProfile.age_band) {
+    query.age_band = myProfile.age_band;
+  }
   if (genderFilter) {
     query.gender = genderFilter;
   }

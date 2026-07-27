@@ -280,6 +280,7 @@ export default function Discover() {
       {showSearch && (
         <SearchUsers
           myId={profile.user_id || currentUser?.id}
+          ageBand={profile.age_band}
           onClose={() => setShowSearch(false)}
           onConnect={handleSearchConnect}
         />
