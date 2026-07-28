@@ -12,7 +12,6 @@ import { useDictT } from '@/lib/dictionaryI18n';
 
 const MAX_CHARS = 200;
 
-
 export default function Chat() {
   const { matchId } = useParams();
   const navigate = useNavigate();
@@ -37,8 +36,36 @@ export default function Chat() {
   const dt = useDictT();
   const bottomRef = useRef(null);
 
+  // Enable native screenshot and screen recording protection on mount
+  useEffect(() => {
+    const enableScreenSecurity = async () => {
+      try {
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+          const { ScreenSecurity } = await import('capacitor-plugin-advanced-screen-secure').catch(() => ({}));
+          if (ScreenSecurity) {
+            await ScreenSecurity.enable();
+          } else if (window.Plugins?.ScreenShotPrevent) {
+            window.Plugins.ScreenShotPrevent.enable();
+          }
+        }
+      } catch (err) {
+        console.warn('Native screen security plugin not available:', err);
+      }
+    };
 
+    enableScreenSecurity();
 
+    return () => {
+      // Disable or cleanup security restriction when leaving the chat screen if needed
+      try {
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+          import('capacitor-plugin-advanced-screen-secure').then(({ ScreenSecurity }) => {
+            ScreenSecurity?.disable();
+          }).catch(() => {});
+        }
+      } catch {}
+    };
+  }, []);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -47,8 +74,6 @@ export default function Chat() {
   const loadInFlight = useRef(false);
   useEffect(() => {
     if (!currentUser) return;
-    // Guard against double-invoke (React strict mode / rapid re-renders)
-    // so we don't fire the load burst twice and trip the rate limit.
     if (loadInFlight.current) return;
     loadInFlight.current = true;
     const load = async () => {
@@ -65,8 +90,6 @@ export default function Chat() {
         setMessages(msgs);
         try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
       } catch (e) {
-        // Transient (e.g. rate limit) — keep cached messages; the realtime
-        // Message subscription will still update the thread live.
         console.warn('Chat load failed, using cached messages', e);
       } finally {
         loadInFlight.current = false;
@@ -132,16 +155,13 @@ export default function Chat() {
         receiverNationality: receiverNat,
       });
       setMessages(prev => {
-        // Remove any copy already added by the realtime subscription to avoid duplicates
         const withoutDup = prev.filter(m => m.id !== saved.id);
         const updated = withoutDup.map(m => m.id === optimistic.id ? { ...saved, status: 'sent' } : m);
         try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(updated)); } catch {}
         return updated;
       });
     } catch (err) {
-      // Remove the optimistic message — nothing was sent
       setMessages(prev => prev.filter(m => m.id !== optimistic.id));
-      // Restore the text so user can edit and retry
       setText(msgText);
       if (err?.message === 'TRANSLATION_FAILED') {
         setSendError("Your message wasn't clear and couldn't be translated — it was not sent. Please rephrase it.");
@@ -155,8 +175,8 @@ export default function Chat() {
 
   const handleAddToDictionary = async (msg) => {
     if (!currentUser || !msg.translated_text) return;
-    const textHe = msg.original_lang === 'he' ? msg.original_text : msg.translated_text;
-    const textAr = msg.original_lang === 'ar' ? msg.original_text : msg.translated_text;
+    const textHe = msg.original_lang === 'israeli' || msg.original_lang === 'he' ? msg.original_text : msg.translated_text;
+    const textAr = msg.original_lang === 'palestinian' || msg.original_lang === 'ar' ? msg.original_text : msg.translated_text;
     const { getTransliterations } = await import('@/lib/translate');
     const translits = await getTransliterations(textHe, textAr);
     await base44.entities.DictionaryWord.create({
@@ -170,12 +190,9 @@ export default function Chat() {
     setTimeout(() => setDictToast(false), 2000);
   };
 
-  // A word was left untranslated because it's marked "known" in the reader's
-  // dictionary. Tapping it means "I don't actually know this" — flip it back
-  // so future messages translate it normally again.
   const handleMarkUnknown = async (word, message) => {
     if (!currentUser) return;
-    const fLang = message.original_lang; // the foreign language, from the reader's point of view
+    const fLang = message.original_lang;
     const field = fLang === 'he' ? 'text_he' : 'text_ar';
     try {
       const matches = await base44.entities.DictionaryWord.filter({
@@ -188,9 +205,7 @@ export default function Chat() {
         setUnknownToast(true);
         setTimeout(() => setUnknownToast(false), 2000);
       }
-    } catch {
-      // Non-critical — silently ignore, the tap just won't register this time.
-    }
+    } catch {}
   };
 
   const handleClearChat = async () => {
@@ -198,9 +213,9 @@ export default function Chat() {
     const match = await base44.entities.Match.get(matchId);
     const isUserA = match.user_a_id === currentUser.id;
     const field = isUserA ? 'user_a_cleared_at' : 'user_b_cleared_at';
-    const clearedAt = new Date().toISOString();
-    await base44.entities.Match.update(matchId, { [field]: clearedAt });
-    setClearedAt(clearedAt);
+    const clearedAtTime = new Date().toISOString();
+    await base44.entities.Match.update(matchId, { [field]: clearedAtTime });
+    setClearedAt(clearedAtTime);
     setConfirmClear(false);
   };
 
@@ -214,7 +229,10 @@ export default function Chat() {
   const placeholder = profile?.nationality === 'israeli' ? '…כתוב בעברית' : 'اكتب بالعربية…';
 
   return (
-    <div className="relative flex flex-col w-full" style={{ background: '#F0F7F6', height: '100dvh' }}>
+    <div 
+      className="relative flex flex-col w-full select-none" 
+      style={{ background: '#F0F7F6', height: '100dvh', WebkitUserSelect: 'none', userSelect: 'none' }}
+    >
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
@@ -336,7 +354,7 @@ export default function Chat() {
               rows={1}
               dir={isRTLInput ? 'rtl' : 'ltr'}
               className="w-full px-4 py-3 pr-12 rounded-2xl border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 text-sm resize-none"
-              style={{ minHeight: 46, maxHeight: 120 }}
+              style={{ minHeight: 46, maxHeight: 120, userSelect: 'text', WebkitUserSelect: 'text' }}
             />
             <span className="absolute bottom-2.5 right-3 text-xs text-gray-300">{text.length}/{MAX_CHARS}</span>
           </div>
