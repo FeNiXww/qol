@@ -36,6 +36,13 @@
         "failed"
       ],
       "default": "sent"
+    },
+    "kept_words": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Words from the sender's language left untranslated because the receiver already marked them as known in their dictionary"
     }
   },
   "required": [

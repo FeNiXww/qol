@@ -9,12 +9,42 @@ function isImageUrl(text) {
   return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(text?.trim());
 }
 
-export default function ChatBubble({ message, isMine, onReport, onAddWord, translationOn = true }) {
+// Escapes regex special characters so kept words can be safely used in a RegExp.
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Splits `text` on any of `words`, returning React nodes with each matched word
+// wrapped in a tappable, underlined span. Longest words are matched first so a
+// shorter word doesn't accidentally split inside a longer one.
+function renderWithKeptWords(text, words, onWordClick) {
+  if (!words?.length) return text;
+  const sorted = [...words].sort((a, b) => b.length - a.length);
+  const regex = new RegExp(`(${sorted.map(escapeRegExp).join('|')})`, 'g');
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    words.includes(part) ? (
+      <span
+        key={i}
+        onClick={(e) => { e.stopPropagation(); onWordClick(part); }}
+        className="underline decoration-dotted decoration-2 underline-offset-2 cursor-pointer"
+        style={{ textDecorationColor: '#16A497' }}
+      >
+        {part}
+      </span>
+    ) : (
+      <React.Fragment key={i}>{part}</React.Fragment>
+    )
+  );
+}
+
+export default function ChatBubble({ message, isMine, onReport, onAddWord, onMarkUnknown, translationOn = true }) {
   const dt = useDictT();
   const [showOriginal, setShowOriginal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [lightbox, setLightbox] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [unmarked, setUnmarked] = useState(() => new Set()); // words tapped this session, stop highlighting them locally
   const bubbleRef = useRef(null);
 
   const handleSpeak = async (e) => {
@@ -30,6 +60,11 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   }
 };
 
+  const handleWordClick = (word) => {
+    setUnmarked(prev => new Set(prev).add(word));
+    onMarkUnknown?.(word, message);
+  };
+
   const isImage = isImageUrl(message.original_text);
   const mainText = isMine
     ? message.original_text
@@ -40,6 +75,11 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
   const time = message.created_date ? format(new Date(message.created_date), 'HH:mm') : '';
   const isFailed = message.status === 'failed';
   const isSending = message.status === 'sending';
+
+  // Kept (untranslated-because-known) words only apply to received, translated text.
+  const activeKeptWords = (!isMine && translationOn && message.kept_words?.length)
+    ? message.kept_words.filter(w => !unmarked.has(w))
+    : [];
 
   const actionColor = '#6B7280'; 
 
@@ -171,7 +211,11 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, trans
               <>
                 <div className="flex items-center gap-2">
                   <p className="text-sm leading-relaxed flex-1" dir={isRTL ? 'rtl' : 'ltr'}>
-                    {isSending ? <span className="opacity-70">{mainText}</span> : mainText}
+                    {isSending
+                      ? <span className="opacity-70">{mainText}</span>
+                      : activeKeptWords.length
+                        ? renderWithKeptWords(mainText, activeKeptWords, handleWordClick)
+                        : mainText}
                   </p>
                   {/* subtle indicator that message is tappable */}
                   <MoreHorizontal
