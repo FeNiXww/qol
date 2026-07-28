@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useProfile } from '@/contexts/ProfileContext';
 import DictionaryCard from '@/components/dictionary/DictionaryCard';
 import DictionaryEditor from '@/components/dictionary/DictionaryEditor';
 import DictionaryTutorialButton from '@/components/dictionary/DictionaryTutorialButton';
-import { ArrowLeft, Pencil, X } from 'lucide-react';
+import { Pencil, X } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useDictT } from '@/lib/dictionaryI18n';
 import { useLang } from '@/contexts/LanguageContext';
 
 export default function DictionaryPractice() {
-  const navigate = useNavigate();
   const { profile } = useProfile();
   const dt = useDictT();
   const { t } = useLang();
@@ -54,9 +52,6 @@ export default function DictionaryPractice() {
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0"
         style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)' }}
       >
-        <button onClick={() => navigate('/discovery')} className="text-white/70 hover:text-white p-1">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
         <div className="flex-1 min-w-0">
           <h1 className="font-black text-white text-lg truncate">📖 {dt.dictionaryName}</h1>
           <p className="text-xs" style={{ color: '#268ECE' }}>{words.length} {dt.wordsCount}</p>
