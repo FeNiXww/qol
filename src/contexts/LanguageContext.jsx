@@ -150,7 +150,12 @@ export const translations = {
     // Memory game
     localTwoPlayerGames: 'משחקים מקומיים לשניים',
     memoryGameName: 'משחק הזיכרון',
-    memoryGameDesc: 'הפוך קלפים והתאם זוגות — שני שחקנים באותו מכשיר',
+    memoryGameInstructions: [
+      'קלפים מונחים הפוכים על הלוח.',
+      'לכל קלף יש זוג תואם בשפה השנייה.',
+      'הפכו שני קלפים בתור — מצאו את הזוג התואם.',
+      'זכרו היכן הקלפים נמצאים כדי לאסוף יותר זוגות מהיריב!',
+    ],
     memoryGameTitle: 'משחק הזיכרון',
     player: 'שחקן',
     player1: 'שחקן 1',
@@ -190,9 +195,19 @@ export const translations = {
 
     // Mini games
     wordGuessName: 'ניחוש מילים',
-    wordGuessDesc: 'נחש את המילה בשפה השנייה. בתורות!',
+    wordGuessInstructions: [
+      'אתה מקבל מילה בשפה שלך.',
+      'כתוב את התרגום שלה לשפת השותף שלך.',
+      'השותף שלך מדרג עד כמה תשובתך מדויקת.',
+      'שחקו בתורות וראו מי מתרגם הכי טוב!',
+    ],
     translationDuelName: 'דו-קרב תרגום',
-    translationDuelDesc: 'תרגם משפט — השותף שלך מדרג את תשובתך!',
+    translationDuelInstructions: [
+      'שני השחקנים מקבלים את אותה המילה.',
+      'התחרו על תרגומה לשפה השנייה.',
+      'השותף שלך מדרג את התרגום שלך.',
+      'התשובה המהירה והמדויקת ביותר מנצחת את הסיבוב!',
+    ],
 
     // Discover
     discoverTitle: 'גלה',
@@ -416,7 +431,12 @@ export const translations = {
     // Memory game
     localTwoPlayerGames: 'ألعاب محلية للاعبين',
     memoryGameName: 'لعبة الذاكرة',
-    memoryGameDesc: 'اقلب البطاقات وطابق الأزواج — لاعبان على نفس الجهاز',
+    memoryGameInstructions: [
+      'توضع البطاقات مقلوبة على اللوح.',
+      'لكل بطاقة زوج مطابق باللغة الأخرى.',
+      'اقلب بطاقتين في كل دور — ابحث عن الزوج المطابق.',
+      'تذكّر أين توجد البطاقات لتجمع أزواجاً أكثر من خصمك!',
+    ],
     memoryGameTitle: 'لعبة الذاكرة',
     player: 'لاعب',
     player1: 'لاعب 1',
@@ -456,9 +476,19 @@ export const translations = {
 
     // Mini games
     wordGuessName: 'تخمين الكلمات',
-    wordGuessDesc: 'خمّن الكلمة باللغة الأخرى. بالتناوب!',
+    wordGuessInstructions: [
+      'تتلقى كلمة بلغتك.',
+      'اكتب ترجمتها بلغة شريكك.',
+      'يقيّم شريكك مدى دقة إجابتك.',
+      'تناوبا وانظرا من يترجم أفضل!',
+    ],
     translationDuelName: 'مبارزة الترجمة',
-    translationDuelDesc: 'ترجم جملة — شريكك يقيّم إجابتك!',
+    translationDuelInstructions: [
+      'يتلقى اللاعبان نفس الكلمة.',
+      'تنافسا على ترجمتها إلى اللغة الأخرى.',
+      'يقيّم شريكك ترجمتك.',
+      'أسرع إجابة وأدقها تفوز بالجولة!',
+    ],
 
     // Discover
     discoverTitle: 'اكتشف',
@@ -657,7 +687,12 @@ export const translations = {
     lostDesc: 'You made 3 mistakes. No worries, try again!',
     localTwoPlayerGames: 'Local Two-Player Games',
     memoryGameName: 'Memory Game',
-    memoryGameDesc: 'Flip cards and match pairs — two players on the same device',
+    memoryGameInstructions: [
+      'Cards are placed face-down on the board.',
+      'Each card has a matching pair in the other language.',
+      'Flip two cards per turn — find the matching translation.',
+      'Remember where cards are to match more pairs than your partner!',
+    ],
     memoryGameTitle: 'Memory Game',
     player: 'Player',
     player1: 'Player 1',
@@ -686,9 +721,19 @@ export const translations = {
     stillExploring: 'Still exploring hobbies',
     findingConnections: 'Finding connections…',
     wordGuessName: 'Word Guess',
-    wordGuessDesc: 'Guess the word in the other language. Take turns!',
+    wordGuessInstructions: [
+      'You receive a word in your language.',
+      "Type its translation in your partner's language.",
+      'Your partner rates how accurate your answer is.',
+      'Take turns and see who translates best!',
+    ],
     translationDuelName: 'Translation Duel',
-    translationDuelDesc: 'Translate a phrase — your partner rates your answer!',
+   translationDuelInstructions: [
+      'Both players receive the same word.',
+      'Race to translate it into the other language.',
+      'Your partner rates your translation.',
+      'Fastest and most accurate answer wins the round!',
+    ],
     discoverTitle: 'Discover',
     meeting: 'Meeting',
     palestinians: 'Palestinians',

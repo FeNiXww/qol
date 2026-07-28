@@ -3,31 +3,79 @@ import { base44 } from '@/api/base44Client';
 import { getMatches, isProfileOnline } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Settings, X } from 'lucide-react';
-
+import { ChevronRight, Settings, X, Info } from 'lucide-react';
 import QolLogo from '@/components/qol/QolLogo';
 import GameInvitations from '@/components/qol/GameInvitations';
 import { useLang } from '@/contexts/LanguageContext';
 
 const GAMES_CONFIG = [
-  { id: 'word_guess', emoji: '🔤', color: theme.colors.teal, nameKey: 'wordGuessName', descKey: 'wordGuessDesc' },
-  { id: 'translation_duel', emoji: '⚔️', color: theme.colors.orange, nameKey: 'translationDuelName', descKey: 'translationDuelDesc' },
-  { id: 'memory', emoji: '🃏', color: theme.colors.orange, nameKey: 'memoryGameName', descKey: 'memoryGameDesc' },
+  {
+    id: 'word_guess',
+    emoji: '🔤',
+    color: theme.colors.teal,
+    nameKey: 'wordGuessName',
+    instructions: [
+      'You receive a word in your language.',
+      'Type its translation in your partner\'s language.',
+      'Your partner rates how accurate your answer is.',
+      'Take turns and see who translates best!',
+    ],
+  },
+  {
+    id: 'translation_duel',
+    emoji: '⚔️',
+    color: theme.colors.orange,
+    nameKey: 'translationDuelName',
+    instructions: [
+      'Both players receive the same word.',
+      'Race to translate it into the other language.',
+      'Your partner rates your translation.',
+      'Fastest and most accurate answer wins the round!',
+    ],
+  },
+  {
+    id: 'memory',
+    emoji: '🃏',
+    color: theme.colors.orange,
+    nameKey: 'memoryGameName',
+    instructions: [
+      'Cards are placed face-down on the board.',
+      'Each card has a matching pair in the other language.',
+      'Flip two cards per turn — find the matching translation.',
+      'Remember where cards are to match more pairs than your partner!',
+    ],
+  },
 ];
 
 const OFFLINE_GAMES = [
-  { id: 'letter_match', emoji: '🧩', color: theme.colors.navy, nameKey: 'letterMatchName', descKey: 'letterMatchDesc', path: '/letter-match' },
+  {
+    id: 'letter_match',
+    emoji: '🧩',
+    color: theme.colors.navy,
+    nameKey: 'letterMatchName',
+    path: '/letter-match',
+  },
 ];
 
 export default function MiniGames() {
   const navigate = useNavigate();
   const { t } = useLang();
-  const GAMES = GAMES_CONFIG.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] }));
-  const soloGames = OFFLINE_GAMES.map(g => ({ ...g, name: t[g.nameKey], description: t[g.descKey] }));
+
+  const GAMES = GAMES_CONFIG.map(g => ({
+    ...g,
+    name: t[g.nameKey] || g.id,
+  }));
+
+  const soloGames = OFFLINE_GAMES.map(g => ({
+    ...g,
+    name: t[g.nameKey] || g.id,
+  }));
+
   const [matches, setMatches] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
+  const [instructionsGame, setInstructionsGame] = useState(null); // game whose instructions are showing
   const [creating, setCreating] = useState(false);
   const [, setTick] = useState(0);
 
@@ -37,13 +85,11 @@ export default function MiniGames() {
 
   useEffect(() => {
     if (!currentUser) return;
-    getMatches(currentUser.id).then(data => {
-      setMatches(data);
-      setLoading(false);
-    });
+    getMatches(currentUser.id)
+      .then(data => { setMatches(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [currentUser?.id]);
 
-  // Re-evaluate online status every 30s by re-rendering only — no re-fetch
   useEffect(() => {
     const interval = setInterval(() => setTick(n => n + 1), 30_000);
     return () => clearInterval(interval);
@@ -65,6 +111,8 @@ export default function MiniGames() {
         score_b: 0,
       });
       navigate(`/game/${session.id}`);
+    } catch (e) {
+      console.error('Failed to start game:', e);
     } finally {
       setCreating(false);
     }
@@ -72,10 +120,15 @@ export default function MiniGames() {
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#E6E2D8' }}>
+
       {/* Header */}
       <div
         className="px-5 pb-5 flex-shrink-0"
-        style={{ paddingTop: '52px', background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
+        style={{
+          paddingTop: '52px',
+          background: 'linear-gradient(145deg, #132E4C 0%, #0D6470 100%)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+        }}
       >
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-2.5">
@@ -96,69 +149,79 @@ export default function MiniGames() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6" style={{ background: '#E6E2D8' }}>
-        {/* Pending game invitations */}
+
+        {/* Pending invitations */}
         <GameInvitations />
 
-        {/* Offline / single-player games */}
+        {/* Offline games */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.offlineGames}</p>
           <div className="space-y-3">
-            {soloGames.map(g => {
-              return (
-                <button
-                  key={g.id}
-                  onClick={() => navigate(g.path)}
-                  dir="ltr"
-                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
-                  style={{ borderColor: 'rgba(22,164,153,0.12)' }}
+            {soloGames.map(g => (
+              <button
+                key={g.id}
+                onClick={() => navigate(g.path)}
+                dir="ltr"
+                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+                style={{ borderColor: 'rgba(22,164,153,0.12)' }}
+              >
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                  style={{ background: `${g.color}18` }}
                 >
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                    style={{ background: `${g.color}18` }}
-                  >
-                    {g.emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900">{g.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{g.description}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
-                </button>
-              );
-            })}
+                  {g.emoji}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-bold text-gray-900">{g.name}</p>
+                </div>
+                <ChevronRight className="w-5 h-5 flex-shrink-0 text-gray-300" />
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Two-player game picker */}
+        {/* Two-player games */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{t.twoPlayerGames}</p>
           <div className="space-y-3">
             {GAMES.map(game => (
-              <button
-                key={game.id}
-                onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
-                dir="ltr"
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm"
-                style={{
-                  borderColor: selectedGame?.id === game.id ? game.color : 'rgba(22,164,153,0.12)',
-                  boxShadow: selectedGame?.id === game.id ? `0 0 0 2px ${game.color}30` : undefined,
-                }}
-              >
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{ background: `${game.color}18` }}
+              <div key={game.id} className="relative">
+                <button
+                  onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
+                  dir="ltr"
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 bg-white transition-all shadow-sm"
+                  style={{
+                    borderColor: selectedGame?.id === game.id ? game.color : 'rgba(22,164,153,0.12)',
+                    boxShadow: selectedGame?.id === game.id ? `0 0 0 2px ${game.color}30` : undefined,
+                  }}
                 >
-                  {game.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900">{game.name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{game.description}</p>
-                </div>
-                <ChevronRight
-                  className="w-5 h-5 flex-shrink-0 transition-transform"
-                  style={{ color: selectedGame?.id === game.id ? game.color : '#CBD5E1', transform: selectedGame?.id === game.id ? 'rotate(90deg)' : 'none' }}
-                />
-              </button>
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                    style={{ background: `${game.color}18` }}
+                  >
+                    {game.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="font-bold text-gray-900">{game.name}</p>
+                  </div>
+
+                  {/* info button — opens instructions without selecting the game */}
+                  <button
+                    onClick={e => { e.stopPropagation(); setInstructionsGame(game); }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors hover:bg-gray-100"
+                  >
+                    <Info className="w-4 h-4 text-gray-400" />
+                  </button>
+
+                  <ChevronRight
+                    className="w-5 h-5 flex-shrink-0 transition-transform"
+                    style={{
+                      color: selectedGame?.id === game.id ? game.color : '#CBD5E1',
+                      transform: selectedGame?.id === game.id ? 'rotate(90deg)' : 'none',
+                    }}
+                  />
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -172,25 +235,70 @@ export default function MiniGames() {
         )}
       </div>
 
-      {/* Match picker popup */}
+      {/* Instructions modal */}
+      {instructionsGame && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/40"
+            onClick={() => setInstructionsGame(null)}
+          />
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl">
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-gray-200" />
+            </div>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{instructionsGame.emoji}</span>
+                <p className="font-bold text-gray-900">{instructionsGame.name}</p>
+              </div>
+              <button
+                onClick={() => setInstructionsGame(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <div className="px-5 py-5 space-y-3">
+              {instructionsGame.instructions.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
+                    style={{ background: instructionsGame.color }}
+                  >
+                    {i + 1}
+                  </span>
+                  <p className="text-sm text-gray-700 leading-relaxed">{step}</p>
+                </div>
+              ))}
+              <button
+                onClick={() => {
+                  setSelectedGame(instructionsGame);
+                  setInstructionsGame(null);
+                }}
+                className="w-full mt-4 py-3 rounded-2xl text-white font-bold text-sm transition-opacity active:opacity-80"
+                style={{ background: instructionsGame.color }}
+              >
+                Play {instructionsGame.name}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Match picker bottom sheet */}
       {selectedGame && (
         <>
-          {/* Backdrop */}
           <div
             className="fixed inset-0 z-40 bg-black/40"
             onClick={() => setSelectedGame(null)}
           />
-          {/* Bottom sheet */}
           <div
             className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
             style={{ maxHeight: '70vh' }}
           >
-            {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-gray-200" />
             </div>
-
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{selectedGame.emoji}</span>
@@ -206,12 +314,13 @@ export default function MiniGames() {
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-
-            {/* Match list */}
             <div className="overflow-y-auto px-4 py-4 space-y-2" style={{ maxHeight: 'calc(70vh - 100px)' }}>
               {loading ? (
                 <div className="flex justify-center py-8">
-                  <div className="w-7 h-7 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
+                  <div
+                    className="w-7 h-7 border-4 border-gray-200 rounded-full animate-spin"
+                    style={{ borderTopColor: theme.colors.teal }}
+                  />
                 </div>
               ) : (() => {
                 const onlineMatches = matches.filter(m => isProfileOnline(m.otherProfile));
@@ -232,19 +341,19 @@ export default function MiniGames() {
                       onClick={() => startGame(match, selectedGame.id)}
                       disabled={creating}
                       dir="ltr"
-                      className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:shadow-md active:scale-[0.98]"
+                      className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-60"
                     >
                       {other?.avatar_url ? (
                         <img src={other.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
                       ) : (
                         <div
                           className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-                          style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
+                          style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}
                         >
                           {name[0]?.toUpperCase()}
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-left">
                         <p className="font-bold text-gray-900">{flag} {name}</p>
                         <p className="text-xs text-gray-400">{t.playWith} {selectedGame.name}</p>
                       </div>
