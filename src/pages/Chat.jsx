@@ -36,34 +36,26 @@ export default function Chat() {
   const dt = useDictT();
   const bottomRef = useRef(null);
 
-  // Enable native screenshot and screen recording protection on mount
+  // Screenshot deterrence: blur the whole page whenever the window/tab loses
+  // focus or visibility, so switching to a screen-capture tool hides the chat.
+  // On native Capacitor builds a real FLAG_SECURE plugin can be wired in later;
+  // this keeps the web app safe without an unresolvable native import.
   useEffect(() => {
-    const enableScreenSecurity = async () => {
-      try {
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-          const { ScreenSecurity } = await import('capacitor-plugin-advanced-screen-secure').catch(() => ({}));
-          if (ScreenSecurity) {
-            await ScreenSecurity.enable();
-          } else if (window.Plugins?.ScreenShotPrevent) {
-            window.Plugins.ScreenShotPrevent.enable();
-          }
-        }
-      } catch (err) {
-        console.warn('Native screen security plugin not available:', err);
-      }
-    };
-
-    enableScreenSecurity();
-
+    const root = document.getElementById('root');
+    if (!root) return;
+    const obscure = () => { root.style.filter = 'blur(14px)'; };
+    const reveal = () => { root.style.filter = ''; };
+    const onVis = () => document.hidden ? obscure() : reveal();
+    const onBlur = () => obscure();
+    const onFocus = () => reveal();
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
     return () => {
-      // Disable or cleanup security restriction when leaving the chat screen if needed
-      try {
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-          import('capacitor-plugin-advanced-screen-secure').then(({ ScreenSecurity }) => {
-            ScreenSecurity?.disable();
-          }).catch(() => {});
-        }
-      } catch {}
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+      reveal();
     };
   }, []);
 
