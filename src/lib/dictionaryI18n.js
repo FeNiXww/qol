@@ -34,6 +34,7 @@ const dictT = {
     dictionaryTutorialStep4Desc: 'מילים שסימנתם כ״אני יודע״ מסומנות בסימן ✓, כך שתוכלו לראות בקלות מה כבר שלטתם.',
     gotIt: 'הבנתי',
     markedUnknown: '↺ סומן כ״לא יודע״ — יתורגם שוב מעכשיו',
+    doYouKnowWord: 'אתם מכירים את המילה?',
   },
   ar: {
     addToDictionary: 'أضف إلى القاموس',
@@ -68,6 +69,7 @@ const dictT = {
     dictionaryTutorialStep4Desc: 'الكلمات التي وسمتها بـ«أعرفها» تظهر بعلامة ✓، لتتابع بسهولة ما أتقنته بالفعل.',
     gotIt: 'فهمت',
     markedUnknown: '↺ حُدّدت كـ«لا أعرفها» — ستُترجم مجددًا من الآن',
+    doYouKnowWord: 'هل تعرف هذه الكلمة؟',
   },
   en: {
     addToDictionary: 'Add to dictionary',
@@ -102,6 +104,7 @@ const dictT = {
     dictionaryTutorialStep4Desc: 'Words you mark "I know it" get a ✓ so you can see at a glance what you\'ve already mastered.',
     gotIt: 'Got it',
     markedUnknown: "↺ Marked as \"don't know\" — it'll be translated again from now on",
+    doYouKnowWord: 'Do you know this word?',
   },
 };
 
