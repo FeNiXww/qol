@@ -33,6 +33,7 @@ export default function Chat() {
   const [translationOn, setTranslationOn] = useState(true);
   const [sendError, setSendError] = useState(null);
   const [dictToast, setDictToast] = useState(false);
+  const [unknownToast, setUnknownToast] = useState(false);
   const dt = useDictT();
   const bottomRef = useRef(null);
 
@@ -125,6 +126,7 @@ export default function Chat() {
       const saved = await sendMessage({
         matchId,
         senderId: currentUser.id,
+        receiverId: otherProfile?.user_id || null,
         text: msgText,
         senderNationality: profile.nationality,
         receiverNationality: receiverNat,
@@ -166,6 +168,29 @@ export default function Chat() {
     });
     setDictToast(true);
     setTimeout(() => setDictToast(false), 2000);
+  };
+
+  // A word was left untranslated because it's marked "known" in the reader's
+  // dictionary. Tapping it means "I don't actually know this" — flip it back
+  // so future messages translate it normally again.
+  const handleMarkUnknown = async (word, message) => {
+    if (!currentUser) return;
+    const fLang = message.original_lang; // the foreign language, from the reader's point of view
+    const field = fLang === 'he' ? 'text_he' : 'text_ar';
+    try {
+      const matches = await base44.entities.DictionaryWord.filter({
+        user_id: currentUser.id,
+        [field]: word,
+        known: true,
+      });
+      if (matches[0]) {
+        await base44.entities.DictionaryWord.update(matches[0].id, { known: false });
+        setUnknownToast(true);
+        setTimeout(() => setUnknownToast(false), 2000);
+      }
+    } catch {
+      // Non-critical — silently ignore, the tap just won't register this time.
+    }
   };
 
   const handleClearChat = async () => {
@@ -270,6 +295,7 @@ export default function Chat() {
             isMine={msg.sender_id === currentUser?.id}
             onReport={setReportingMessage}
             onAddWord={handleAddToDictionary}
+            onMarkUnknown={handleMarkUnknown}
             translationOn={translationOn}
           />
         ))}
@@ -280,6 +306,13 @@ export default function Chat() {
       {dictToast && (
         <div className="absolute left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg" style={{ bottom: 110, background: theme.colors.teal }}>
           📖 {dt.addedToDictionary}
+        </div>
+      )}
+
+      {/* Marked as "don't know" toast */}
+      {unknownToast && (
+        <div className="absolute left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg" style={{ bottom: 110, background: '#B45309' }}>
+          {dt.markedUnknown}
         </div>
       )}
 

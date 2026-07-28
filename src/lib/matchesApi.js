@@ -69,13 +69,36 @@ export async function getMessages(matchId) {
   return base44.entities.Message.filter({ match_id: matchId }, 'created_date', 200);
 }
 
-export async function sendMessage({ matchId, senderId, text, senderNationality, receiverNationality }) {
+export async function sendMessage({ matchId, senderId, receiverId, text, senderNationality, receiverNationality }) {
   const { translateText, getNativeLang } = await import('./translate');
   const fromLang = getNativeLang(senderNationality);
   const toLang = getNativeLang(receiverNationality);
 
+  // Words the receiver has already marked "known" in their dictionary, in the
+  // sender's language — these are left untranslated so the receiver practices
+  // reading them in the original language instead of always seeing them translated.
+  let knownWords = [];
+  if (receiverId) {
+    try {
+      const known = await base44.entities.DictionaryWord.filter(
+        { user_id: receiverId, known: true }, null, 500
+      );
+      const field = fromLang === 'he' ? 'text_he' : 'text_ar';
+      knownWords = [...new Set(known.map(w => w[field]).filter(Boolean))];
+    } catch {
+      // If this lookup fails, just translate normally — never block sending.
+      knownWords = [];
+    }
+  }
+
   // Translate first — if it fails (unclear message), nothing is sent or updated
-  const translatedText = await translateText(text, fromLang, toLang);
+  const translatedText = await translateText(text, fromLang, toLang, knownWords);
+
+  // Since Hebrew and Arabic use entirely different scripts, any known word that
+  // still appears verbatim in the translated (target-language) text can only be
+  // there because it was deliberately preserved — never an organic translation.
+  const keptWords = knownWords.filter(w => translatedText.includes(w));
+
   await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });
 
   const msg = await base44.entities.Message.create({
@@ -85,6 +108,7 @@ export async function sendMessage({ matchId, senderId, text, senderNationality, 
     original_lang: fromLang,
     translated_text: translatedText,
     translated_lang: toLang,
+    kept_words: keptWords,
     status: 'sent',
   });
 
