@@ -45,6 +45,7 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, onMar
   const [lightbox, setLightbox] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [unmarked, setUnmarked] = useState(() => new Set()); // words tapped this session, stop highlighting them locally
+  const [confirmWord, setConfirmWord] = useState(null); // word awaiting "know it / don't know it" confirmation
   const bubbleRef = useRef(null);
 
   const handleSpeak = async (e) => {
@@ -61,8 +62,17 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, onMar
 };
 
   const handleWordClick = (word) => {
-    setUnmarked(prev => new Set(prev).add(word));
-    onMarkUnknown?.(word, message);
+    setConfirmWord(word);
+  };
+
+  const confirmStillKnown = () => {
+    setConfirmWord(null); // no change — word stays highlighted/untranslated
+  };
+
+  const confirmDontKnow = () => {
+    setUnmarked(prev => new Set(prev).add(confirmWord));
+    onMarkUnknown?.(confirmWord, message);
+    setConfirmWord(null);
   };
 
   const isImage = isImageUrl(message.original_text);
@@ -99,6 +109,41 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, onMar
             alt="sent image"
             className="max-w-full max-h-full rounded-xl object-contain"
           />
+        </div>
+      )}
+
+      {/* known-word confirm prompt */}
+      {confirmWord && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => setConfirmWord(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-xs p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">
+              {dt.doYouKnowWord}
+            </p>
+            <p className="text-center font-black text-gray-900 text-xl mb-5" dir="auto">
+              {confirmWord}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={confirmDontKnow}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm active:scale-[0.98] transition-all"
+              >
+                {dt.dontKnowIt}
+              </button>
+              <button
+                onClick={confirmStillKnown}
+                className="flex-1 py-2.5 rounded-xl text-white font-bold text-sm active:scale-[0.98] transition-all"
+                style={{ background: theme.colors.teal }}
+              >
+                {dt.knowIt}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
