@@ -5,13 +5,15 @@ import { theme } from '@/lib/theme';
 import WordGuessGame from '@/components/games/WordGuessGame';
 import TranslationDuelGame from '@/components/games/TranslationDuelGame';
 import MemoryGame from '@/components/games/MemoryGame';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Trophy } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 
 export default function GameRoom() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { t } = useLang();
+  const dir = t.dir || 'ltr';
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
   const [session, setSession] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
@@ -47,7 +49,7 @@ export default function GameRoom() {
 
   if (loading || !session || !currentUser) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: '#E6E2D8' }}>
+      <div dir={dir} className="flex items-center justify-center h-screen" style={{ background: '#E6E2D8' }}>
         <div className="w-8 h-8 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: theme.colors.teal }} />
       </div>
     );
@@ -77,9 +79,9 @@ export default function GameRoom() {
   if (session.status === 'waiting') {
     const avatarUrl = otherProfile?.avatar_url;
     return (
-      <div className="flex flex-col items-center justify-center h-screen px-8 text-center relative" style={{ background: '#E6E2D8' }}>
-        <button onClick={cancelInvite} className="absolute left-4 text-gray-400 p-1" style={{ top: '52px' }}>
-          <ArrowLeft className="w-5 h-5" />
+      <div dir={dir} className="flex flex-col items-center justify-center h-screen px-8 text-center relative" style={{ background: '#E6E2D8' }}>
+        <button onClick={cancelInvite} className="absolute text-gray-400 p-1" style={{ top: '52px', insetInlineStart: 16 }}>
+          <BackIcon className="w-5 h-5" />
         </button>
         {avatarUrl ? (
           <img src={avatarUrl} alt={otherName} className="w-24 h-24 rounded-full object-cover shadow-lg mb-5" />
@@ -110,7 +112,7 @@ export default function GameRoom() {
     const abandonedByOpponent = session.abandoned_by_id && session.abandoned_by_id !== currentUser.id;
     if (abandonedByOpponent) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#E6E2D8' }}>
+        <div dir={dir} className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#E6E2D8' }}>
           <div className="text-6xl mb-4">👋</div>
           <h2 className="text-2xl font-black mb-2" style={{ color: theme.colors.navy }}>{t.opponentLeft}</h2>
           <p className="text-sm text-gray-500 mb-8">{t.opponentLeftDesc}</p>
@@ -127,7 +129,7 @@ export default function GameRoom() {
     const iWon = session.winner_id === currentUser.id;
     const isDraw = !session.winner_id;
     return (
-      <div className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#E6E2D8' }}>
+      <div dir={dir} className="flex flex-col items-center justify-center h-screen px-8 text-center" style={{ background: '#E6E2D8' }}>
         <div
           className="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-xl"
           style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, ${theme.colors.orange})` }}
@@ -153,14 +155,14 @@ export default function GameRoom() {
   }
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: '#E6E2D8' }}>
+    <div dir={dir} className="flex flex-col h-screen" style={{ background: '#E6E2D8' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-4 flex-shrink-0 shadow-md"
         style={{ paddingTop: '52px', background: `linear-gradient(135deg, ${theme.colors.navy}, ${theme.colors.tealDark})` }}
       >
         <button onClick={leaveGame} className="text-white/70 p-1">
-          <ArrowLeft className="w-5 h-5" />
+          <BackIcon className="w-5 h-5" />
         </button>
         <div className="flex-1">
           <p className="font-bold text-white text-sm">

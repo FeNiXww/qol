@@ -4,7 +4,7 @@ import { Loader2, Mic } from 'lucide-react';
 import { useDictT } from '@/lib/dictionaryI18n';
 import generateTTS from '@/utils/tts';
 
-export default function DictionaryCard({ word, front, back, frontTranslit, frontLang = 'he', onSwipe }) {
+export default function DictionaryCard({ word, front, back, frontTranslit, frontLang = 'he', backLang = 'he', onSwipe }) {
   const dt = useDictT();
   const [flipped, setFlipped] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -26,14 +26,13 @@ export default function DictionaryCard({ word, front, back, frontTranslit, front
   };
 
   const handleSpeak = async (e) => {
-    e?.stopPropagation(); 
+    e?.stopPropagation();
     if (speaking) return;
     setSpeaking(true);
     try {
-  
-      //const textToSpeak = flipped ? back : front;
-      const textToSpeak = front;
-      await generateTTS(textToSpeak, frontLang);
+      const textToSpeak = flipped ? back : front;
+      const lang = flipped ? backLang : frontLang;
+      await generateTTS(textToSpeak, lang);
     } catch (err) {
       console.error("TTS failed:", err);
     } finally {
@@ -78,9 +77,10 @@ export default function DictionaryCard({ word, front, back, frontTranslit, front
           boxShadow: '0 20px 48px rgba(0,0,0,0.18)',
         }}
       >
-        {/* listen button */}
+        {/* listen button — top right corner of card, unobtrusive */}
         <button
           onClick={handleSpeak}
+          onPointerDown={(e) => e.stopPropagation()}
           disabled={speaking}
           className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all disabled:opacity-50 active:scale-90"
           style={{ backgroundColor: 'rgba(255,255,255,0.18)' }}

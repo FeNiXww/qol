@@ -13,17 +13,40 @@ function scoreProfile(profile, myHobbies) {
   return overlap * 2 + randomFactor;
 }
 
+// Short-lived cache of swiped-ids per user so each batch doesn't re-query swipes.
+const SWIPES_CACHE_TTL = 20000;
+const _swipesCache = { key: null, at: 0, ids: null };
+async function getSwipedIds(myUserId) {
+  const now = Date.now();
+  if (_swipesCache.key === myUserId && now - _swipesCache.at < SWIPES_CACHE_TTL) {
+    return _swipesCache.ids;
+  }
+  const swipes = await safeQuery(() => base44.entities.Swipe.filter({ swiper_id: myUserId }));
+  const ids = new Set(swipes.map(s => s.target_id));
+  _swipesCache.key = myUserId;
+  _swipesCache.at = Date.now();
+  _swipesCache.ids = ids;
+  return ids;
+}
+
+// Dedupe concurrent identical batch fetches (e.g., mount + loadMore racing).
+const _inflightBatches = new Map();
+
 export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }) {
-  const myNationality = myProfile.nationality;
-  const myAgeBand = myProfile.age_band;
-  const oppositeNationality = getOppositeNationality(myNationality);
+  const cacheKey = `${myProfile.user_id || myProfile.created_by_id}:${genderFilter || 'all'}:${limit}`;
+  if (_inflightBatches.has(cacheKey)) return _inflightBatches.get(cacheKey);
+  const p = _fetchDiscoverBatchImpl({ myProfile, genderFilter, limit });
+  _inflightBatches.set(cacheKey, p);
+  try { return await p; } finally { _inflightBatches.delete(cacheKey); }
+}
+
+async function _fetchDiscoverBatchImpl({ myProfile, genderFilter, limit = 20 }) {
+  const oppositeNationality = getOppositeNationality(myProfile.nationality);
 
   // Use user_id if set (demo profiles), otherwise fall back to created_by_id
   const myUserId = myProfile.user_id || myProfile.created_by_id;
 
-  // Get all swiped IDs first
-  const swipes = await base44.entities.Swipe.filter({ swiper_id: myUserId });
-  const swipedIds = new Set(swipes.map(s => s.target_id));
+  const swipedIds = await getSwipedIds(myUserId);
 
   // Query candidates: opposite nationality, complete profile
   // Note: don't filter by age_band here — it may not be set on all profiles
@@ -31,11 +54,15 @@ export async function fetchDiscoverBatch({ myProfile, genderFilter, limit = 20 }
     nationality: oppositeNationality,
     onboarding_step: 'complete',
   };
+  // Age-band isolation: adults only see adults, minors only see minors.
+  if (myProfile.age_band) {
+    query.age_band = myProfile.age_band;
+  }
   if (genderFilter) {
     query.gender = genderFilter;
   }
 
-  const candidates = await base44.entities.Profile.filter(query, '-created_date', limit * 3);
+  const candidates = await safeQuery(() => base44.entities.Profile.filter(query, '-created_date', limit * 3));
 
   // Filter out already-swiped; use user_id if available for identity check
   const filtered = candidates.filter(p => {
@@ -110,14 +137,36 @@ export async function acceptConnectionRequest({ likerId, myId, ageBand }) {
   return matches[0] || matchesB[0] || null;
 }
 
+// Run a query with retry-on-rate-limit. Requests are issued sequentially (not
+// in Promise.all) so concurrent bursts don't trip the API rate limit.
+async function safeQuery(fn, attempts = 5) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); }
+    catch (e) {
+      lastErr = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 // Fetch all notifications for a user: pending connection requests + connections made.
+// Profiles are fetched in a single query and mapped locally — doing one
+// Profile.filter per swipe/match triggered an API burst that hit rate limits.
 export async function fetchNotifications(myId) {
-  const [incoming, outgoing, matchesA, matchesB] = await Promise.all([
-    base44.entities.Swipe.filter({ target_id: myId, direction: 'like' }),
-    base44.entities.Swipe.filter({ swiper_id: myId }),
-    base44.entities.Match.filter({ user_a_id: myId }),
-    base44.entities.Match.filter({ user_b_id: myId }),
-  ]);
+  const incoming = await safeQuery(() => base44.entities.Swipe.filter({ target_id: myId, direction: 'like' }));
+  const outgoing = await safeQuery(() => base44.entities.Swipe.filter({ swiper_id: myId }));
+  const matchesA = await safeQuery(() => base44.entities.Match.filter({ user_a_id: myId }));
+  const matchesB = await safeQuery(() => base44.entities.Match.filter({ user_b_id: myId }));
+  const allProfiles = await safeQuery(() => base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200));
+
+  const profileByUserId = new Map();
+  for (const p of allProfiles) {
+    const key = p.user_id || p.created_by_id;
+    if (key && !profileByUserId.has(key)) profileByUserId.set(key, p);
+  }
+
   const outgoingIds = new Set(outgoing.map((s) => s.target_id));
   const matchedIds = new Set([...matchesA.map((m) => m.user_b_id), ...matchesB.map((m) => m.user_a_id)]);
   let dismissed = [];
@@ -125,14 +174,10 @@ export async function fetchNotifications(myId) {
   const pendingSwipes = incoming.filter(
     (s) => !outgoingIds.has(s.swiper_id) && !matchedIds.has(s.swiper_id) && !dismissed.includes(s.swiper_id)
   );
-  const pending = await Promise.all(pendingSwipes.map(async (s) => {
-    const profiles = await base44.entities.Profile.filter({ user_id: s.swiper_id });
-    return { swipe: s, profile: profiles[0] || null };
-  }));
-  const connections = await Promise.all([...matchesA, ...matchesB].map(async (m) => {
+  const pending = pendingSwipes.map((s) => ({ swipe: s, profile: profileByUserId.get(s.swiper_id) || null }));
+  const connections = [...matchesA, ...matchesB].map((m) => {
     const otherId = m.user_a_id === myId ? m.user_b_id : m.user_a_id;
-    const profiles = await base44.entities.Profile.filter({ user_id: otherId });
-    return { match: m, profile: profiles[0] || null };
-  }));
+    return { match: m, profile: profileByUserId.get(otherId) || null };
+  });
   return { pending, connections };
 }

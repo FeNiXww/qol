@@ -4,17 +4,26 @@ import { fetchDiscoverBatch, recordSwipe, createMatchIfMutual, sendConnectionReq
 import ScrollDeck from '@/components/qol/ScrollDeck';
 import SearchUsers from '@/components/qol/SearchUsers';
 import MatchModal from '@/components/qol/MatchModal';
+import SwipeCounterBadge from '@/components/qol/SwipeCounterBadge';
 import { theme } from '@/lib/theme';
 import { base44 } from '@/api/base44Client';
 import { SlidersHorizontal, Settings, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import QolLogo from '@/components/qol/QolLogo';
+import NotificationsBell from '@/components/qol/NotificationsBell';
 import { useLang } from '@/contexts/LanguageContext';
+import {
+  getSubscription,
+  isPremiumActive,
+  dailySwipesRemaining,
+  bumpSwipeCount,
+  DAILY_SWIPE_LIMIT,
+} from '@/lib/subscription';
 
 export default function Discover() {
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [genderFilter, setGenderFilter] = useState(null);
@@ -23,12 +32,22 @@ export default function Discover() {
   const [showSearch, setShowSearch] = useState(false);
   const [toast, setToast] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [swipesRemaining, setSwipesRemaining] = useState(DAILY_SWIPE_LIMIT);
   const fetchingRef = useRef(false);
   const swipedIdsRef = useRef(new Set());
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    getSubscription(currentUser.id).then(sub => {
+      setSubscription(sub);
+      setSwipesRemaining(dailySwipesRemaining(sub));
+    });
+  }, [currentUser?.id]);
 
   // Match celebrations are handled globally by ConnectedNotifier (in Layout).
 
@@ -74,21 +93,34 @@ export default function Discover() {
     resetAndLoad();
   }, [profile?.id, genderFilter]);
 
-  const handleSwipe = async (targetProfile, direction) => {
-    if (!currentUser || !profile) return;
+  const handleSwipe = (targetProfile, direction) => {
+    if (!currentUser || !profile) return false;
     const myId = profile.user_id || currentUser.id;
     const targetId = targetProfile.user_id || targetProfile.created_by_id;
+
+    // Free users are capped at DAILY_SWIPE_LIMIT swipes per day.
+    if (!isPremiumActive(subscription)) {
+      if (swipesRemaining <= 0) {
+        return false;
+      }
+      setSwipesRemaining(r => r - 1);
+    }
+
     // Track locally (both user ID and profile ID) so refetched batches never re-include this profile
     swipedIdsRef.current.add(targetId);
     swipedIdsRef.current.add(targetProfile.id);
-    const result = await recordSwipe({ swiperId: myId, targetId, direction });
-    if (result.matched) {
-      await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
-      const matches = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: targetId });
-      const matchesB = await base44.entities.Match.filter({ user_a_id: targetId, user_b_id: myId });
-      const match = matches[0] || matchesB[0];
-      if (match) setMatchData({ ...match, otherProfile: targetProfile });
-    }
+    bumpSwipeCount(myId, subscription);
+    (async () => {
+      const result = await recordSwipe({ swiperId: myId, targetId, direction });
+      if (result.matched) {
+        await createMatchIfMutual({ userAId: myId, userBId: targetId, ageBand: profile.age_band });
+        const matches = await base44.entities.Match.filter({ user_a_id: myId, user_b_id: targetId });
+        const matchesB = await base44.entities.Match.filter({ user_a_id: targetId, user_b_id: myId });
+        const match = matches[0] || matchesB[0];
+        if (match) setMatchData({ ...match, otherProfile: targetProfile });
+      }
+    })();
+    return true;
   };
 
   const handleSearchConnect = async (targetProfile) => {
@@ -122,12 +154,26 @@ export default function Discover() {
 
   // Profile not complete — shouldn't reach here normally but safeguard
   if (!profile || profile.onboarding_step !== 'complete') {
+    const resumeStep = profile?.onboarding_step;
+    const resumeRoute =
+      resumeStep === 'nationality' ? '/onboarding/nationality' :
+      resumeStep === 'about' ? '/onboarding/about' :
+      resumeStep === 'hobbies' ? '/onboarding/hobbies' :
+      resumeStep === 'profile' ? '/onboarding/profile-setup' :
+      '/onboarding/name';
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-8">
         <div className="text-center">
           <div className="text-5xl mb-4">👋</div>
           <h3 className="text-xl font-bold text-gray-700 mb-2">Complete your profile first</h3>
-          <p className="text-gray-400 text-sm">Finish onboarding to start discovering connections.</p>
+          <p className="text-gray-400 text-sm mb-6">Finish onboarding to start discovering connections.</p>
+          <button
+            onClick={() => navigate(resumeRoute)}
+            className="px-6 py-3 rounded-2xl text-white font-bold text-sm shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #132E4C, #0D6470)', boxShadow: '0 8px 24px rgba(13,100,112,0.35)' }}
+          >
+            {lang === 'he' ? 'השלם את הפרופיל' : lang === 'ar' ? 'أكمل ملفك الشخصي' : 'Complete Profile'}
+          </button>
         </div>
       </div>
     );
@@ -163,6 +209,7 @@ export default function Discover() {
           >
             <Search className="w-4 h-4 text-white/80" />
           </button>
+          <NotificationsBell />
           <button
             onClick={() => navigate('/settings')}
             className="w-9 h-9 rounded-full flex items-center justify-center"
@@ -205,6 +252,11 @@ export default function Discover() {
         </div>
       )}
 
+      {/* Swipe counter */}
+      <div className="flex justify-center pt-3 pb-1 px-5" style={{ background: '#E6E2D8' }}>
+        <SwipeCounterBadge remaining={swipesRemaining} premium={isPremiumActive(subscription)} />
+      </div>
+
       {/* Scroll deck */}
       <div style={{ background: '#E6E2D8' }}>
         <ScrollDeck
@@ -228,6 +280,7 @@ export default function Discover() {
       {showSearch && (
         <SearchUsers
           myId={profile.user_id || currentUser?.id}
+          ageBand={profile.age_band}
           onClose={() => setShowSearch(false)}
           onConnect={handleSearchConnect}
         />
@@ -238,6 +291,7 @@ export default function Discover() {
           {toast}
         </div>
       )}
+
     </div>
   );
 }

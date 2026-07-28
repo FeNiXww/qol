@@ -82,3 +82,23 @@ Keep them short and phonetic, no explanations.`,
 export function getNativeLang(nationality) {
   return nationality === 'israeli' ? 'he' : 'ar';
 }
+
+// Returns a short bilingual explanation of a word pair, written in the user's
+// native language so they can understand usage, nuance, and context.
+export async function explainWord(textHe, textAr, userLang = 'he') {
+  const explainLang = LANG_NAMES[userLang] || LANG_NAMES.he;
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt: `You are a friendly bilingual language tutor helping a learner understand a word pair.
+
+Hebrew word: "${textHe}"
+Arabic word: "${textAr}"
+
+Write a short, clear explanation IN ${explainLang} that includes:
+- The meaning of the word in ${explainLang}.
+- A simple example sentence in BOTH Hebrew and Arabic (with the word used in context).
+- A one-line note on usage, nuance, or context (e.g. formal vs casual, regional, common situations).
+
+Keep it concise (about 4-6 lines). Do not add headers or markdown — just plain text.`,
+  });
+  return (result || '').trim();
+}

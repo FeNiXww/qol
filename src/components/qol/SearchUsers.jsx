@@ -7,7 +7,7 @@ import { ProfileCard } from '@/components/qol/ScrollDeck';
 // Search a specific user by name and send them a connection request,
 // the same way a "like" from the discovery deck does. Results render as the
 // same profile cards used on the Discover page.
-export default function SearchUsers({ myId, onClose, onConnect }) {
+export default function SearchUsers({ myId, ageBand, onClose, onConnect }) {
   const { t } = useLang();
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
@@ -18,9 +18,19 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
 
   const getAllProfiles = async () => {
     if (cacheRef.current) return cacheRef.current;
-    const all = await base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200);
-    cacheRef.current = all;
-    return all;
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const all = await base44.entities.Profile.filter({ onboarding_step: 'complete' }, '-created_date', 200);
+        cacheRef.current = all;
+        return all;
+      } catch (e) {
+        lastErr = e;
+        // Rate-limited: wait for the burst to settle, then retry.
+        await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+      }
+    }
+    throw lastErr;
   };
 
   useEffect(() => {
@@ -35,10 +45,14 @@ export default function SearchUsers({ myId, onClose, onConnect }) {
           .filter((p) => {
             const pid = p.user_id || p.created_by_id;
             if (pid === myId) return false;
+            // Age-band isolation: adults only find adults, minors only find minors.
+            if (ageBand && p.age_band && p.age_band !== ageBand) return false;
             return (p.display_name || '').toLowerCase().includes(needle);
           })
           .slice(0, 20);
         setResults(filtered);
+      } catch {
+        setResults([]);
       } finally {
         setLoading(false);
       }
