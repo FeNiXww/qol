@@ -111,6 +111,7 @@ export async function createMatchIfMutual({ userAId, userBId, ageBand }) {
     age_band: ageBand,
     last_message_at: new Date().toISOString(),
   });
+  base44.analytics.track({ eventName: 'connection_made', properties: { age_band: ageBand || null } });
   markLocalMatch();
 }
 

@@ -24,6 +24,7 @@ export default function SignUp() {
     setLoading(true);
     try {
       await base44.auth.register({ email: form.email, password: form.password });
+      base44.analytics.track({ eventName: 'user_signed_up', properties: { email: form.email } });
       navigate('/verify-otp', { state: { email: form.email } });
     } catch (err) {
       setError(err.message || t.passwordMismatch);
