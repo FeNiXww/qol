@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { X, Crown, UserMinus, LogOut, UserPlus, Upload, Shield, ShieldOff, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GroupMemberSearch from '@/components/qol/GroupMemberSearch';
-import { getGroup, addMembers, removeMember, promoteToOwner, demoteOwner, leaveGroup, updateGroupProfile } from '@/lib/groupsApi';
+import { getGroup, removeMember, promoteToOwner, demoteOwner, leaveGroup, updateGroupProfile, createGroupInvites } from '@/lib/groupsApi';
 import { bustMatchesCache } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 
@@ -61,8 +61,9 @@ export default function GroupInfoSheet({ matchId, currentUserId, myAgeBand, grou
 
   const handleAdd = async (selectedIds) => {
     if (!selectedIds.length) { setAddMode(false); return; }
-    await addMembers({ matchId, userIds: selectedIds });
-    bustMatchesCache();
+    // Don't add members directly anymore — send each selected user a group
+    // invitation they can review and accept from their own device.
+    await createGroupInvites({ matchId, inviterId: currentUserId, inviteeIds: selectedIds });
     setAddMode(false);
     load();
   };
@@ -275,7 +276,7 @@ export default function GroupInfoSheet({ matchId, currentUserId, myAgeBand, grou
             className="flex-1 py-3 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2"
             style={{ background: 'linear-gradient(135deg, #16A499, #0D6470)' }}
           >
-            <UserPlus className="w-4 h-4" /> Add members
+            <UserPlus className="w-4 h-4" /> Invite members
           </button>
         )}
         <button

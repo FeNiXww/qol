@@ -90,3 +90,50 @@ export async function setGroupClearedAt({ matchId, userId }) {
   map[userId] = new Date().toISOString();
   await base44.entities.Match.update(matchId, { cleared_at_map: map });
 }
+
+// Group invitations: owners invite users, who get a popup with group info +
+// the member list and can accept (added as participant) or decline.
+export async function createGroupInvites({ matchId, inviterId, inviteeIds }) {
+  const rows = [];
+  for (const uid of inviteeIds) {
+    if (uid === inviterId) continue;
+    try {
+      const row = await safeQuery(() => base44.entities.GroupInvite.create({
+        match_id: matchId,
+        inviter_id: inviterId,
+        invitee_id: uid,
+        status: 'pending',
+      }));
+      rows.push(row);
+    } catch (e) { /* rate-limit tolerant; keep inviting the rest */ }
+  }
+  base44.analytics.track({ eventName: 'group_invite_sent', properties: { count: rows.length } });
+  return rows;
+}
+
+export async function getPendingGroupInvites(userId) {
+  return safeQuery(() => base44.entities.GroupInvite.filter({ invitee_id: userId, status: 'pending' }, '-created_date', 20));
+}
+
+// Fetch the participant profiles for a group match — used by the invite popup.
+export async function getGroupParticipants(matchId) {
+  const m = await base44.entities.Match.get(matchId);
+  const pids = m.participant_ids || [];
+  if (!pids.length) return [];
+  const [byUser, byCreator] = await Promise.all([
+    base44.entities.Profile.filter({ user_id: { $in: pids } }),
+    base44.entities.Profile.filter({ created_by_id: { $in: pids } }),
+  ]);
+  const map = {};
+  byCreator.concat(byUser).forEach((p) => { const k = p.user_id || p.created_by_id; if (k) map[k] = p; });
+  return pids.map((id) => map[id]).filter(Boolean);
+}
+
+export async function acceptGroupInvite(inviteId, matchId, userId) {
+  await addMembers({ matchId, userIds: [userId] });
+  await base44.entities.GroupInvite.update(inviteId, { status: 'accepted' });
+}
+
+export async function declineGroupInvite(inviteId) {
+  await base44.entities.GroupInvite.update(inviteId, { status: 'declined' });
+}

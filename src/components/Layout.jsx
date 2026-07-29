@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import GameInvitePopup from '@/components/qol/GameInvitePopup';
 import NewMessageNotifier from '@/components/qol/NewMessageNotifier';
 import ConnectionRequestPopup from '@/components/qol/ConnectionRequestPopup';
+import GroupInvitePopup from '@/components/qol/GroupInvitePopup';
 import { NotificationsProvider } from '@/contexts/NotificationsContext';
 import ConnectedNotifier from '@/components/qol/ConnectedNotifier';
 
@@ -62,6 +63,7 @@ export default function Layout() {
       <GameInvitePopup />
       <NewMessageNotifier />
       <ConnectionRequestPopup />
+      <GroupInvitePopup />
       <ConnectedNotifier />
       <div className={`flex-1 flex flex-col ${hideTabs ? 'overflow-hidden' : 'overflow-hidden pb-[76px]'}`}>
         <Outlet />

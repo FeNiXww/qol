@@ -1,0 +1,37 @@
+{
+  "name": "GroupInvite",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "The group's Match record id"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "Optional Group metadata row id"
+    },
+    "inviter_id": {
+      "type": "string",
+      "description": "Owner who sent the invitation"
+    },
+    "invitee_id": {
+      "type": "string",
+      "description": "User being invited"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "match_id",
+    "inviter_id",
+    "invitee_id",
+    "status"
+  ]
+}
