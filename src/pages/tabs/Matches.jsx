@@ -94,11 +94,11 @@ export default function Matches() {
             <button
               onClick={() => setShowCreateGroup(true)}
               className="h-9 px-3 rounded-full flex items-center gap-1.5"
-              style={{ background: 'linear-gradient(135deg, #16A499, #0D6470)', boxShadow: '0 4px 12px rgba(22,164,153,0.35)' }}
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}
               title="New group"
             >
-              <Plus className="w-4 h-4 text-white" />
-              <span className="text-white text-sm font-bold">
+              <Plus className="w-4 h-4 text-white/85" />
+              <span className="text-white/90 text-sm font-semibold">
                 {lang === 'he' ? 'קבוצה חדשה' : lang === 'ar' ? 'مجموعة جديدة' : 'New group'}
               </span>
             </button>

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { X, Crown, UserMinus, LogOut, UserPlus, Upload, Shield, ShieldOff, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GroupMemberSearch from '@/components/qol/GroupMemberSearch';
+import ConfirmModal from '@/components/qol/ConfirmModal';
 import { getGroup, removeMember, promoteToOwner, demoteOwner, leaveGroup, updateGroupProfile, createGroupInvites } from '@/lib/groupsApi';
 import { bustMatchesCache } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
@@ -23,6 +24,16 @@ export default function GroupInfoSheet({ matchId, currentUserId, myAgeBand, grou
   const [avatarDraft, setAvatarDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState(null);
+  const [confirm, setConfirm] = useState({ open: false });
+  const showConfirm = (cfg) => setConfirm({ open: true, busy: false, ...cfg });
+  const closeConfirm = () => setConfirm({ open: false });
+  const runConfirm = async () => {
+    const fn = confirm.onConfirm;
+    if (!fn) return;
+    setConfirm((s) => ({ ...s, busy: true }));
+    try { await fn(); setConfirm({ open: false }); }
+    catch { setConfirm((s) => ({ ...s, busy: false })); }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -68,12 +79,17 @@ export default function GroupInfoSheet({ matchId, currentUserId, myAgeBand, grou
     load();
   };
 
-  const handleKick = async (uid) => {
-    if (!confirm('Remove this member from the group?')) return;
-    setBusyId(uid);
-    try { await removeMember({ matchId, userId: uid }); bustMatchesCache(); load(); }
-    finally { setBusyId(null); }
-  };
+  const handleKick = (uid) => showConfirm({
+    title: 'Remove member?',
+    message: 'They will no longer be able to see or post in this group.',
+    confirmLabel: 'Remove',
+    variant: 'danger',
+    onConfirm: async () => {
+      setBusyId(uid);
+      try { await removeMember({ matchId, userId: uid }); bustMatchesCache(); load(); }
+      finally { setBusyId(null); }
+    },
+  });
 
   const handlePromote = async (uid) => {
     setBusyId(uid);
@@ -93,12 +109,17 @@ export default function GroupInfoSheet({ matchId, currentUserId, myAgeBand, grou
     }
   };
 
-  const handleLeave = async () => {
-    if (!confirm('Leave this group?')) return;
-    await leaveGroup({ matchId, userId: currentUserId });
-    bustMatchesCache();
-    onLeftGroup?.();
-  };
+  const handleLeave = () => showConfirm({
+    title: 'Leave group?',
+    message: 'You will no longer receive messages from this group.',
+    confirmLabel: 'Leave',
+    variant: 'danger',
+    onConfirm: async () => {
+      await leaveGroup({ matchId, userId: currentUserId });
+      bustMatchesCache();
+      onLeftGroup?.();
+    },
+  });
 
   const handleAvatarUpload = async (file) => {
     if (!file || !group) return;
@@ -287,6 +308,17 @@ export default function GroupInfoSheet({ matchId, currentUserId, myAgeBand, grou
           <LogOut className="w-4 h-4" /> Leave
         </button>
       </div>
+
+      <ConfirmModal
+        open={confirm.open}
+        title={confirm.title}
+        message={confirm.message}
+        confirmLabel={confirm.confirmLabel}
+        variant={confirm.variant}
+        busy={confirm.busy}
+        onConfirm={runConfirm}
+        onCancel={closeConfirm}
+      />
     </div>
   );
 }

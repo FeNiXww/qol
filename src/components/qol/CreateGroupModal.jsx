@@ -1,27 +1,47 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Camera, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { createGroup, createGroupInvites } from '@/lib/groupsApi';
 import { bustMatchesCache } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
 import GroupMemberSearch from '@/components/qol/GroupMemberSearch';
 
-// Two-step group creation: enter name + bio, then invite initial members before
-// opening the chat. The creator is the first owner; members only join after they
-// accept the invitation popup on their device.
+// Two-step group creation: pick a photo + enter name & bio, then invite
+// initial members before opening the chat. The creator is the first owner;
+// members only join after they accept the invitation popup on their device.
 export default function CreateGroupModal({ myId, ageBand, onClose }) {
   const navigate = useNavigate();
+  const fileRef = useRef(null);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [step, setStep] = useState('form');
   const [matchId, setMatchId] = useState(null);
   const [creating, setCreating] = useState(false);
 
+  const handleAvatar = async (file) => {
+    if (!file || uploading) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setAvatarUrl(file_url);
+    } catch {} finally {
+      setUploading(false);
+    }
+  };
+
   const handleCreate = async () => {
     if (!name.trim() || creating) return;
     setCreating(true);
     try {
-      const { match } = await createGroup({ creatorId: myId, name: name.trim(), bio });
+      const { match } = await createGroup({
+        creatorId: myId,
+        name: name.trim(),
+        bio,
+        avatarUrl,
+      });
       bustMatchesCache();
       setMatchId(match.id);
       setStep('invite');
@@ -75,6 +95,45 @@ export default function CreateGroupModal({ myId, ageBand, onClose }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-8 space-y-5">
+        {/* Avatar picker */}
+        <div className="flex flex-col items-center mb-2">
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Group" className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex flex-col items-center text-white/70">
+                <Camera className="w-7 h-7 mb-1" />
+                <span className="text-xs font-semibold">Add photo</span>
+              </div>
+            )}
+            {uploading && (
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
+              </div>
+            )}
+          </button>
+          {avatarUrl && !uploading && (
+            <button
+              onClick={() => setAvatarUrl('')}
+              className="text-xs text-gray-400 mt-2 font-medium"
+            >
+              Remove photo
+            </button>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleAvatar(e.target.files?.[0])}
+          />
+        </div>
+
         <div>
           <label className="text-xs font-bold text-gray-400 uppercase">Group name</label>
           <input
@@ -103,7 +162,7 @@ export default function CreateGroupModal({ myId, ageBand, onClose }) {
       <div className="px-6 py-4 bg-white border-t border-gray-100">
         <button
           onClick={handleCreate}
-          disabled={!name.trim() || creating}
+          disabled={!name.trim() || creating || uploading}
           className="w-full py-3 rounded-2xl text-white font-bold text-sm shadow-lg disabled:opacity-40"
           style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0D6470)` }}
         >
