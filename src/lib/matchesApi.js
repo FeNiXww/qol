@@ -15,40 +15,66 @@ async function safeQuery(fn, attempts = 5) {
 const MATCHES_CACHE_TTL = 12000;
 const _matchesCache = { key: null, at: 0, data: null };
 
+// Drop the cached matches list so the next read fetches fresh data. Call after
+// creating a group or after any membership change so the Connections list
+// reflects the update without waiting for the TTL to expire.
+export function bustMatchesCache() {
+  _matchesCache.key = null;
+  _matchesCache.at = 0;
+  _matchesCache.data = null;
+}
+
+async function fetchProfileMap(userIds) {
+  if (!userIds.length) return {};
+  const [byUserId, byCreatorId] = await Promise.all([
+    safeQuery(() => base44.entities.Profile.filter({ user_id: { $in: userIds } })),
+    safeQuery(() => base44.entities.Profile.filter({ created_by_id: { $in: userIds } })),
+  ]);
+  const map = {};
+  byCreatorId.concat(byUserId).forEach((p) => {
+    const k = p.user_id || p.created_by_id;
+    if (k) map[k] = p;
+  });
+  return map;
+}
+
+// Fetch all of the current user's chats:
+//  - 1:1 matches (user_a or user_b)
+//  - group matches (participant_ids contains the user)
+// Group matches are enriched with their Group metadata row so the list can
+// render group name/avatar/member count instead of the 1:1 other-profile.
 export async function getMatches(myUserId) {
   const now = Date.now();
   if (_matchesCache.key === myUserId && now - _matchesCache.at < MATCHES_CACHE_TTL) {
     return _matchesCache.data;
   }
 
-  const matchesA = await safeQuery(() => base44.entities.Match.filter({ user_a_id: myUserId }, '-last_message_at', 50));
-  const matchesB = await safeQuery(() => base44.entities.Match.filter({ user_b_id: myUserId }, '-last_message_at', 50));
+  const [matchesA, matchesB] = await Promise.all([
+    safeQuery(() => base44.entities.Match.filter({ user_a_id: myUserId }, '-last_message_at', 50)),
+    safeQuery(() => base44.entities.Match.filter({ user_b_id: myUserId }, '-last_message_at', 50)),
+  ]);
+  const groupMatches = await safeQuery(() => base44.entities.Match.filter({ is_group: true, participant_ids: { $in: [myUserId] } }, '-last_message_at', 50));
 
-  const all = [...matchesA, ...matchesB].sort((a, b) =>
+  const oneOnOne = [...matchesA, ...matchesB].filter((m) => !m.is_group);
+  const all = [...oneOnOne, ...groupMatches].sort((a, b) =>
     new Date(b.last_message_at) - new Date(a.last_message_at)
   );
 
-  // Collect all other user IDs
-  const otherIds = all.map(match => match.user_a_id === myUserId ? match.user_b_id : match.user_a_id);
-  const uniqueOtherIds = [...new Set(otherIds)];
+  const otherIds = oneOnOne.map(match => match.user_a_id === myUserId ? match.user_b_id : match.user_a_id);
+  const profileMap = await fetchProfileMap([...new Set(otherIds)]);
 
-  let byUserId = [], byCreatorId = [];
-  if (uniqueOtherIds.length > 0) {
-    // Fetch all profiles in two bulk queries (by user_id and by created_by_id)
-    [byUserId, byCreatorId] = await Promise.all([
-      safeQuery(() => base44.entities.Profile.filter({ user_id: { $in: uniqueOtherIds } })),
-      safeQuery(() => base44.entities.Profile.filter({ created_by_id: { $in: uniqueOtherIds } })),
-    ]);
+  let groupRows = [];
+  if (groupMatches.length) {
+    const groupMatchIds = groupMatches.map((m) => m.id);
+    groupRows = await safeQuery(() => base44.entities.Group.filter({ match_id: { $in: groupMatchIds } }));
   }
-
-  // Build a lookup map: userId -> profile
-  const profileMap = {};
-  [...byCreatorId, ...byUserId].forEach(p => {
-    const key = p.user_id || p.created_by_id;
-    if (key) profileMap[key] = p;
-  });
+  const groupByMatch = {};
+  groupRows.forEach((g) => { groupByMatch[g.match_id] = g; });
 
   const enriched = all.map(match => {
+    if (match.is_group) {
+      return { ...match, group: groupByMatch[match.id] || null, otherProfile: null };
+    }
     const otherId = match.user_a_id === myUserId ? match.user_b_id : match.user_a_id;
     return { ...match, otherId, otherProfile: profileMap[otherId] || null };
   });
@@ -59,7 +85,6 @@ export async function getMatches(myUserId) {
   return enriched;
 }
 
-// A profile is considered online if its heartbeat is within the last 2 minutes
 export function isProfileOnline(profile, windowMs = 120_000) {
   if (!profile?.last_seen_at) return false;
   return Date.now() - new Date(profile.last_seen_at).getTime() < windowMs;
@@ -69,16 +94,21 @@ export async function getMessages(matchId) {
   return base44.entities.Message.filter({ match_id: matchId }, 'created_date', 200);
 }
 
-export async function sendMessage({ matchId, senderId, receiverId, text, senderNationality, receiverNationality }) {
+// Send a message. For 1:1 chats, translate to the receiver's native language
+// and respect the receiver's known-word dictionary. For group chats, there is
+// no single receiver, so we translate to the opposite language of the sender
+// (Hebrew→Arabic, Arabic→Hebrew) and skip the per-receiver dictionary lookup;
+// the bubble displays both the original and translated text so each member
+// reads the language they understand.
+export async function sendMessage({ matchId, senderId, receiverId, text, senderNationality, receiverNationality, isGroup = false }) {
   const { translateText, getNativeLang } = await import('./translate');
   const fromLang = getNativeLang(senderNationality);
-  const toLang = getNativeLang(receiverNationality);
+  const toLang = isGroup
+    ? (senderNationality === 'israeli' ? 'ar' : 'he')
+    : getNativeLang(receiverNationality);
 
-  // Words the receiver has already marked "known" in their dictionary, in the
-  // sender's language — these are left untranslated so the receiver practices
-  // reading them in the original language instead of always seeing them translated.
   let knownWords = [];
-  if (receiverId) {
+  if (!isGroup && receiverId) {
     try {
       const known = await base44.entities.DictionaryWord.filter(
         { user_id: receiverId, known: true }, null, 500
@@ -86,17 +116,11 @@ export async function sendMessage({ matchId, senderId, receiverId, text, senderN
       const field = fromLang === 'he' ? 'text_he' : 'text_ar';
       knownWords = [...new Set(known.map(w => w[field]).filter(Boolean))];
     } catch {
-      // If this lookup fails, just translate normally — never block sending.
       knownWords = [];
     }
   }
 
-  // Translate first — if it fails (unclear message), nothing is sent or updated
   const translatedText = await translateText(text, fromLang, toLang, knownWords);
-
-  // Since Hebrew and Arabic use entirely different scripts, any known word that
-  // still appears verbatim in the translated (target-language) text can only be
-  // there because it was deliberately preserved — never an organic translation.
   const keptWords = knownWords.filter(w => translatedText.includes(w));
 
   await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });

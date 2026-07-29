@@ -6,8 +6,10 @@ import { getMessages, sendMessage } from '@/lib/matchesApi';
 import { markMatchRead } from '@/lib/unread';
 import ChatBubble from '@/components/qol/ChatBubble';
 import ReportMessageModal from '@/components/qol/ReportMessageModal';
+import GroupInfoSheet from '@/components/qol/GroupInfoSheet';
+import { getGroup, setGroupClearedAt } from '@/lib/groupsApi';
 import { theme } from '@/lib/theme';
-import { ArrowLeft, Send, Globe, Eraser, GlobeLock } from 'lucide-react';
+import { ArrowLeft, Send, Globe, Eraser, GlobeLock, Users } from 'lucide-react';
 import { useDictT } from '@/lib/dictionaryI18n';
 
 const MAX_CHARS = 200;
@@ -25,6 +27,10 @@ export default function Chat() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [otherProfile, setOtherProfile] = useState(null);
+  const [match, setMatch] = useState(null);
+  const [group, setGroup] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [reportingMessage, setReportingMessage] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -72,12 +78,30 @@ export default function Chat() {
       try {
         let m = null;
         try { m = await base44.entities.Match.get(matchId); } catch { return; }
-        const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
-        const profiles = await base44.entities.Profile.filter({ user_id: otherId });
-        setOtherProfile(profiles[0] || null);
-        const isUserA = m.user_a_id === currentUser.id;
-        const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
-        if (myClearedAt) setClearedAt(myClearedAt);
+        setMatch(m);
+        if (m.is_group) {
+          const info = await getGroup(matchId);
+          setGroup(info);
+          const pids = m.participant_ids || [];
+          if (pids.length) {
+            const [prof, profByCreator] = await Promise.all([
+              base44.entities.Profile.filter({ user_id: { $in: pids } }),
+              base44.entities.Profile.filter({ created_by_id: { $in: pids } }),
+            ]);
+            const map = {};
+            profByCreator.concat(prof).forEach((p) => { const k = p.user_id || p.created_by_id; if (k) map[k] = p; });
+            setParticipants(pids.map((id) => map[id]).filter(Boolean));
+          }
+          const clearedAtMap = m.cleared_at_map || {};
+          if (clearedAtMap[currentUser.id]) setClearedAt(clearedAtMap[currentUser.id]);
+        } else {
+          const otherId = m.user_a_id === currentUser.id ? m.user_b_id : m.user_a_id;
+          const profiles = await base44.entities.Profile.filter({ user_id: otherId });
+          setOtherProfile(profiles[0] || null);
+          const isUserA = m.user_a_id === currentUser.id;
+          const myClearedAt = isUserA ? m.user_a_cleared_at : m.user_b_cleared_at;
+          if (myClearedAt) setClearedAt(myClearedAt);
+        }
         const msgs = await getMessages(matchId);
         setMessages(msgs);
         try { localStorage.setItem(`qol_chat_${matchId}`, JSON.stringify(msgs)); } catch {}
@@ -145,6 +169,7 @@ export default function Chat() {
         text: msgText,
         senderNationality: profile.nationality,
         receiverNationality: receiverNat,
+        isGroup: !!match?.is_group,
       });
       setMessages(prev => {
         const withoutDup = prev.filter(m => m.id !== saved.id);
@@ -201,12 +226,15 @@ export default function Chat() {
   };
 
   const handleClearChat = async () => {
-    if (!currentUser) return;
-    const match = await base44.entities.Match.get(matchId);
-    const isUserA = match.user_a_id === currentUser.id;
-    const field = isUserA ? 'user_a_cleared_at' : 'user_b_cleared_at';
+    if (!currentUser || !match) return;
     const clearedAtTime = new Date().toISOString();
-    await base44.entities.Match.update(matchId, { [field]: clearedAtTime });
+    if (match.is_group) {
+      await setGroupClearedAt({ matchId, userId: currentUser.id });
+    } else {
+      const isUserA = match.user_a_id === currentUser.id;
+      const field = isUserA ? 'user_a_cleared_at' : 'user_b_cleared_at';
+      await base44.entities.Match.update(matchId, { [field]: clearedAtTime });
+    }
     setClearedAt(clearedAtTime);
     setConfirmClear(false);
   };
@@ -215,8 +243,10 @@ export default function Chat() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const name = otherProfile?.display_name || 'Connection';
-  const flag = otherProfile?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+  const isGroup = !!match?.is_group;
+  const displayName = isGroup ? (group?.name || 'Group') : (otherProfile?.display_name || 'Connection');
+  const displayAvatar = isGroup ? group?.avatar_url : otherProfile?.avatar_url;
+  const otherFlag = otherProfile?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
   const isRTLInput = profile?.nationality === 'israeli' || profile?.nationality === 'palestinian';
   const placeholder = profile?.nationality === 'israeli' ? '…כתוב בעברית' : 'اكتب بالعربية…';
 
@@ -233,19 +263,31 @@ export default function Chat() {
         <button onClick={() => navigate('/matches')} className="text-white/70 hover:text-white transition-colors p-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        {otherProfile?.avatar_url ? (
-          <img src={otherProfile.avatar_url} alt={name} className="w-10 h-10 rounded-full object-cover border-2 border-white/30" />
+        {displayAvatar ? (
+          <img src={displayAvatar} alt={displayName} className="w-10 h-10 rounded-full object-cover border-2 border-white/30" />
         ) : (
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-white/30"
             style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
           >
-            {name[0]?.toUpperCase()}
+            {displayName[0]?.toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-white truncate">{flag} {name}</h2>
+          <h2 className="font-bold text-white truncate">{isGroup ? `👥 ${displayName}` : `${otherFlag} ${displayName}`}</h2>
+          {isGroup && (
+            <p className="text-xs text-white/60 truncate">{participants.length || (match?.participant_ids?.length || 0)} members</p>
+          )}
         </div>
+        {isGroup && (
+          <button
+            onClick={() => setShowGroupInfo(true)}
+            className="text-white/70 hover:text-white transition-colors p-1"
+            title="Group info"
+          >
+            <Users className="w-5 h-5" />
+          </button>
+        )}
         <button
           onClick={() => setTranslationOn(p => !p)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0"
@@ -370,6 +412,17 @@ export default function Chat() {
           matchId={matchId}
           currentUserId={currentUser?.id}
           onClose={() => setReportingMessage(null)}
+        />
+      )}
+
+      {isGroup && showGroupInfo && (
+        <GroupInfoSheet
+          matchId={matchId}
+          currentUserId={currentUser?.id}
+          myAgeBand={profile?.age_band}
+          group={group}
+          onClose={() => setShowGroupInfo(false)}
+          onLeftGroup={() => navigate('/matches')}
         />
       )}
     </div>

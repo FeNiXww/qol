@@ -32,6 +32,32 @@
     "user_b_cleared_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "is_group": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this Match represents a group chat instead of a 1:1 connection"
+    },
+    "participant_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User ids of all group participants (used instead of user_a/b for group matches)"
+    },
+    "owner_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User ids who can edit the group, add members, and kick others"
+    },
+    "cleared_at_map": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-participant ISO timestamps of when each one cleared the group chat"
     }
   },
   "required": [

@@ -4,12 +4,13 @@ import { getUnreadMatchIds } from '@/lib/unread';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ChevronRight, UserCheck, Moon, Settings } from 'lucide-react';
+import { MessageCircle, ChevronRight, UserCheck, Moon, Settings, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
 import { useLang } from '@/contexts/LanguageContext';
 import NotificationsBell from '@/components/qol/NotificationsBell';
+import CreateGroupModal from '@/components/qol/CreateGroupModal';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -18,12 +19,21 @@ export default function Matches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [unreadIds, setUnreadIds] = useState(new Set());
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
   const loadInFlight = useRef(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    base44.entities.Profile.filter({ user_id: currentUser.id })
+      .then(rows => setProfile(rows[0] || null))
+      .catch(() => {});
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -82,6 +92,14 @@ export default function Matches() {
           <div className="flex items-center gap-2">
             <NotificationsBell />
             <button
+              onClick={() => setShowCreateGroup(true)}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
+              title="New group"
+            >
+              <Users className="w-4 h-4 text-white/80" />
+            </button>
+            <button
               onClick={() => navigate('/settings')}
               className="w-9 h-9 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
@@ -118,12 +136,51 @@ export default function Matches() {
           </div>
         ) : (
           matches.map(match => {
+            const timeAgo = match.last_message_at
+              ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true, locale: dateFnsLocale })
+              : (match.is_group ? 'New group' : t.newMatch);
+
+            if (match.is_group) {
+              const gname = match.group?.name || 'Group';
+              const gavatar = match.group?.avatar_url;
+              const memberCount = (match.participant_ids || []).length || 1;
+              return (
+                <Link
+                  key={match.id}
+                  to={`/chat/${match.id}`}
+                  className="flex items-center gap-4 p-4 bg-white rounded-2xl transition-all active:scale-[0.98]"
+                  style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.04)' }}
+                >
+                  <div className="relative flex-shrink-0">
+                    {gavatar ? (
+                      <img src={gavatar} alt={gname} className="w-14 h-14 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center text-white" style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}>
+                        <Users className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-base">👥</span>
+                      <p className="font-bold text-gray-900 truncate">{gname}</p>
+                      {unreadIds.has(match.id) && (
+                        <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: theme.colors.orange }} />
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 truncate flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3 flex-shrink-0" />
+                      {memberCount} members · {timeAgo}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.teal }} />
+                </Link>
+              );
+            }
+
             const other = match.otherProfile;
             const name = other?.display_name || 'Connection';
             const flag = other ? (other.nationality === 'israeli' ? '🇮🇱' : '🇵🇸') : '🌍';
-            const timeAgo = match.last_message_at
-              ? formatDistanceToNow(new Date(match.last_message_at), { addSuffix: true, locale: dateFnsLocale })
-              : t.newMatch;
 
             return (
               <Link
@@ -197,6 +254,14 @@ export default function Matches() {
           })
         )}
       </div>
+
+      {showCreateGroup && profile && (
+        <CreateGroupModal
+          myId={profile.user_id || currentUser?.id}
+          ageBand={profile.age_band}
+          onClose={() => setShowCreateGroup(false)}
+        />
+      )}
     </div>
   );
 }

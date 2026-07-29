@@ -1,0 +1,28 @@
+{
+  "name": "Group",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "References the Match record this group is tied to"
+    },
+    "name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "created_by_id": {
+      "type": "string",
+      "description": "User id of the group's original creator"
+    }
+  },
+  "required": [
+    "match_id",
+    "name",
+    "created_by_id"
+  ]
+}
