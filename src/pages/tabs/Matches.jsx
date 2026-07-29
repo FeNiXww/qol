@@ -4,7 +4,7 @@ import { getUnreadMatchIds } from '@/lib/unread';
 import { base44 } from '@/api/base44Client';
 import { theme } from '@/lib/theme';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ChevronRight, UserCheck, Moon, Settings, Users } from 'lucide-react';
+import { MessageCircle, ChevronRight, UserCheck, Moon, Settings, Users, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { he, ar } from 'date-fns/locale';
@@ -93,11 +93,14 @@ export default function Matches() {
             <NotificationsBell />
             <button
               onClick={() => setShowCreateGroup(true)}
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}
+              className="h-9 px-3 rounded-full flex items-center gap-1.5"
+              style={{ background: 'linear-gradient(135deg, #16A499, #0D6470)', boxShadow: '0 4px 12px rgba(22,164,153,0.35)' }}
               title="New group"
             >
-              <Users className="w-4 h-4 text-white/80" />
+              <Plus className="w-4 h-4 text-white" />
+              <span className="text-white text-sm font-bold">
+                {lang === 'he' ? 'קבוצה חדשה' : lang === 'ar' ? 'مجموعة جديدة' : 'New group'}
+              </span>
             </button>
             <button
               onClick={() => navigate('/settings')}
@@ -126,13 +129,22 @@ export default function Matches() {
             </div>
             <h3 className="text-xl font-bold mb-2" style={{ color: theme.colors.navy }}>{t.noMatchesYet}</h3>
             <p className="text-gray-400 text-sm leading-relaxed">{t.noMatchesMsg}</p>
-            <Link
-              to="/"
-              className="mt-6 px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-md"
-              style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
-            >
-              {t.goToDiscover}
-            </Link>
+            <div className="flex flex-col gap-3 items-center w-full mt-6 max-w-xs mx-auto">
+              <Link
+                to="/"
+                className="w-full px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-md text-center"
+                style={{ background: `linear-gradient(135deg, #132E4C, #1E4870)` }}
+              >
+                {t.goToDiscover}
+              </Link>
+              <button
+                onClick={() => setShowCreateGroup(true)}
+                className="w-full px-6 py-3 rounded-2xl font-semibold text-sm shadow-md text-center"
+                style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0D6470)`, color: 'white' }}
+              >
+                {lang === 'he' ? 'צור קבוצה' : lang === 'ar' ? 'أنشئ مجموعة' : 'Create a group'}
+              </button>
+            </div>
           </div>
         ) : (
           matches.map(match => {

@@ -18,6 +18,8 @@ export default function ConnectedNotifier() {
       if (event.type !== 'create') return;
       const match = event.data;
       if (match.user_a_id !== me.id && match.user_b_id !== me.id) return;
+      // Group matches use user_a_id === user_b_id as a placeholder; never celebrate them as a connection.
+      if (match.is_group) return;
       if (wasLocalMatchRecent()) return;
       const otherId = match.user_a_id === me.id ? match.user_b_id : match.user_a_id;
       const [otherProfiles, myProfiles] = await Promise.all([

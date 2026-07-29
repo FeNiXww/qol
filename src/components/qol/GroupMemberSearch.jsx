@@ -12,6 +12,8 @@ export default function GroupMemberSearch({
   excludeIds = [],
   onClose,
   onConfirm,
+  onSkip,
+  skipLabel = 'Skip for now',
   title = 'Add members',
   confirmLabel = 'Add',
 }) {
@@ -146,7 +148,7 @@ export default function GroupMemberSearch({
       </div>
 
       {/* Confirm */}
-      <div className="px-4 py-4 bg-white border-t border-gray-100 flex-shrink-0">
+      <div className="px-4 py-4 bg-white border-t border-gray-100 flex-col flex-shrink-0">
         <button
           onClick={handleConfirm}
           className="w-full py-3 rounded-2xl text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2"
@@ -155,6 +157,11 @@ export default function GroupMemberSearch({
           <UserPlus className="w-4 h-4" />
           {confirmLabel}{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
         </button>
+        {onSkip && (
+          <button onClick={onSkip} className="w-full text-sm text-gray-400 font-semibold py-2">
+            {skipLabel}
+          </button>
+        )}
       </div>
     </div>
   );

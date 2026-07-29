@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { createGroup } from '@/lib/groupsApi';
+import { createGroup, createGroupInvites } from '@/lib/groupsApi';
 import { bustMatchesCache } from '@/lib/matchesApi';
 import { theme } from '@/lib/theme';
+import GroupMemberSearch from '@/components/qol/GroupMemberSearch';
 
-// Full-screen modal for creating a new group. The creator becomes the first
-// owner and can add members afterwards from the Group info sheet in chat.
+// Two-step group creation: enter name + bio, then invite initial members before
+// opening the chat. The creator is the first owner; members only join after they
+// accept the invitation popup on their device.
 export default function CreateGroupModal({ myId, ageBand, onClose }) {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
+  const [step, setStep] = useState('form');
+  const [matchId, setMatchId] = useState(null);
   const [creating, setCreating] = useState(false);
 
   const handleCreate = async () => {
@@ -19,13 +23,45 @@ export default function CreateGroupModal({ myId, ageBand, onClose }) {
     try {
       const { match } = await createGroup({ creatorId: myId, name: name.trim(), bio });
       bustMatchesCache();
-      onClose();
-      navigate(`/chat/${match.id}`);
+      setMatchId(match.id);
+      setStep('invite');
     } catch (e) {
       alert('Could not create group. Please try again.');
+    } finally {
       setCreating(false);
     }
   };
+
+  const openChat = () => {
+    onClose();
+    if (matchId) navigate(`/chat/${matchId}`);
+  };
+
+  const handleInvite = async (selectedIds) => {
+    if (selectedIds.length && matchId) {
+      try {
+        await createGroupInvites({ matchId, inviterId: myId, inviteeIds: selectedIds });
+      } catch {}
+    }
+    openChat();
+  };
+
+  // Step 2: pick who to invite to the freshly-created group.
+  if (step === 'invite') {
+    return (
+      <GroupMemberSearch
+        myId={myId}
+        ageBand={ageBand}
+        excludeIds={[]}
+        title="Invite members"
+        confirmLabel="Send invites & open group"
+        onConfirm={handleInvite}
+        onClose={openChat}
+        onSkip={openChat}
+        skipLabel="Skip — I'll invite later"
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col" style={{ background: '#F0F7F6' }}>
@@ -35,6 +71,7 @@ export default function CreateGroupModal({ myId, ageBand, onClose }) {
       >
         <button onClick={onClose} className="text-white/70 p-1"><X className="w-5 h-5" /></button>
         <h2 className="font-bold text-white">New group</h2>
+        <div className="ml-auto text-xs text-white/60 font-semibold">Step 1 of 2</div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-8 space-y-5">
@@ -58,8 +95,8 @@ export default function CreateGroupModal({ myId, ageBand, onClose }) {
             className="w-full mt-1 px-4 py-3 rounded-2xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-sm resize-none"
           />
         </div>
-        <p className="text-xs text-gray-400 text-center">
-          After creating, tap the <span className="font-bold">group icon</span> in the chat to invite members.
+        <p className="text-xs text-gray-400 text-center px-4">
+          On the next step you can invite members — they'll get a notification with your group's name, bio, and member list.
         </p>
       </div>
 
@@ -70,7 +107,7 @@ export default function CreateGroupModal({ myId, ageBand, onClose }) {
           className="w-full py-3 rounded-2xl text-white font-bold text-sm shadow-lg disabled:opacity-40"
           style={{ background: `linear-gradient(135deg, ${theme.colors.teal}, #0D6470)` }}
         >
-          {creating ? 'Creating…' : 'Create group'}
+          {creating ? 'Creating…' : 'Next: invite members'}
         </button>
       </div>
     </div>
