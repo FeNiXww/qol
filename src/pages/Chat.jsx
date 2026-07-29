@@ -39,6 +39,8 @@ export default function Chat() {
   const [sendError, setSendError] = useState(null);
   const [dictToast, setDictToast] = useState(false);
   const [unknownToast, setUnknownToast] = useState(false);
+  const [groupTrans, setGroupTrans] = useState({});
+  const translatingRef = useRef(new Set());
   const dt = useDictT();
   const bottomRef = useRef(null);
 
@@ -244,11 +246,53 @@ export default function Chat() {
   };
 
   const isGroup = !!match?.is_group;
+  const myLang = profile?.nationality === 'israeli' ? 'he' : 'ar';
+  const participantMap = {};
+  participants.forEach((p) => { participantMap[p.user_id || p.created_by_id] = p; });
   const displayName = isGroup ? (group?.name || 'Group') : (otherProfile?.display_name || 'Connection');
   const displayAvatar = isGroup ? group?.avatar_url : otherProfile?.avatar_url;
   const otherFlag = otherProfile?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
   const isRTLInput = profile?.nationality === 'israeli' || profile?.nationality === 'palestinian';
   const placeholder = profile?.nationality === 'israeli' ? '…כתוב בעברית' : 'اكتب بالعربية…';
+
+  // Group chats: translate each incoming message to the viewer's native
+  // language on demand (cached in localStorage so we don't re-call the LLM).
+  useEffect(() => {
+    if (!isGroup || !myLang || !currentUser) return;
+    let cancelled = false;
+    (async () => {
+      const { translateText } = await import('@/lib/translate');
+      for (const msg of messages) {
+        if (cancelled) return;
+        if (msg.sender_id === currentUser.id) continue;
+        if (msg.original_lang === myLang) continue;
+        if (translatingRef.current.has(msg.id)) continue;
+        translatingRef.current.add(msg.id);
+        const cacheKey = `qol_gt_${msg.id}_${myLang}`;
+        let cached = null;
+        try { cached = localStorage.getItem(cacheKey); } catch {}
+        if (cached) { setGroupTrans((p) => ({ ...p, [msg.id]: cached })); continue; }
+        try {
+          const t = await translateText(msg.original_text, msg.original_lang, myLang, []);
+          if (cancelled) return;
+          setGroupTrans((p) => ({ ...p, [msg.id]: t }));
+          try { localStorage.setItem(cacheKey, t); } catch {}
+        } catch {}
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [messages, isGroup, myLang, currentUser?.id]);
+
+  // Build per-viewer messages for groups: incoming messages show in my language
+  // (translated on demand above); messages I sent stay as-is.
+  const viewMessages = isGroup
+    ? messages.map((m) => {
+        if (m.sender_id === currentUser?.id) return m;
+        if (m.original_lang === myLang) return { ...m, translated_text: '', translated_lang: '' };
+        const t = groupTrans[m.id];
+        return { ...m, translated_text: t || '', translated_lang: t ? myLang : '' };
+      })
+    : messages;
 
   return (
     <div 
@@ -340,17 +384,22 @@ export default function Chat() {
             <p className="text-gray-400 text-sm mt-1">Your message will be auto-translated.</p>
           </div>
         )}
-        {messages.filter(msg => !clearedAt || new Date(msg.created_date) > new Date(clearedAt)).map(msg => (
-          <ChatBubble
-            key={msg.id}
-            message={msg}
-            isMine={msg.sender_id === currentUser?.id}
-            onReport={setReportingMessage}
-            onAddWord={handleAddToDictionary}
-            onMarkUnknown={handleMarkUnknown}
-            translationOn={translationOn}
-          />
-        ))}
+        {viewMessages.filter(msg => !clearedAt || new Date(msg.created_date) > new Date(clearedAt)).map(msg => {
+          const senderProfile = isGroup && msg.sender_id !== currentUser?.id ? participantMap[msg.sender_id] : null;
+          return (
+            <ChatBubble
+              key={msg.id}
+              message={msg}
+              isMine={msg.sender_id === currentUser?.id}
+              senderName={senderProfile?.display_name}
+              senderAvatar={senderProfile?.avatar_url}
+              onReport={setReportingMessage}
+              onAddWord={handleAddToDictionary}
+              onMarkUnknown={handleMarkUnknown}
+              translationOn={translationOn}
+            />
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 

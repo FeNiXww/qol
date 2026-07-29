@@ -38,7 +38,7 @@ function renderWithKeptWords(text, words, onWordClick) {
   );
 }
 
-export default function ChatBubble({ message, isMine, onReport, onAddWord, onMarkUnknown, translationOn = true }) {
+export default function ChatBubble({ message, isMine, senderName, senderAvatar, onReport, onAddWord, onMarkUnknown, translationOn = true }) {
   const dt = useDictT();
   const [showOriginal, setShowOriginal] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -230,6 +230,18 @@ export default function ChatBubble({ message, isMine, onReport, onAddWord, onMar
       {/* bubble */}
       <div className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className={`max-w-[78%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
+          {senderName && (
+            <div className="flex items-center gap-1.5 mb-1 ml-1">
+              {senderAvatar ? (
+                <img src={senderAvatar} alt={senderName} className="w-5 h-5 rounded-full object-cover" />
+              ) : (
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
+                  {senderName[0]?.toUpperCase()}
+                </div>
+              )}
+              <span className="text-xs font-semibold text-gray-500">{senderName}</span>
+            </div>
+          )}
           <div
             ref={bubbleRef}
             className={`rounded-2xl shadow-sm cursor-pointer overflow-hidden ${

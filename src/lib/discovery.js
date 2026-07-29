@@ -180,5 +180,28 @@ export async function fetchNotifications(myId) {
     const otherId = m.user_a_id === myId ? m.user_b_id : m.user_a_id;
     return { match: m, profile: profileByUserId.get(otherId) || null };
   });
-  return { pending, connections };
+
+  // Pending group invitations for this user, enriched with the Group metadata
+  // and the Match (for participant count) so the notifications panel can render
+  // group name/avatar/member count without extra per-row queries.
+  const groupInvites = await safeQuery(() => base44.entities.GroupInvite.filter({ invitee_id: myId, status: 'pending' }, '-created_date', 20));
+  let groupRows = [];
+  let inviteMatches = [];
+  if (groupInvites.length) {
+    const matchIds = [...new Set(groupInvites.map((i) => i.match_id))];
+    try { groupRows = await base44.entities.Group.filter({ match_id: { $in: matchIds } }); } catch {}
+    const matchResults = await Promise.all(matchIds.map((mid) => base44.entities.Match.get(mid).catch(() => null)));
+    inviteMatches = matchResults.filter(Boolean);
+  }
+  const groupByMatch = {};
+  groupRows.forEach((g) => { groupByMatch[g.match_id] = g; });
+  const matchById = {};
+  inviteMatches.forEach((m) => { matchById[m.id] = m; });
+  const groupInviteItems = groupInvites.map((inv) => ({
+    invite: inv,
+    group: groupByMatch[inv.match_id] || null,
+    match: matchById[inv.match_id] || null,
+  }));
+
+  return { pending, connections, groupInvites: groupInviteItems };
 }

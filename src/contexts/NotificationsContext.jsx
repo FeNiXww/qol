@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { fetchNotifications, acceptConnectionRequest, DISMISS_KEY } from '@/lib/discovery';
+import { acceptGroupInvite, declineGroupInvite } from '@/lib/groupsApi';
+import { bustMatchesCache } from '@/lib/matchesApi';
 import NotificationsPanel from '@/components/qol/NotificationsPanel';
 import MatchModal from '@/components/qol/MatchModal';
 
@@ -56,7 +58,10 @@ export function NotificationsProvider({ children }) {
     const unsubM = base44.entities.Match.subscribe((event) => {
       if (event.type === 'create' && (event.data?.user_a_id === me.id || event.data?.user_b_id === me.id)) scheduleLoad();
     });
-    return () => { unsubS(); unsubM(); if (debounceRef.current) clearTimeout(debounceRef.current); };
+    const unsubGI = base44.entities.GroupInvite.subscribe((event) => {
+      if (event.data?.invitee_id === me.id) scheduleLoad();
+    });
+    return () => { unsubS(); unsubM(); unsubGI(); if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [me?.id]);
 
   const handleAccept = async (item) => {
@@ -86,10 +91,31 @@ export function NotificationsProvider({ children }) {
     load();
   };
 
+  const handleAcceptGroupInvite = async (item) => {
+    if (!me) return;
+    setBusyId('gi-' + item.invite.id);
+    try {
+      await acceptGroupInvite(item.invite.id, item.invite.match_id, me.id);
+      bustMatchesCache();
+      await load(true);
+      const matchId = item.invite.match_id;
+      setOpen(false);
+      navigate(`/chat/${matchId}`);
+    } finally { setBusyId(null); }
+  };
+
+  const handleDeclineGroupInvite = async (item) => {
+    setBusyId('gi-' + item.invite.id);
+    try {
+      await declineGroupInvite(item.invite.id);
+      await load(true);
+    } finally { setBusyId(null); }
+  };
+
   const openPanel = () => setOpen(true);
 
   return (
-    <Ctx.Provider value={{ pendingCount: data.pending.length, openPanel }}>
+    <Ctx.Provider value={{ pendingCount: data.pending.length + (data.groupInvites?.length || 0), openPanel }}>
       {children}
       {open && (
         <NotificationsPanel
@@ -99,6 +125,8 @@ export function NotificationsProvider({ children }) {
           onClose={() => setOpen(false)}
           onAccept={handleAccept}
           onDecline={handleDecline}
+          onAcceptGroupInvite={handleAcceptGroupInvite}
+          onDeclineGroupInvite={handleDeclineGroupInvite}
           onOpenChat={(matchId) => { setOpen(false); navigate(`/chat/${matchId}`); }}
         />
       )}

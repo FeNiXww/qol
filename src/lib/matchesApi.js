@@ -96,31 +96,30 @@ export async function getMessages(matchId) {
 
 // Send a message. For 1:1 chats, translate to the receiver's native language
 // and respect the receiver's known-word dictionary. For group chats, there is
-// no single receiver, so we translate to the opposite language of the sender
-// (Hebrew→Arabic, Arabic→Hebrew) and skip the per-receiver dictionary lookup;
-// the bubble displays both the original and translated text so each member
-// reads the language they understand.
+// no single receiver, so we store the original text only; each viewer's
+// client translates it to their own native language on demand (see Chat.jsx).
 export async function sendMessage({ matchId, senderId, receiverId, text, senderNationality, receiverNationality, isGroup = false }) {
   const { translateText, getNativeLang } = await import('./translate');
   const fromLang = getNativeLang(senderNationality);
-  const toLang = isGroup
-    ? (senderNationality === 'israeli' ? 'ar' : 'he')
-    : getNativeLang(receiverNationality);
 
+  let toLang = fromLang;
   let knownWords = [];
-  if (!isGroup && receiverId) {
-    try {
-      const known = await base44.entities.DictionaryWord.filter(
-        { user_id: receiverId, known: true }, null, 500
-      );
-      const field = fromLang === 'he' ? 'text_he' : 'text_ar';
-      knownWords = [...new Set(known.map(w => w[field]).filter(Boolean))];
-    } catch {
-      knownWords = [];
+  let translatedText = text;
+  if (!isGroup) {
+    toLang = getNativeLang(receiverNationality);
+    if (receiverId) {
+      try {
+        const known = await base44.entities.DictionaryWord.filter(
+          { user_id: receiverId, known: true }, null, 500
+        );
+        const field = fromLang === 'he' ? 'text_he' : 'text_ar';
+        knownWords = [...new Set(known.map(w => w[field]).filter(Boolean))];
+      } catch {
+        knownWords = [];
+      }
     }
+    translatedText = fromLang === toLang ? text : await translateText(text, fromLang, toLang, knownWords);
   }
-
-  const translatedText = await translateText(text, fromLang, toLang, knownWords);
   const keptWords = knownWords.filter(w => translatedText.includes(w));
 
   await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });

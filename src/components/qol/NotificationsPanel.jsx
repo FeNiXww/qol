@@ -1,12 +1,13 @@
 import React from 'react';
-import { X, Check, Loader2, MessageCircle } from 'lucide-react';
+import { X, Check, Loader2, MessageCircle, Users } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 
 // Presentational notifications list. State/handlers come from NotificationsProvider.
-export default function NotificationsPanel({ data, loading, busyId, onClose, onAccept, onDecline, onOpenChat }) {
+export default function NotificationsPanel({ data, loading, busyId, onClose, onAccept, onDecline, onAcceptGroupInvite, onDeclineGroupInvite, onOpenChat }) {
   const { t } = useLang();
 
   const all = [
+    ...(data.groupInvites || []).map((g) => ({ kind: 'group_invite', ...g, date: g.invite.created_date })),
     ...data.pending.map((p) => ({ kind: 'pending', ...p, date: p.swipe.created_date })),
     ...data.connections.map((c) => ({ kind: 'connection', ...c, date: c.match.created_date })),
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -33,6 +34,43 @@ export default function NotificationsPanel({ data, loading, busyId, onClose, onA
           <div className="text-center py-12 text-gray-400 text-sm">{t.noNotifications}</div>
         )}
         {all.map((n, idx) => {
+          if (n.kind === 'group_invite') {
+            const gname = n.group?.name || 'Group';
+            const gavatar = n.group?.avatar_url;
+            const memberCount = n.match?.participant_ids?.length || 0;
+            const busy = busyId === 'gi-' + n.invite.id;
+            return (
+              <div key={idx} className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-100">
+                {gavatar ? (
+                  <img src={gavatar} alt={gname} className="w-11 h-11 rounded-full object-cover" />
+                ) : (
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
+                    <Users className="w-5 h-5" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 truncate">👥 {gname}</p>
+                  <p className="text-xs text-gray-500">{memberCount} members · invitation to join</p>
+                </div>
+                <button
+                  onClick={() => onDeclineGroupInvite(n)}
+                  disabled={busy}
+                  className="px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 border border-gray-200 disabled:opacity-50"
+                >
+                  {t.decline}
+                </button>
+                <button
+                  onClick={() => onAcceptGroupInvite(n)}
+                  disabled={busy}
+                  className="px-3 py-2 rounded-xl text-sm font-bold text-white flex items-center gap-1 disabled:opacity-60"
+                  style={{ background: 'linear-gradient(135deg, #16A499, #0D6470)' }}
+                >
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Join
+                </button>
+              </div>
+            );
+          }
           const name = n.profile?.display_name || 'Someone';
           const flag = n.profile?.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
           const avatar = n.profile?.avatar_url;
