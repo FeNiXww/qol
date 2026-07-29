@@ -3,7 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { Search, X, Loader2, Check, UserPlus } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 
-// Full-screen searchable user picker. Used by GroupInfoSheet to add members.
+// Full-screen searchable user picker. Used by GroupInfoSheet to add members
+// and by CreateGroupModal when inviting initial members.
+// - When the search box is empty, shows the owner's existing connections first.
+// - Typing searches every user on the platform by name.
 // excludeIds hides those users from results (current members + self).
 // onConfirm receives the newly-selected user ids (excludes already-members).
 export default function GroupMemberSearch({
@@ -22,8 +25,10 @@ export default function GroupMemberSearch({
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(new Set());
+  const [connections, setConnections] = useState([]);
   const debounceRef = useRef(null);
   const cacheRef = useRef(null);
+  const connLoadedRef = useRef(false);
   const excludeSet = useRef(new Set([...excludeIds, myId]));
 
   const getAllProfiles = async () => {
@@ -41,6 +46,39 @@ export default function GroupMemberSearch({
     }
     throw lastErr;
   };
+
+  // Load the owner's existing connections (1:1 matches) so they can pick them
+  // without needing to remember exact names. Not loaded again during the picker.
+  useEffect(() => {
+    if (!myId || connLoadedRef.current) return;
+    connLoadedRef.current = true;
+    (async () => {
+      try {
+        const [mA, mB] = await Promise.all([
+          base44.entities.Match.filter({ user_a_id: myId }),
+          base44.entities.Match.filter({ user_b_id: myId }),
+        ]);
+        const otherIds = [
+          ...mA.map((m) => m.user_b_id),
+          ...mB.map((m) => m.user_a_id),
+        ].filter((id) => !excludeSet.current.has(id));
+        if (!otherIds.length) { setConnections([]); return; }
+        const uniq = [...new Set(otherIds)];
+        const [byUser, byCreator] = await Promise.all([
+          base44.entities.Profile.filter({ user_id: { $in: uniq } }),
+          base44.entities.Profile.filter({ created_by_id: { $in: uniq } }),
+        ]);
+        const map = {};
+        byUser.concat(byCreator).forEach((p) => {
+          const key = p.user_id || p.created_by_id;
+          if (key && !excludeSet.current.has(key)) map[key] = p;
+        });
+        setConnections(uniq.map((id) => map[id]).filter(Boolean));
+      } catch {
+        setConnections([]);
+      }
+    })();
+  }, [myId]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -80,6 +118,38 @@ export default function GroupMemberSearch({
   const selectedIds = [...selected];
   const handleConfirm = () => onConfirm(selectedIds);
 
+  const renderRow = (p) => {
+    const pid = p.user_id || p.created_by_id;
+    const isSelected = selected.has(pid);
+    const name = p.display_name || 'User';
+    const flag = p.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
+    return (
+      <button
+        key={p.id}
+        onClick={() => toggle(p)}
+        className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl text-left"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: isSelected ? '2px solid #16A499' : '1px solid rgba(0,0,0,0.04)' }}
+      >
+        {p.avatar_url ? (
+          <img src={p.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover" />
+        ) : (
+          <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-lg font-bold" style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
+            {name[0]?.toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0 text-left">
+          <p className="font-semibold text-gray-900 truncate">{flag} {name}</p>
+          {p.bio && <p className="text-xs text-gray-400 truncate">{p.bio}</p>}
+        </div>
+        {isSelected && (
+          <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#16A499' }}>
+            <Check className="w-4 h-4 text-white" />
+          </div>
+        )}
+      </button>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex flex-col" style={{ background: '#E6E2D8' }}>
       {/* Header */}
@@ -111,40 +181,24 @@ export default function GroupMemberSearch({
         {!loading && q.trim() && results.length === 0 && (
           <div className="text-center py-12 text-gray-400 text-sm">No users found</div>
         )}
+        {!loading && q.trim() && results.map(renderRow)}
         {!loading && !q.trim() && (
-          <div className="text-center py-12 text-gray-400 text-sm">Search by name to add members</div>
-        )}
-        {results.map((p) => {
-          const pid = p.user_id || p.created_by_id;
-          const isSelected = selected.has(pid);
-          const name = p.display_name || 'User';
-          const flag = p.nationality === 'israeli' ? '🇮🇱' : '🇵🇸';
-          return (
-            <button
-              key={p.id}
-              onClick={() => toggle(p)}
-              className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl text-left"
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: isSelected ? '2px solid #16A499' : '1px solid rgba(0,0,0,0.04)' }}
-            >
-              {p.avatar_url ? (
-                <img src={p.avatar_url} alt={name} className="w-11 h-11 rounded-full object-cover" />
-              ) : (
-                <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-lg font-bold" style={{ background: 'linear-gradient(135deg, #132E4C, #1E4870)' }}>
-                  {name[0]?.toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0 text-left">
-                <p className="font-semibold text-gray-900 truncate">{flag} {name}</p>
-                {p.bio && <p className="text-xs text-gray-400 truncate">{p.bio}</p>}
+          <>
+            {connections.length > 0 ? (
+              <>
+                <p className="text-xs font-bold text-gray-400 uppercase px-1 pb-1">Your connections</p>
+                {connections.map(renderRow)}
+                <p className="text-center text-xs text-gray-400 mt-5 mb-1">
+                  or search by name to invite anyone else
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-12 text-gray-400 text-sm">
+                Search by name to add members
               </div>
-              {isSelected && (
-                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#16A499' }}>
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </button>
-          );
-        })}
+            )}
+          </>
+        )}
       </div>
 
       {/* Confirm */}
