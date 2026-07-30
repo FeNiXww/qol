@@ -109,11 +109,11 @@ export async function sendMessage({ matchId, senderId, receiverId, text, senderN
     toLang = getNativeLang(receiverNationality);
     if (receiverId) {
       try {
-        const known = await base44.entities.DictionaryWord.filter(
-          { user_id: receiverId, known: true }, null, 500
-        );
-        const field = fromLang === 'he' ? 'text_he' : 'text_ar';
-        knownWords = [...new Set(known.map(w => w[field]).filter(Boolean))];
+        // DictionaryWord's RLS only lets a user read their own rows, so this
+        // has to go through a backend function running with elevated access
+        // (it also verifies we actually share a chat with receiverId first).
+        const { data } = await base44.functions.invoke('getReceiverKnownWords', { receiverId, lang: fromLang });
+        knownWords = Array.isArray(data?.words) ? data.words : [];
       } catch {
         knownWords = [];
       }
