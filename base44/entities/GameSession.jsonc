@@ -87,5 +87,67 @@
     "player_a_id",
     "player_b_id",
     "game_type"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.player_a_id": "{{user.id}}"
+        },
+        {
+          "data.player_b_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.player_a_id": "{{user.id}}"
+        },
+        {
+          "data.player_b_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.player_a_id": "{{user.id}}"
+        },
+        {
+          "data.player_b_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.player_a_id": "{{user.id}}"
+        },
+        {
+          "data.player_b_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
