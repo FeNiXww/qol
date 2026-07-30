@@ -49,6 +49,9 @@
           "data.user_id": "{{user.id}}"
         },
         {
+          "data.known": true
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
